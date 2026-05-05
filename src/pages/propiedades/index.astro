@@ -1,17 +1,35 @@
 ---
+export const prerender = false;
+
 import Layout from "../../layouts/Layout.astro";
 import { getProperties } from "../../lib/easybroker";
 
 const page = Number(Astro.url.searchParams.get("page") ?? 1);
-const sort = (Astro.url.searchParams.get("sort") as any) ?? "published_at_desc";
 
-const { content: properties, pagination } = await getProperties({ page, sort });
+const data = await getProperties({
+  page,
+  limit: 20,
+  "search[statuses][]": "published",
+});
 ---
 
 <Layout>
   <h1>Propiedades</h1>
-  <p>Total: {pagination.total}</p>
+
   <ul>
-    {properties.map((p) => <li>{p.title}</li>)}
+    {data.content.map((prop) => (
+      <li>
+        <a href={`/propiedades/${prop.public_id}`}>{prop.title}</a>
+      </li>
+    ))}
   </ul>
+
+  <div>
+    {page > 1 && (
+      <a href={`?page=${page - 1}`}>← Anterior</a>
+    )}
+    {data.pagination.next_page && (
+      <a href={`?page=${page + 1}`}>Siguiente →</a>
+    )}
+  </div>
 </Layout>

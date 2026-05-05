@@ -2,12 +2,6 @@ const BASE_URL = 'https://api.easybroker.com/v1';
 
 // --- Types ---
 
-export type SortBy =
-  | 'published_at_desc'  // más reciente primero (default)
-  | 'published_at_asc'   // más antiguo primero
-  | 'price_asc'          // precio ascendente
-  | 'price_desc';        // precio descendente
-
 export interface PropertyImage {
   title: string | null;
   url: string;
@@ -34,6 +28,8 @@ export interface PropertyLocation {
 export interface Property {
   public_id: string;
   title: string;
+  title_image_full: string;
+  title_image_thumb: string;
   description: string;
   property_type: string;
   bedrooms: number;
@@ -42,7 +38,7 @@ export interface Property {
   construction_size: number;
   lot_size: number;
   age: string;
-  location: PropertyLocation;
+  location: PropertyLocation | string;
   operations: Operation[];
   property_images: PropertyImage[];
   videos: string[];
@@ -51,8 +47,10 @@ export interface Property {
 }
 
 export interface Pagination {
+  limit: number;
+  page: number;
   total: number;
-  next_page: number | null;
+  next_page: string | null;
 }
 
 export interface PropertiesResponse {
@@ -60,19 +58,20 @@ export interface PropertiesResponse {
   pagination: Pagination;
 }
 
-// --- Core fetcher (privado) ---
+// --- Core fetcher ---
 
 type Params = Record<string, string | number | null | undefined>;
 
 async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
-  const qs = Object.entries(params)
-    .filter(([, v]) => v !== undefined && v !== null && v !== '')
-    .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
-    .join('&');
+  const url = new URL(BASE_URL + path);
 
-  const url = `${BASE_URL}${path}${qs ? `?${qs}` : ''}`;
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') {
+      url.searchParams.append(k, String(v));
+    }
+  });
 
-  const res = await fetch(url, {
+  const res = await fetch(url.toString(), {
     headers: { 'X-Authorization': import.meta.env.EB_API_KEY },
   });
 
@@ -86,17 +85,8 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
 
 // --- API pública ---
 
-export function getProperties({
-  page = 1,
-  limit = 20,
-  sort = 'published_at_desc' as SortBy,
-} = {}): Promise<PropertiesResponse> {
-  return ebFetch<PropertiesResponse>('/properties', {
-    page,
-    limit,
-    'search[statuses][]': 'published',
-    'search[sort_by][]': sort,
-  });
+export function getProperties(filters: Params = {}): Promise<PropertiesResponse> {
+  return ebFetch<PropertiesResponse>('/properties', filters);
 }
 
 export function getProperty(id: string): Promise<Property> {
