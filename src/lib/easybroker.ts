@@ -58,6 +58,17 @@ export interface PropertiesResponse {
   pagination: Pagination;
 }
 
+export interface EBLocation {
+  name: string;
+  level: string;
+  parent_name: string | null;
+  localities: EBLocation[];
+}
+
+export interface LocationsResponse {
+  localities: EBLocation[];
+}
+
 // --- Core fetcher ---
 
 type Params = Record<string, string | number | null | undefined>;
@@ -91,4 +102,8 @@ export function getProperties(filters: Params = {}): Promise<PropertiesResponse>
 
 export function getProperty(id: string): Promise<Property> {
   return ebFetch<Property>(`/properties/${id}`);
+}
+
+export function getLocations(name?: string): Promise<LocationsResponse> {
+  return ebFetch<LocationsResponse>('/locations', name ? { name } : {});
 }

@@ -5,31 +5,56 @@ import Layout from "../../layouts/Layout.astro";
 import { getProperties } from "../../lib/easybroker";
 
 const page = Number(Astro.url.searchParams.get("page") ?? 1);
+const operacion = Astro.url.searchParams.get("operacion") ?? "";
+const tipo = Astro.url.searchParams.get("tipo") ?? "";
+const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 
 const data = await getProperties({
   page,
   limit: 20,
   "search[statuses][]": "published",
+  ...(operacion && { "search[operation_types][]": operacion }),
+  ...(tipo && { "search[property_types][]": tipo }),
+  ...(ubicacion && { "search[city]": ubicacion }),
 });
 ---
 
 <Layout>
   <h1>Propiedades</h1>
+  <p>Total: {data.pagination.total}</p>
 
   <ul>
-    {data.content.map((prop) => (
-      <li>
-        <a href={`/propiedades/${prop.public_id}`}>{prop.title}</a>
-      </li>
-    ))}
+    {
+      data.content.map((prop) => (
+        <li>
+          <a href={`/propiedades/${prop.public_id}`}>
+            <span>{prop.title}</span>
+            <span>--{prop.operations.map((op) => op.type)}--</span>
+            <span>{prop.location}</span>
+          </a>
+        </li>
+      ))
+    }
   </ul>
 
   <div>
-    {page > 1 && (
-      <a href={`?page=${page - 1}`}>← Anterior</a>
-    )}
-    {data.pagination.next_page && (
-      <a href={`?page=${page + 1}`}>Siguiente →</a>
-    )}
+    {
+      page > 1 && (
+        <a
+          href={`?page=${page - 1}&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`}
+        >
+          ← Anterior
+        </a>
+      )
+    }
+    {
+      data.pagination.next_page && (
+        <a
+          href={`?page=${page + 1}&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`}
+        >
+          Siguiente →
+        </a>
+      )
+    }
   </div>
 </Layout>
