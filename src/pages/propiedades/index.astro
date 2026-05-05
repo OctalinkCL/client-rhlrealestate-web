@@ -4,53 +4,54 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import { getProperties } from "../../lib/easybroker";
 
-const page      = Number(Astro.url.searchParams.get("page") ?? 1);
+const PER_PAGE = 9;
+
+const page = Number(Astro.url.searchParams.get("page") ?? 1);
 const operacion = Astro.url.searchParams.get("operacion") ?? "";
-const tipo      = Astro.url.searchParams.get("tipo") ?? "";
+const tipo = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 
-// Si hay filtro de operacion, pedimos el maximo para filtrar todo de una vez
-const limit = operacion ? 50 : 20;
-
 const data = await getProperties({
-  page: operacion ? 1 : page,
-  limit,
+  page: 1,
+  limit: 50,
   "search[statuses][]": "published",
-  ...(tipo      && { "search[property_types][]": tipo }),
+  ...(tipo && { "search[property_types][]": tipo }),
   ...(ubicacion && { "search[city]": ubicacion }),
 });
 
-const properties = operacion
+const filtered = operacion
   ? data.content.filter((p) => p.operations.some((op) => op.type === operacion))
   : data.content;
 
-const showPagination = !operacion;
+const totalPages = Math.ceil(filtered.length / PER_PAGE);
+const properties = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`;
 ---
 
 <Layout>
   <h1>Propiedades</h1>
-  <p>Total: {properties.length}</p>
+  <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
 
-  <ul>
-    {properties.map((prop) => (
-      <li>
-        <a href={`/propiedades/${prop.public_id}`}>
-          <span>{prop.title}</span>
-          <span>--{prop.operations.map((op) => op.type)}--</span>
-          <span>{prop.location}</span>
-        </a>
-      </li>
-    ))}
+  <ul class="grid gap-2 p-4">
+    {
+      properties.map((prop) => (
+        <li class="border p-2">
+          <a href={`/propiedades/${prop.public_id}`}>
+            <p>
+              <span>{prop.operations.map((op) => op.type)}</span> --
+              <span>{prop.property_type}</span>
+            </p>
+            <p class="font-bold">{prop.title}</p>
+            <p>{prop.location}</p>
+          </a>
+        </li>
+      ))
+    }
   </ul>
 
-  {showPagination && (
-    <div>
-      {page > 1 && (
-        <a href={`?page=${page - 1}&tipo=${tipo}&ubicacion=${ubicacion}`}>Anterior</a>
-      )}
-      {data.pagination.next_page && (
-        <a href={`?page=${page + 1}&tipo=${tipo}&ubicacion=${ubicacion}`}>Siguiente</a>
-      )}
-    </div>
-  )}
+  <div>
+    {page > 1 && <a href={`?page=${page - 1}${params}`}>Anterior</a>}
+    {page < totalPages && <a href={`?page=${page + 1}${params}`}>Siguiente</a>}
+  </div>
 </Layout>
