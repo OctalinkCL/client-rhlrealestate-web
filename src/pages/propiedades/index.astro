@@ -6,9 +6,9 @@ import { getProperties } from "../../lib/easybroker";
 
 const PER_PAGE = 9;
 
-const page      = Number(Astro.url.searchParams.get("page") ?? 1);
+const page = Number(Astro.url.searchParams.get("page") ?? 1);
 const operacion = Astro.url.searchParams.get("operacion") ?? "";
-const tipo      = Astro.url.searchParams.get("tipo") ?? "";
+const tipo = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 
 const data = await getProperties({
@@ -20,11 +20,13 @@ const data = await getProperties({
 const filtered = data.content
   .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
   .filter((p) => !tipo || p.property_type === tipo)
-  .filter((p) => !ubicacion || (
-    typeof p.location === "string"
-      ? p.location.toLowerCase().includes(ubicacion.toLowerCase())
-      : false
-  ));
+  .filter(
+    (p) =>
+      !ubicacion ||
+      (typeof p.location === "string"
+        ? p.location.toLowerCase().includes(ubicacion.toLowerCase())
+        : false),
+  );
 
 const totalPages = Math.ceil(filtered.length / PER_PAGE);
 const properties = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -33,26 +35,51 @@ const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`;
 ---
 
 <Layout>
-  <h1>Propiedades</h1>
-  <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
+  <div id="properties" class="bg-neutral-100">
+    <header class="bg-blue-100">
+      <h1>Propiedades</h1>
+      <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
+    </header>
 
-  <ul class="grid gap-2 p-4">
-    {properties.map((prop) => (
-      <li class="border p-2">
-        <a href={`/propiedades/${prop.public_id}`}>
-          <p>
-            <span>{prop.operations.map((op) => op.type)}</span> --
-            <span>{prop.property_type}</span>
-          </p>
-          <p class="font-bold">{prop.title}</p>
-          <p>{prop.location}</p>
-        </a>
-      </li>
-    ))}
-  </ul>
+    <div class="container mx-auto">
+      <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {
+          properties.map((prop) => (
+            <a href={`/propiedades/${prop.public_id}`} class="group">
+              <div class="bg-white rounded-lg p-2">
+                {/* image */}
+                <div class="relative w-full overflow-hidden">
+                  <img
+                    class="rounded w-full object-cover aspect-video group-hover:scale-105 transition-all duration-300 ease-in-out"
+                    src={prop.title_image_full}
+                    alt={prop.title}
+                  />
 
-  <div>
-    {page > 1 && <a href={`?page=${page - 1}${params}`}>Anterior</a>}
-    {page < totalPages && <a href={`?page=${page + 1}${params}`}>Siguiente</a>}
+                  <div class="absolute top-0 left-0 p-2 flex gap-2">
+                    <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
+                      {prop.operations.map((op) => op.type)}
+                    </span>
+                    <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
+                      {prop.property_type}
+                    </span>
+                  </div>
+                </div>
+                <p class="font-bold">{prop.title}</p>
+                <p>{prop.location}</p>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+
+      <div>
+        {page > 1 && <a href={`?page=${page - 1}${params}`}>Anterior</a>}
+        {
+          page < totalPages && (
+            <a href={`?page=${page + 1}${params}`}>Siguiente</a>
+          )
+        }
+      </div>
+    </div>
   </div>
 </Layout>
