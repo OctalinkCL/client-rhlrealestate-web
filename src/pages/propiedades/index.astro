@@ -1,7 +1,17 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from "../../layouts/Layout.astro";
+import { getProperties } from "../../lib/easybroker";
+
+const page = Number(Astro.url.searchParams.get("page") ?? 1);
+const sort = (Astro.url.searchParams.get("sort") as any) ?? "published_at_desc";
+
+const { content: properties, pagination } = await getProperties({ page, sort });
 ---
 
 <Layout>
   <h1>Propiedades</h1>
+  <p>Total: {pagination.total}</p>
+  <ul>
+    {properties.map((p) => <li>{p.title}</li>)}
+  </ul>
 </Layout>

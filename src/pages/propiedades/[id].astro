@@ -1,9 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getProperty } from '../../lib/easybroker';
 
 const { id } = Astro.params;
+const property = await getProperty(id!);
 ---
 
 <Layout>
-  <h1>Detalle de propiedad</h1>
+  <h1>{property.title}</h1>
 </Layout>
