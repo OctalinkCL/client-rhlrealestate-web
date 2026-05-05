@@ -9,23 +9,27 @@ const operacion = Astro.url.searchParams.get("operacion") ?? "";
 const tipo      = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 
+// Si hay filtro de operacion, pedimos el maximo para filtrar todo de una vez
+const limit = operacion ? 50 : 20;
+
 const data = await getProperties({
-  page,
-  limit: 20,
+  page: operacion ? 1 : page,
+  limit,
   "search[statuses][]": "published",
   ...(tipo      && { "search[property_types][]": tipo }),
   ...(ubicacion && { "search[city]": ubicacion }),
 });
 
-// EasyBroker no filtra por tipo de operacion en el listado — filtramos aqui
 const properties = operacion
   ? data.content.filter((p) => p.operations.some((op) => op.type === operacion))
   : data.content;
+
+const showPagination = !operacion;
 ---
 
 <Layout>
   <h1>Propiedades</h1>
-  <p>Total: {data.pagination.total}</p>
+  <p>Total: {properties.length}</p>
 
   <ul>
     {properties.map((prop) => (
@@ -39,16 +43,14 @@ const properties = operacion
     ))}
   </ul>
 
-  <div>
-    {page > 1 && (
-      <a href={`?page=${page - 1}&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`}>
-        Anterior
-      </a>
-    )}
-    {data.pagination.next_page && (
-      <a href={`?page=${page + 1}&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`}>
-        Siguiente
-      </a>
-    )}
-  </div>
+  {showPagination && (
+    <div>
+      {page > 1 && (
+        <a href={`?page=${page - 1}&tipo=${tipo}&ubicacion=${ubicacion}`}>Anterior</a>
+      )}
+      {data.pagination.next_page && (
+        <a href={`?page=${page + 1}&tipo=${tipo}&ubicacion=${ubicacion}`}>Siguiente</a>
+      )}
+    </div>
+  )}
 </Layout>
