@@ -74,15 +74,15 @@ export interface LocationsResponse {
 type Params = Record<string, string | number | null | undefined>;
 
 async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
-  const url = new URL(BASE_URL + path);
+  // String manual — URLSearchParams codifica [ ] como %5B%5D y EasyBroker rechaza eso
+  const qs = Object.entries(params)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
+    .join('&');
 
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') {
-      url.searchParams.append(k, String(v));
-    }
-  });
+  const url = `${BASE_URL}${path}${qs ? `?${qs}` : ''}`;
 
-  const res = await fetch(url.toString(), {
+  const res = await fetch(url, {
     headers: { 'X-Authorization': import.meta.env.EB_API_KEY },
   });
 

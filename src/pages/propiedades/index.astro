@@ -13,7 +13,7 @@ const tipo = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 
 const [data, { localities }] = await Promise.all([
-  getProperties({ page: 1, limit: 50, "search[statuses][]": "published" }),
+  getProperties({ page: 1, limit: 50, "search[statuses][]": "published", "search[sort_by]": "updated_at-desc" }),
   getLocations(),
 ]);
 
