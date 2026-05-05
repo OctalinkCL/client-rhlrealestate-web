@@ -2,60 +2,13 @@
 export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
+import Buscador from '../components/Buscador.astro';
 import { getLocations } from '../lib/easybroker';
 
 const { localities } = await getLocations();
-
-const TIPOS = [
-  'Casa',
-  'Departamento',
-  'Cabaña',
-  'Comercial',
-  'Edificio',
-  'Estacionamiento',
-  'Oficina',
-  'Terreno',
-];
 ---
 
 <Layout>
   <h1>Inicio</h1>
-
-  <form action="/propiedades" method="GET">
-
-    <div>
-      <label>
-        <input type="radio" name="operacion" value="sale" checked /> Venta
-      </label>
-      <label>
-        <input type="radio" name="operacion" value="rental" /> Arriendo
-      </label>
-    </div>
-
-    <div>
-      <label for="tipo">Tipo de propiedad</label>
-      <select name="tipo" id="tipo">
-        <option value="">Todos</option>
-        {TIPOS.map((t) => <option value={t}>{t}</option>)}
-      </select>
-    </div>
-
-    <div>
-      <label for="ubicacion">Ubicación</label>
-      <select name="ubicacion" id="ubicacion">
-        <option value="">Todas</option>
-        {localities.map((loc) => (
-          <>
-            <option value={loc.name}>{loc.name}</option>
-            {loc.localities?.map((child) => (
-              <option value={child.name}>&nbsp;&nbsp;{child.name}</option>
-            ))}
-          </>
-        ))}
-      </select>
-    </div>
-
-    <button type="submit">Buscar</button>
-
-  </form>
+  <Buscador localities={localities} />
 </Layout>

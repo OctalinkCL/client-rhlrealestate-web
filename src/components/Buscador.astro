@@ -1,0 +1,63 @@
+---
+import type { EBLocation } from '../lib/easybroker';
+
+interface Props {
+  localities: EBLocation[];
+  operacion?: string;
+  tipo?: string;
+  ubicacion?: string;
+}
+
+const { localities, operacion = '', tipo = '', ubicacion = '' } = Astro.props;
+
+const TIPOS = [
+  'Casa',
+  'Departamento',
+  'Cabaña',
+  'Comercial',
+  'Edificio',
+  'Estacionamiento',
+  'Oficina',
+  'Terreno',
+];
+---
+
+<form action="/propiedades" method="GET">
+
+  <div>
+    <label>
+      <input type="radio" name="operacion" value="sale" checked={operacion === '' || operacion === 'sale'} /> Venta
+    </label>
+    <label>
+      <input type="radio" name="operacion" value="rental" checked={operacion === 'rental'} /> Arriendo
+    </label>
+  </div>
+
+  <div>
+    <label for="tipo">Tipo de propiedad</label>
+    <select name="tipo" id="tipo">
+      <option value="">Todos</option>
+      {TIPOS.map((t) => (
+        <option value={t} selected={t === tipo}>{t}</option>
+      ))}
+    </select>
+  </div>
+
+  <div>
+    <label for="ubicacion">Ubicación</label>
+    <select name="ubicacion" id="ubicacion">
+      <option value="">Todas</option>
+      {localities.map((loc) => (
+        <>
+          <option value={loc.name} selected={loc.name === ubicacion}>{loc.name}</option>
+          {loc.localities?.map((child) => (
+            <option value={child.name} selected={child.name === ubicacion}>&nbsp;&nbsp;{child.name}</option>
+          ))}
+        </>
+      ))}
+    </select>
+  </div>
+
+  <button type="submit">Buscar</button>
+
+</form>
