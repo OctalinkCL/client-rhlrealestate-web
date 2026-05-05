@@ -6,22 +6,25 @@ import { getProperties } from "../../lib/easybroker";
 
 const PER_PAGE = 9;
 
-const page = Number(Astro.url.searchParams.get("page") ?? 1);
+const page      = Number(Astro.url.searchParams.get("page") ?? 1);
 const operacion = Astro.url.searchParams.get("operacion") ?? "";
-const tipo = Astro.url.searchParams.get("tipo") ?? "";
+const tipo      = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 
 const data = await getProperties({
   page: 1,
   limit: 50,
   "search[statuses][]": "published",
-  ...(tipo && { "search[property_types][]": tipo }),
-  ...(ubicacion && { "search[city]": ubicacion }),
 });
 
-const filtered = operacion
-  ? data.content.filter((p) => p.operations.some((op) => op.type === operacion))
-  : data.content;
+const filtered = data.content
+  .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
+  .filter((p) => !tipo || p.property_type === tipo)
+  .filter((p) => !ubicacion || (
+    typeof p.location === "string"
+      ? p.location.toLowerCase().includes(ubicacion.toLowerCase())
+      : false
+  ));
 
 const totalPages = Math.ceil(filtered.length / PER_PAGE);
 const properties = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -34,20 +37,18 @@ const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`;
   <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
 
   <ul class="grid gap-2 p-4">
-    {
-      properties.map((prop) => (
-        <li class="border p-2">
-          <a href={`/propiedades/${prop.public_id}`}>
-            <p>
-              <span>{prop.operations.map((op) => op.type)}</span> --
-              <span>{prop.property_type}</span>
-            </p>
-            <p class="font-bold">{prop.title}</p>
-            <p>{prop.location}</p>
-          </a>
-        </li>
-      ))
-    }
+    {properties.map((prop) => (
+      <li class="border p-2">
+        <a href={`/propiedades/${prop.public_id}`}>
+          <p>
+            <span>{prop.operations.map((op) => op.type)}</span> --
+            <span>{prop.property_type}</span>
+          </p>
+          <p class="font-bold">{prop.title}</p>
+          <p>{prop.location}</p>
+        </a>
+      </li>
+    ))}
   </ul>
 
   <div>
