@@ -20,6 +20,14 @@
 			"dest": "_render"
 		},
 		{
+			"src": "^/propiedades/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/propiedades/?$",
+			"dest": "_render"
+		},
+		{
 			"src": "^/$",
 			"dest": "_render"
 		},
