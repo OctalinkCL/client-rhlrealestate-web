@@ -11,13 +11,22 @@ const page = Number(Astro.url.searchParams.get("page") ?? 1);
 const operacion = Astro.url.searchParams.get("operacion") ?? "";
 const tipo = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
+const orden = Astro.url.searchParams.get("orden") ?? "updated_at-desc";
+
+// Orden de precio se resuelve client-side; updated_at va al servidor
+const sortServer = orden.startsWith("updated_at") ? orden : "updated_at-desc";
 
 const [data, { localities }] = await Promise.all([
-  getProperties({ page: 1, limit: 50, "search[statuses][]": "published", "search[sort_by]": "updated_at-desc" }),
+  getProperties({
+    page: 1,
+    limit: 50,
+    "search[statuses][]": "published",
+    "search[sort_by]": sortServer,
+  }),
   getLocations(),
 ]);
 
-const filtered = data.content
+let filtered = data.content
   .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
   .filter((p) => !tipo || p.property_type === tipo)
   .filter(
@@ -28,10 +37,28 @@ const filtered = data.content
         : false),
   );
 
+// Orden por precio client-side
+if (orden === "price-asc") {
+  filtered = filtered.sort(
+    (a, b) => (a.operations[0]?.amount ?? 0) - (b.operations[0]?.amount ?? 0),
+  );
+} else if (orden === "price-desc") {
+  filtered = filtered.sort(
+    (a, b) => (b.operations[0]?.amount ?? 0) - (a.operations[0]?.amount ?? 0),
+  );
+}
+
 const totalPages = Math.ceil(filtered.length / PER_PAGE);
 const properties = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`;
+const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}&orden=${orden}`;
+
+const ORDEN_OPCIONES = [
+  { value: "updated_at-desc", label: "Últimos anuncios" },
+  { value: "updated_at-asc", label: "Anuncios más antiguos" },
+  { value: "price-asc", label: "Precio (de menor a mayor)" },
+  { value: "price-desc", label: "Precio (de mayor a menor)" },
+];
 ---
 
 <Layout>
@@ -39,29 +66,50 @@ const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}`;
     <header class="bg-blue-100">
       <h1>Propiedades</h1>
       <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
-      <Buscador localities={localities} operacion={operacion} tipo={tipo} ubicacion={ubicacion} />
+      <Buscador
+        localities={localities}
+        operacion={operacion}
+        tipo={tipo}
+        ubicacion={ubicacion}
+      />
     </header>
 
     <div class="container mx-auto">
+      <div class="flex justify-end">
+        <select
+          id="orden-select"
+          onchange={`window.location.href='?page=1&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}&orden='+this.value`}
+        >
+          {
+            ORDEN_OPCIONES.map((op) => (
+              <option value={op.value} selected={op.value === orden}>
+                {op.label}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+
       <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {
           properties.map((prop) => (
             <a href={`/propiedades/${prop.public_id}`} class="group">
               <div class="bg-white rounded-lg p-2">
-                {/* image */}
                 <div class="relative w-full overflow-hidden">
                   <img
                     class="rounded w-full object-cover aspect-video group-hover:scale-105 transition-all duration-300 ease-in-out"
                     src={prop.title_image_full}
                     alt={prop.title}
                   />
-
                   <div class="absolute top-0 left-0 p-2 flex gap-2">
                     <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
                       {prop.operations.map((op) => op.type)}
                     </span>
                     <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
                       {prop.property_type}
+                    </span>
+                    <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
+                      {prop.operations.map((op) => op.formatted_amount)}
                     </span>
                   </div>
                 </div>
