@@ -16,13 +16,15 @@ export interface Operation {
 }
 
 export interface PropertyLocation {
-  region: string;
-  city: string;
-  city_area: string;
-  street: string;
+  name: string;
   latitude: number;
   longitude: number;
+  street: string;
+  postal_code: string | null;
   show_exact_location: boolean;
+  hide_exact_location: boolean;
+  exterior_number: string;
+  interior_number: string;
 }
 
 export interface Property {
@@ -38,7 +40,7 @@ export interface Property {
   construction_size: number;
   lot_size: number;
   age: string;
-  location: PropertyLocation | string;
+  location: PropertyLocation;
   operations: Operation[];
   property_images: PropertyImage[];
   videos: string[];

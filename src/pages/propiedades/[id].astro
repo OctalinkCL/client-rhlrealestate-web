@@ -9,27 +9,30 @@ const property = await getProperty(id!);
 ---
 
 <Layout>
-  <ul>
-    {property.property_images.map((image) => (
-      <img src={image.url} alt={property.title} />
-    ))}
-  </ul>
+  <div class="container mx-auto">
+    <ul class="grid grid-cols-4 gap-2">
+      {
+        property.property_images.map((image) => (
+          <img src={image.url} alt={property.title} class="rounded" />
+        ))
+      }
+    </ul>
 
-  <h1>{property.title}</h1>
-  <p>ID: {property.public_id}</p>
-  <p>Tipo: {property.property_type}</p>
-  <p>Operación: {property.operations?.[0]?.type}</p>
-  <p>Precio: {property.operations?.[0]?.formatted_amount}</p>
-  <p>Ubicación: {property.location?.city}, {property.location?.region}</p>
-  <p>{property.description}</p>
+    <h1>{property.title}</h1>
+    <p>ID: {property.public_id}</p>
+    <p>Tipo: {property.property_type}</p>
+    <p>Operación: {property.operations?.[0]?.type}</p>
+    <p>Ubicación: {property.location.name}</p>
+    <p>{property.description}</p>
 
-  <hr />
-  <h2>Detalles</h2>
-  <p>Dormitorios: {property.bedrooms}</p>
-  <p>Baños: {property.bathrooms}</p>
-  <p>Construidos: {property.construction_size} m²</p>
+    <hr />
+    <h2>Detalles</h2>
+    <p>Dormitorios: {property.bedrooms}</p>
+    <p>Baños: {property.bathrooms}</p>
+    <p>Construidos: {property.construction_size} m²</p>
 
-  <hr />
-  <h2>Raw data</h2>
-  <pre>{JSON.stringify(property, null, 2)}</pre>
+    <hr />
+    <h2>Raw data</h2>
+    <!-- <pre>{JSON.stringify(property, null, 2)}</pre> -->
+  </div>
 </Layout>
