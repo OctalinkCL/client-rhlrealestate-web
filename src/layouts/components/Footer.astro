@@ -1,12 +1,61 @@
+---
+import { SwitchCamera } from "@lucide/astro";
+---
+
 <footer class="bg-rhl-secondary text-white">
   <div class="wrap">
     <!-- Top -->
-    <div class="py-4">
-      <img src="logo_rhl_white.svg" alt="RHL Real Estate" class="w-3xs" />
+    <div class="grid gap-9 py-9 lg:gap-12 lg:py-12">
+      <div class="flex items-center justify-between">
+        <img src="logo_rhl_white.svg" alt="RHL Real Estate" class="w-3xs" />
+        <a
+          href="https://www.instagram.com/rhlrealestate.cl"
+          target="_blank"
+          class="flex items-center gap-2 bg-white/20 px-3 py-2 rounded lg:px-4 hover:bg-white/30 transition-colors"
+        >
+          <span class="text-lg font-medium hidden lg:block">
+            Siguenos en Instagram
+          </span>
+          <SwitchCamera />
+        </a>
+      </div>
+      <!-- / -->
+      <ul class="grid gap-3 lg:grid-cols-3 lg:gap-6">
+        <li class="flex-inline flex-col">
+          <p class="text-xs">Email</p>
+          <a
+            href="mailto:contacto@rhlrealestate.cl"
+            target="_blank"
+            class="text-lg font-medium hover:underline"
+          >
+            contacto@rhlrealestate.cl
+          </a>
+        </li>
+        <li class="flex-inline flex-col lg:text-center">
+          <p class="text-xs">Visitanos</p>
+          <a
+            href="https://maps.app.goo.gl/YnGwzEHrhVaVfAh78"
+            target="_blank"
+            class="text-lg font-medium hover:underline"
+          >
+            Av. Chacabuco 473, Of 302 Concepción
+          </a>
+        </li>
+        <li class="flex-inline flex-col lg:text-right">
+          <p class="text-xs">Llámanos</p>
+          <a
+            href="tel:+5648043836"
+            target="_blank"
+            class="text-lg font-medium hover:underline"
+          >
+            +56 0 4804 3836
+          </a>
+        </li>
+      </ul>
     </div>
     <!-- Bottom -->
     <div
-      class="flex text-xs items-center justify-between border-t border-white/30 py-4"
+      class="flex text-xs items-center justify-between border-t border-white/30 py-6"
     >
       <p>© 2025 Copyrights</p>
       <a href="#">Terms & Conditions</a>

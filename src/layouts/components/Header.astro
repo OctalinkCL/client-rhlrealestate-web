@@ -9,26 +9,39 @@ const navigation = [
 ];
 ---
 
-<header class="bg-rhl-primary sticky top-0 z-10 text-white">
+<header class="bg-rhl-primary fixed top-0 left-0 w-full z-10 text-white">
   <!-- Header -->
-  <div class="wrap flex items-center justify-between py-4">
+  <div class="wrap flex items-center justify-between py-4 lg:h-[90px]">
     <!-- Logo -->
     <img src="logo_rhl_white.svg" alt="RHL Real Estate" class="w-54 lg:w-80" />
 
     <!-- Desktop Navigation -->
     <nav class="hidden lg:flex gap-3">
-      {navigation.map((item) => <a href={item.url}>{item.title}</a>)}
+      {
+        navigation.map((item) => (
+          <a
+            href={item.url}
+            class="px-3 py-1 rounded font-medium text-md hover:bg-white/10 transition-colors"
+          >
+            {item.title}
+          </a>
+        ))
+      }
     </nav>
 
     <!-- Mobile Button -->
-    <button id="button" class="md:hidden border border-white/30 rounded p-2">
-      <Menu size={21} />
+    <button id="button" class="md:hidden rounded p-1">
+      <Menu size={27} />
     </button>
   </div>
 
   <!-- Mobile Navigation -->
-  <nav id="mobile-navigation" class="hidden lg:hidden px-4">
-    <div class="grid gap-2 pb-5">
+  <nav
+    id="mobile-navigation"
+    class="lg:hidden overflow-hidden"
+    style="height:0"
+  >
+    <div class="grid gap-2 pb-5 px-4">
       {
         navigation.map((item) => (
           <a
@@ -45,10 +58,25 @@ const navigation = [
 
 <script>
   const button = document.getElementById("button");
-  const mobileNavigation = document.getElementById("mobile-navigation");
+  const nav = document.getElementById(
+    "mobile-navigation",
+  ) as HTMLElement | null;
+
+  let open = false;
 
   button?.addEventListener("click", () => {
-    const isHidden = mobileNavigation?.classList.contains("hidden");
-    mobileNavigation?.classList.toggle("hidden", !isHidden);
+    if (!nav) return;
+    open = !open;
+
+    if (open) {
+      nav.style.height = nav.scrollHeight + "px";
+      nav.style.transition = "height 300ms ease";
+    } else {
+      nav.style.height = nav.scrollHeight + "px";
+      requestAnimationFrame(() => {
+        nav.style.transition = "height 300ms ease";
+        nav.style.height = "0";
+      });
+    }
   });
 </script>
