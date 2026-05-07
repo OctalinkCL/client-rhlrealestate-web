@@ -35,7 +35,7 @@ let filtered = data.content
   .filter(
     (p) =>
       !ubicacion ||
-      p.location.name.toLowerCase().includes(ubicacion.toLowerCase()),
+      p.location.toLowerCase().includes(ubicacion.toLowerCase()),
   );
 
 // Orden por precio client-side
