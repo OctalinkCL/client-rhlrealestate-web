@@ -1,3 +1,5 @@
+import { getCache, setCache } from './cache';
+
 const BASE_URL = 'https://api.easybroker.com/v1';
 
 // --- Types ---
@@ -84,6 +86,9 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
 
   const url = `${BASE_URL}${path}${qs ? `?${qs}` : ''}`;
 
+  const cached = getCache<T>(url);
+  if (cached) return cached;
+
   const res = await fetch(url, {
     headers: { 'X-Authorization': import.meta.env.EB_API_KEY },
   });
@@ -93,7 +98,9 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
     throw new Error(`EasyBroker ${res.status}: ${text}`);
   }
 
-  return res.json() as Promise<T>;
+  const data = await res.json() as T;
+  setCache(url, data);
+  return data;
 }
 
 // --- API pública ---
