@@ -1,3 +1,43 @@
-<header class="bg-rhl-primary text-white py-4">
-  <div class="wrap">HEADER</div>
+---
+import { Menu } from "@lucide/astro";
+
+const navigation = [
+  { title: "Inicio", url: "/" },
+  { title: "Propiedades", url: "/propiedades" },
+  { title: "Nosotros", url: "/nosotros" },
+  { title: "Contacto", url: "/contacto" },
+];
+---
+
+<header class="bg-rhl-primary sticky top-0 z-10 text-white">
+  <!-- Header -->
+  <div class="wrap flex items-center justify-between py-4">
+    <!-- Logo -->
+    <img src="logo_rhl_white.svg" alt="RHL Real Estate" class="w-54" />
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden lg:flex">
+      {navigation.map((item) => <a href={item.url}>{item.title}</a>)}
+    </nav>
+
+    <!-- Mobile Button -->
+    <button id="button" class="md:hidden border border-white/30 rounded p-2">
+      <Menu size={21} />
+    </button>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav id="mobile-navigation" class="hidden lg:hidden">
+    {navigation.map((item) => <a href={item.url}>{item.title}</a>)}
+  </nav>
 </header>
+
+<script>
+  const button = document.getElementById("button");
+  const mobileNavigation = document.getElementById("mobile-navigation");
+
+  button?.addEventListener("click", () => {
+    const isHidden = mobileNavigation?.classList.contains("hidden");
+    mobileNavigation?.classList.toggle("hidden", !isHidden);
+  });
+</script>
