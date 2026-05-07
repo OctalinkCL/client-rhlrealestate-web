@@ -1,7 +1,16 @@
 @import "tailwindcss";
 
+@theme {
+  --color-rhl-primary: #072c5a;
+  --color-rhl-secondary: #7898c1;
+}
+
 html,
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.wrap {
+  @apply container mx-auto px-4 lg:px-0;
 }
