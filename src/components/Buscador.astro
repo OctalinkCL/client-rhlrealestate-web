@@ -22,29 +22,18 @@ const TIPOS = [
 ];
 ---
 
-<form action="/propiedades" method="GET" class="flex flex-col lg:flex-row">
-  <div>
-    <label>
-      <input
-        type="radio"
-        name="operacion"
-        value="sale"
-        checked={operacion === "" || operacion === "sale"}
-      /> Venta
-    </label>
-    <label>
-      <input
-        type="radio"
-        name="operacion"
-        value="rental"
-        checked={operacion === "rental"}
-      /> Arriendo
-    </label>
+<form action="/propiedades" method="GET" class="grid gap-3 lg:grid-cols-7">
+  <div class="lg:col-span-2 col-span-7">
+    <select name="operacion" id="operacion" class="input-field">
+      <option value="sale" selected={operacion === "" || operacion === "sale"}
+        >Venta</option
+      >
+      <option value="rental" selected={operacion === "rental"}>Arriendo</option>
+    </select>
   </div>
 
-  <div>
-    <label for="tipo">Tipo de propiedad</label>
-    <select name="tipo" id="tipo">
+  <div class="lg:col-span-2 col-span-7">
+    <select name="tipo" id="tipo" class="input-field">
       <option value="">Todos</option>
       {
         TIPOS.map((t) => (
@@ -56,9 +45,8 @@ const TIPOS = [
     </select>
   </div>
 
-  <div>
-    <label for="ubicacion">Ubicación</label>
-    <select name="ubicacion" id="ubicacion">
+  <div class="lg:col-span-2 col-span-7">
+    <select name="ubicacion" id="ubicacion" class="input-field">
       <option value="">Todas</option>
       {
         localities.map((loc) => (
@@ -77,5 +65,8 @@ const TIPOS = [
     </select>
   </div>
 
-  <button type="submit">Buscar</button>
+  <button
+    class="bg-blue-950 h-[40px] rounded font-medium text-white lg:col-span-1 col-span-7 w-full"
+    type="submit">Buscar</button
+  >
 </form>
