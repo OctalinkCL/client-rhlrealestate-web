@@ -4,7 +4,9 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import Buscador from '../components/Buscador.astro';
 import { getLocations } from '../lib/easybroker';
+import { setCacheHeaders } from '../lib/cache';
 
+setCacheHeaders(Astro.response);
 const { localities } = await getLocations();
 ---
 

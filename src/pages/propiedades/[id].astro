@@ -3,7 +3,9 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
+import { setCacheHeaders } from "../../lib/cache";
 
+setCacheHeaders(Astro.response);
 const { id } = Astro.params;
 const property = await getProperty(id!);
 ---

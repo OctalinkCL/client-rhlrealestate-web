@@ -16,6 +16,6 @@ export function setCache<T>(key: string, data: T, ttlMs = 3_600_000): void {
 
 // Le dice al CDN de Vercel que cachee el HTML renderizado 1 hora.
 // stale-while-revalidate sirve el HTML anterior mientras regenera en background.
-export function setCacheHeaders(response: Response, maxAge = 3600): void {
+export function setCacheHeaders(response: { headers: Headers }, maxAge = 3600): void {
   response.headers.set('Cache-Control', `s-maxage=${maxAge}, stale-while-revalidate=60`);
 }

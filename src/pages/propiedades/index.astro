@@ -4,6 +4,9 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import Buscador from "../../components/Buscador.astro";
 import { getProperties, getLocations } from "../../lib/easybroker";
+import { setCacheHeaders } from "../../lib/cache";
+
+setCacheHeaders(Astro.response);
 
 const PER_PAGE = 9;
 
@@ -32,9 +35,7 @@ let filtered = data.content
   .filter(
     (p) =>
       !ubicacion ||
-      (typeof p.location === "string"
-        ? p.location.toLowerCase().includes(ubicacion.toLowerCase())
-        : false),
+      p.location.name.toLowerCase().includes(ubicacion.toLowerCase()),
   );
 
 // Orden por precio client-side
