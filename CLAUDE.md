@@ -1,5 +1,7 @@
 # Proyecto: Réplica de rhlrealestate.cl en Astro
 
+> **Plan de proyecto:** Ver [PLAN.md](./PLAN.md) — roadmap por fases con estado actual, tareas pendientes y arquitectura de caché.
+
 ## Objetivo
 
 Construir una réplica del sitio https://rhlrealestate.cl/ usando Astro SSR.
