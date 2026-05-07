@@ -13,10 +13,10 @@ const navigation = [
   <!-- Header -->
   <div class="wrap flex items-center justify-between py-4">
     <!-- Logo -->
-    <img src="logo_rhl_white.svg" alt="RHL Real Estate" class="w-54" />
+    <img src="logo_rhl_white.svg" alt="RHL Real Estate" class="w-54 lg:w-80" />
 
     <!-- Desktop Navigation -->
-    <nav class="hidden lg:flex">
+    <nav class="hidden lg:flex gap-3">
       {navigation.map((item) => <a href={item.url}>{item.title}</a>)}
     </nav>
 
@@ -27,8 +27,19 @@ const navigation = [
   </div>
 
   <!-- Mobile Navigation -->
-  <nav id="mobile-navigation" class="hidden lg:hidden">
-    {navigation.map((item) => <a href={item.url}>{item.title}</a>)}
+  <nav id="mobile-navigation" class="hidden lg:hidden px-4">
+    <div class="grid gap-2 pb-5">
+      {
+        navigation.map((item) => (
+          <a
+            href={item.url}
+            class="bg-white/10 rounded px-3 py-2 font-semibold"
+          >
+            {item.title}
+          </a>
+        ))
+      }
+    </div>
   </nav>
 </header>
 
