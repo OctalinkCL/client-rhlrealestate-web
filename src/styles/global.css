@@ -1,6 +1,10 @@
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource-variable/playfair-display";
 @import "tailwindcss";
 
 @theme {
+  --font-sans: "Inter Tight Variable", sans-serif;
+  --font-serif: "Playfair Display Variable", serif;
   --color-rhl-primary: #072c5a;
   --color-rhl-secondary: #7898c1;
 }
