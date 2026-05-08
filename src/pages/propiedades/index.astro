@@ -5,6 +5,7 @@ import Layout from "../../layouts/Layout.astro";
 import Buscador from "../../components/Buscador.astro";
 import { getProperties, getLocations } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
+import PropertyCard from "../../components/PropertyCard.astro";
 
 setCacheHeaders(Astro.response);
 
@@ -16,7 +17,6 @@ const tipo = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 const orden = Astro.url.searchParams.get("orden") ?? "updated_at-desc";
 
-// Orden de precio se resuelve client-side; updated_at va al servidor
 const sortServer = orden.startsWith("updated_at") ? orden : "updated_at-desc";
 
 const [data, { localities }] = await Promise.all([
@@ -63,21 +63,40 @@ const ORDEN_OPCIONES = [
 
 <Layout>
   <div id="properties" class="rhl-page">
-    <header class="bg-blue-100">
-      <h1>Propiedades</h1>
-      <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
-      <Buscador
-        localities={localities}
-        operacion={operacion}
-        tipo={tipo}
-        ubicacion={ubicacion}
-      />
+    <!-- Header -->
+    <header class="bg-rhl-soft-blue py-9 lg:py-12">
+      <div class="container mx-auto px-4 lg:px-0 grid gap-4">
+        <div>
+          <span class="uppercase text-xs font-medium opacity-60"
+            >Nuestra Oferta</span
+          >
+          <h1 class="font-display text-2xl lg:text-4xl">
+            Encontrár la propiedad que buscás
+          </h1>
+        </div>
+
+        <div class="bg-rhl-primary/70 p-4 rounded-lg">
+          <Buscador
+            localities={localities}
+            operacion={operacion}
+            tipo={tipo}
+            ubicacion={ubicacion}
+          />
+        </div>
+      </div>
     </header>
 
-    <div class="container mx-auto">
-      <div class="flex justify-end">
+    <div
+      class="container mx-auto px-4 pt-6 pb-9 lg:pt-9 lg:pb-12 lg:px-0 grid gap-6"
+    >
+      <!-- Order -->
+      <div class="flex justify-between items-center gap-6 bg-white p-2 rounded">
+        <p class="text-sm lg:text-base whitespace-nowrap hidden md:block">
+          {filtered.length} propiedades
+        </p>
         <select
           id="orden-select"
+          class="h-[38px] w-full lg:w-auto rounded px-2 bg-white"
           onchange={`window.location.href='?page=1&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}&orden='+this.value`}
         >
           {
@@ -90,44 +109,40 @@ const ORDEN_OPCIONES = [
         </select>
       </div>
 
-      <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {
-          properties.map((prop) => (
-            <a href={`/propiedades/${prop.public_id}`} class="group">
-              <div class="bg-white rounded-lg p-2">
-                <div class="relative w-full overflow-hidden">
-                  <img
-                    class="rounded w-full object-cover aspect-video group-hover:scale-105 transition-all duration-300 ease-in-out"
-                    src={prop.title_image_full}
-                    alt={prop.title}
-                  />
-                  <div class="absolute top-0 left-0 p-2 flex gap-2">
-                    <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
-                      {prop.operations.map((op) => op.type)}
-                    </span>
-                    <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
-                      {prop.property_type}
-                    </span>
-                    <span class="bg-white rounded px-2 py-1 text-xs font-semibold">
-                      {prop.operations.map((op) => op.formatted_amount)}
-                    </span>
-                  </div>
-                </div>
-                <p class="font-bold">{prop.title}</p>
-                <p>{prop.location}</p>
-              </div>
-            </a>
-          ))
-        }
+      <!-- Properties -->
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {properties.map((prop) => <PropertyCard property={prop} />)}
       </div>
 
-      <div>
-        {page > 1 && <a href={`?page=${page - 1}${params}`}>Anterior</a>}
-        {
-          page < totalPages && (
-            <a href={`?page=${page + 1}${params}`}>Siguiente</a>
-          )
-        }
+      <!-- Pagination -->
+      <div class="grid grid-cols-3 items-center">
+        <div>
+          {
+            page > 1 && (
+              <a
+                class="bg-white px-3 py-2 rounded"
+                href={`?page=${page - 1}${params}`}
+              >
+                Anterior
+              </a>
+            )
+          }
+        </div>
+
+        <span class="text-sm text-center">Página {page} de {totalPages}</span>
+
+        <div class="flex justify-end">
+          {
+            page < totalPages && (
+              <a
+                class="bg-white px-3 py-2 rounded"
+                href={`?page=${page + 1}${params}`}
+              >
+                Siguiente
+              </a>
+            )
+          }
+        </div>
       </div>
     </div>
   </div>
