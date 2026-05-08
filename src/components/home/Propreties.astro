@@ -1,6 +1,7 @@
 ---
 import PageHeader from "../PageHeader.astro";
 import { getPropertiesFeatures } from "../../lib/easybroker";
+import PropertyCard from "../PropertyCard.astro";
 
 const response = await getPropertiesFeatures();
 const properties = response.content;
@@ -15,14 +16,7 @@ const properties = response.content;
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {
-        properties.map((property) => (
-          <div class="bg-white rounded-lg shadow-md p-4">
-            <h3 class="text-lg font-semibold">{property.title}</h3>
-            <p class="text-gray-600">{property.description}</p>
-          </div>
-        ))
-      }
+      {properties.map((property) => <PropertyCard property={property} />)}
     </div>
   </div>
 </section>

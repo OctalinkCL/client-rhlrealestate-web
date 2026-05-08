@@ -1,0 +1,11 @@
+---
+import type { Property } from "../lib/easybroker";
+
+interface Props {
+  property: Property;
+}
+
+const { property } = Astro.props;
+---
+
+<div class="bg-white p-2 rounded">{property.title}</div>
