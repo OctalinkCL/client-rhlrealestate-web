@@ -4,16 +4,22 @@ const isHome = Astro.url.pathname === "/";
 
 <header
   data-home={isHome}
-  class:list={["fixed top-0 w-full z-10 border-b group", !isHome && "bg-white"]}
+  class:list={["fixed top-0 w-full z-10 group", !isHome && "bg-white"]}
 >
   <!-- Header -->
-  <nav class="container mx-auto">
+  <nav class="container mx-auto px-4 lg:px-0">
     <div class="flex items-center justify-between lg:grid lg:grid-cols-5">
+      <!-- Logo -->
       <div class="lg:col-span-1">
         <span class="group-[.bg-white]:text-red-500">Logo</span>
       </div>
+      <!-- Menu -->
       <div class="lg:col-span-3 text-center hidden lg:block">Menu</div>
-      <div class="lg:col-span-1 text-right">Contacto</div>
+      <!-- Actions -->
+      <div class="lg:col-span-1 text-right">
+        <button class="hidden lg:inline-block">Contact</button>
+        <button class="lg:hidden">Mobile</button>
+      </div>
     </div>
   </nav>
 
