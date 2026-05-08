@@ -47,3 +47,10 @@
 .rhl-header__menu-mobile-item {
   @apply text-black text-lg font-medium block py-1;
 }
+
+/* ========================================================================== */
+/* Page
+/* ========================================================================== */
+.rhl-page {
+  @apply pt-(--header-height) lg:pt-(--header-height-lg);
+}

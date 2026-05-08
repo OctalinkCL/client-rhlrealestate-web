@@ -34,8 +34,7 @@ let filtered = data.content
   .filter((p) => !tipo || p.property_type === tipo)
   .filter(
     (p) =>
-      !ubicacion ||
-      p.location.toLowerCase().includes(ubicacion.toLowerCase()),
+      !ubicacion || p.location.toLowerCase().includes(ubicacion.toLowerCase()),
   );
 
 // Orden por precio client-side
@@ -63,7 +62,7 @@ const ORDEN_OPCIONES = [
 ---
 
 <Layout>
-  <div id="properties" class="bg-neutral-100">
+  <div id="properties" class="rhl-page">
     <header class="bg-blue-100">
       <h1>Propiedades</h1>
       <p>{filtered.length} propiedades — página {page} de {totalPages}</p>
