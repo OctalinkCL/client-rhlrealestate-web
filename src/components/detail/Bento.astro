@@ -1,0 +1,61 @@
+---
+import type { Property } from "../../lib/easybroker";
+
+interface Props {
+  images: Property["property_images"];
+}
+
+const { images } = Astro.props;
+---
+
+<!-- {images.map((image) => <img src={image.url} alt="" class="rounded" />)} -->
+<div>
+  <div
+    class="hidden lg:grid grid-cols-1 lg:grid-cols-4 grid-rows-2 gap-2 lg:h-[540px]"
+  >
+    <div
+      class="bg-neutral-200 col-span-2 row-span-2 relative overflow-hidden rounded"
+    >
+      <img
+        src={images[0].url}
+        alt="bento_image"
+        class="object-cover w-full h-full"
+      />
+    </div>
+    <div
+      class="bg-neutral-200 col-span-2 row-span-1 relative overflow-hidden rounded"
+    >
+      <img
+        src={images[1].url}
+        alt="bento_image"
+        class="object-cover w-full h-full"
+      />
+    </div>
+    <div
+      class="bg-neutral-200 col-span-1 row-span-1 relative overflow-hidden rounded"
+    >
+      <img
+        src={images[2].url}
+        alt="bento_image"
+        class="object-cover w-full h-full"
+      />
+    </div>
+    <div
+      class="bg-neutral-200 col-span-1 row-span-1 relative overflow-hidden rounded"
+    >
+      <img
+        src={images[3].url}
+        alt="bento_image"
+        class="object-cover w-full h-full"
+      />
+    </div>
+  </div>
+
+  <div class="lg:hidden bg-neutral-200 aspect-video rounded overflow-hidden">
+    <img
+      src={images[0].url}
+      alt="bento_image"
+      class="object-cover w-full h-full"
+    />
+  </div>
+</div>

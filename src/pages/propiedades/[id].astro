@@ -5,7 +5,7 @@ import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
 
-import Gallery from "../../components/detail/Gallery.astro";
+import Bento from "../../components/detail/Bento.astro";
 
 setCacheHeaders(Astro.response);
 const { id } = Astro.params;
@@ -13,18 +13,10 @@ const property = await getProperty(id!);
 ---
 
 <Layout>
-  <div class="rhl-page grid">
+  <div class="rhl-page">
     <div class="container mx-auto px-4 pt-9 lg:px-0">
-      <Gallery images={property.property_images} />
+      <Bento images={property.property_images.slice(0, 4)} />
     </div>
-
-    <ul class="grid grid-cols-4 gap-2">
-      {
-        property.property_images.map((image) => (
-          <img src={image.url} alt={property.title} class="rounded" />
-        ))
-      }
-    </ul>
 
     <h1>{property.title}</h1>
     <p>ID: {property.public_id}</p>
