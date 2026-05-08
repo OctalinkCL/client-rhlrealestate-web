@@ -5,13 +5,19 @@ import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
 
+import Gallery from "../../components/detail/Gallery.astro";
+
 setCacheHeaders(Astro.response);
 const { id } = Astro.params;
 const property = await getProperty(id!);
 ---
 
 <Layout>
-  <div class="rhl-page">
+  <div class="rhl-page grid">
+    <div class="container mx-auto px-4 pt-9 lg:px-0">
+      <Gallery images={property.property_images} />
+    </div>
+
     <ul class="grid grid-cols-4 gap-2">
       {
         property.property_images.map((image) => (
@@ -24,7 +30,7 @@ const property = await getProperty(id!);
     <p>ID: {property.public_id}</p>
     <p>Tipo: {property.property_type}</p>
     <p>Operación: {property.operations?.[0]?.type}</p>
-    <p>Ubicación: {property.location.name}</p>
+    <p>Ubicación: {property.location?.name}</p>
     <p>{property.description}</p>
 
     <hr />
