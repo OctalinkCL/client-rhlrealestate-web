@@ -37,7 +37,9 @@ const {
   </head>
   <body class="flex flex-col min-h-screen">
     <Header />
-    <main><slot /></main>
-    <Footer />
+    <div class="bg-[#f7f7f7]">
+      <main><slot /></main>
+      <Footer />
+    </div>
   </body>
 </html>
