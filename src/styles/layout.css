@@ -1,0 +1,76 @@
+:root {
+  --header-height: 60px;
+  --header-height-lg: 80px;
+}
+
+/* ========================================================================== */
+/* Header
+/* ========================================================================== */
+.rhl-header {
+  @apply fixed top-0 w-full z-10 transition-all  border-b border-white/20;
+}
+.rhl-header__container {
+  @apply container mx-auto px-4 text-white group-[.bg-white]:text-black lg:px-0;
+}
+.rhl-header__wrapper {
+  @apply flex items-center justify-between h-(--header-height) lg:h-(--header-height-lg) lg:grid lg:grid-cols-5;
+}
+
+/* Brand */
+.rhl-header__brand {
+  @apply w-44 lg:w-64 fill-white  group-[.bg-white]:fill-rhl-primary;
+}
+
+/* Menu */
+.rhl-header__menu-item {
+  @apply text-[15px] font-medium tracking-wide;
+}
+
+/* Actions */
+.button-mobile {
+  @apply lg:hidden text-white group-[.bg-white]:text-rhl-primary;
+}
+.button-contact {
+  @apply p-1 text-[15px] font-medium tracking-wide bg-white rounded hidden items-center lg:inline-flex group-[.bg-white]:bg-rhl-primary;
+}
+.button-contact span {
+  @apply px-4 text-rhl-primary group-[.bg-white]:text-white;
+}
+.button-contact div {
+  @apply flex items-center justify-center bg-rhl-primary rounded-xs size-[32px] text-white group-[.bg-white]:bg-white group-[.bg-white]:text-rhl-primary;
+}
+
+/* Menu Mobile */
+.rhl-header__menu-mobile {
+  @apply overflow-hidden px-4 lg:hidden;
+}
+.rhl-header__menu-mobile-item {
+  @apply text-black text-lg font-medium block py-1;
+}
+
+/* ========================================================================== */
+/* Page
+/* ========================================================================== */
+.rhl-page {
+  @apply pt-(--header-height) lg:pt-(--header-height-lg);
+}
+
+/* ========================================================================== */
+/* Footer
+/* ========================================================================== */
+.rhl-footer {
+  @apply p-0 lg:p-4;
+}
+.rhl-footer__inner {
+  @apply bg-[#011d41] text-white lg:rounded-lg;
+}
+.rhl-footer__container {
+  @apply container mx-auto px-4 py-12 lg:px-0 grid gap-9;
+}
+
+.rhl-footer__top {
+  @apply grid gap-9 lg:flex lg:items-start lg:justify-between;
+}
+.rhl-footer__bottom {
+  @apply border-t pt-9 gap-4 border-white/20 flex flex-col text-center text-sm md:flex-row md:justify-between;
+}

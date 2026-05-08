@@ -1,0 +1,83 @@
+---
+import type { Property } from "../lib/easybroker";
+import Logo from "./Logo.astro";
+import { Bed, Bath, RulerDimensionLine, ArrowUpRight } from "@lucide/astro";
+
+interface Props {
+  property: Property;
+}
+
+const { property } = Astro.props;
+
+const operationType = (type: string) => {
+  return type === "sale" ? "En Venta" : "En Renta";
+};
+---
+
+<div class="bg-white p-2 rounded grid gap-5">
+  <!-- Image -->
+  <div
+    class="relative bg-neutral-200 aspect-3/2 rounded flex justify-center items-center"
+  >
+    {
+      property.title_image_full ? (
+        <img
+          src={property.title_image_full}
+          alt={property.title}
+          class="w-full h-full object-cover rounded"
+        />
+      ) : (
+        <Logo class="w-50 opacity-30" />
+      )
+    }
+
+    <div class="absolute top-4 left-4 bg-white px-2.5 py-0.5 rounded text-sm">
+      {property.operations.map((op) => operationType(op.type))}
+    </div>
+  </div>
+
+  <div class="grid gap-5 px-3 pb-3">
+    <div class="grid gap-3.5">
+      <ul class="flex gap-2">
+        {
+          property.bedrooms && (
+            <li class="bg-taupe-100 text-neutral-600 rounded px-2 py-1 text-sm flex items-center gap-2">
+              <Bed class="h-4 w-4" />
+              <span>{property.bedrooms}</span>
+            </li>
+          )
+        }
+        {
+          property.bathrooms && (
+            <li class="bg-taupe-100 text-neutral-600 rounded px-2 py-1 text-sm flex items-center gap-2">
+              <Bath class="h-4 w-4" />
+              <span>{property.bathrooms}</span>
+            </li>
+          )
+        }
+        {
+          property.construction_size && (
+            <li class="bg-taupe-100 text-neutral-600 rounded px-2 py-1 text-sm flex items-center gap-2">
+              <RulerDimensionLine class="h-4 w-4" />
+              {property.construction_size}m²
+            </li>
+          )
+        }
+      </ul>
+      <div class="grid gap-1">
+        <p class="font-display text-xl">{property.title}</p>
+        <p class="text-sm">{property.location}</p>
+      </div>
+    </div>
+    <a
+      class="bg-taupe-200 flex pt-1 pr-1 pb-1 pl-4 items-center justify-between rounded hover:bg-rhl-primary hover:text-white transition-colors duration-200"
+      href={`/propiedades/${property.public_id}`}
+    >
+      <span class="text-sm font-medium">Ver Propiedad</span>
+      <span
+        class="bg-white size-[35px] flex items-center justify-center rounded-xs"
+        ><ArrowUpRight class="h-4 w-4 text-black" /></span
+      >
+    </a>
+  </div>
+</div>

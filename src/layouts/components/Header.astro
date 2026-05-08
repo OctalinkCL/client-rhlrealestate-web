@@ -1,0 +1,110 @@
+---
+const isHome = Astro.url.pathname === "/";
+import Logo from "../../components/Logo.astro";
+import { Menu, ArrowUpRight } from "@lucide/astro";
+
+const navigation = [
+  { title: "Inicio", url: "/" },
+  { title: "Propiedades", url: "/propiedades" },
+];
+
+const contactButton =
+  "https://api.whatsapp.com/send/?phone=56948043836&text&type=phone_number&app_absent=0";
+---
+
+<header
+  id="header"
+  data-home={isHome}
+  class:list={["rhl-header group", !isHome && "bg-white"]}
+>
+  <!-- Header -->
+  <nav class="rhl-header__container">
+    <div class="rhl-header__wrapper">
+      <!-- Logo -->
+      <div class="lg:col-span-1">
+        <a href="/">
+          <Logo class="rhl-header__brand" />
+        </a>
+      </div>
+      <!-- Menu -->
+      <div class="lg:col-span-3 hidden lg:block">
+        <div class="flex justify-center gap-9">
+          {
+            navigation.map((item) => (
+              <a href={item.url} class="rhl-header__menu-item">
+                {item.title}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+      <!-- Actions -->
+      <div class="lg:col-span-1 flex items-center">
+        <a href={contactButton} target="_blank" class="button-contact">
+          <span>Hablemos</span>
+          <div><ArrowUpRight size={18} /></div>
+        </a>
+        <button id="button" class="button-mobile">
+          <Menu size={24} stroke-width={1} />
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile: Navigation -->
+  <nav id="menu" class="rhl-header__menu-mobile" style="height:0">
+    <div class="grid pb-4">
+      {
+        navigation.map((item) => (
+          <a href={item.url} class="rhl-header__menu-mobile-item">
+            {item.title}
+          </a>
+        ))
+      }
+      <a
+        href={contactButton}
+        target="_blank"
+        class="button-contact flex! justify-between mt-4"
+      >
+        <span>Hablemos</span>
+        <div><ArrowUpRight size={14} /></div>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const header = document.querySelector("header");
+  const isHome = header?.dataset.home === "true";
+  const button = document.getElementById("button");
+  const menu = document.getElementById("menu") as HTMLElement | null;
+  const headerApp = document.getElementById("header") as HTMLElement | null;
+
+  let open = false;
+
+  button?.addEventListener("click", () => {
+    if (!menu) return;
+    open = !open;
+
+    if (open) {
+      menu.style.height = menu.scrollHeight + "px";
+      menu.style.transition = "height 300ms ease";
+      headerApp?.classList.add("bg-white");
+    } else {
+      menu.style.height = menu.scrollHeight + "px";
+      requestAnimationFrame(() => {
+        menu.style.transition = "height 300ms ease";
+        menu.style.height = "0";
+        if (isHome && headerApp) {
+          headerApp.classList.remove("bg-white");
+        }
+      });
+    }
+  });
+
+  if (isHome) {
+    window.addEventListener("scroll", () => {
+      header?.classList.toggle("bg-white", window.scrollY > 50);
+    });
+  }
+</script>

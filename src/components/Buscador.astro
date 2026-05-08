@@ -1,0 +1,82 @@
+---
+import type { EBLocation } from "../lib/easybroker";
+
+interface Props {
+  localities: EBLocation[];
+  operacion?: string;
+  tipo?: string;
+  ubicacion?: string;
+}
+
+const { localities, operacion = "", tipo = "", ubicacion = "" } = Astro.props;
+
+const TIPOS = [
+  "Casa",
+  "Departamento",
+  "Cabaña",
+  "Local",
+  "Comercial",
+  "Edificio",
+  "Estacionamiento",
+  "Oficina",
+  "Terreno",
+];
+---
+
+<form action="/propiedades" method="GET" class="rhl-finder">
+  <!-- Inputs -->
+  <div class="rhl-finder-inputs">
+    <div class="lg:col-span-1">
+      <select name="operacion" id="operacion">
+        <option value="sale" selected={operacion === "" || operacion === "sale"}
+          >Venta</option
+        >
+        <option value="rental" selected={operacion === "rental"}
+          >Arriendo</option
+        >
+      </select>
+    </div>
+
+    <div class="lg:col-span-2">
+      <select name="tipo" id="tipo">
+        <option value="">Tipo de propiedad</option>
+        {
+          TIPOS.map((t) => (
+            <option value={t} selected={t === tipo}>
+              {t}
+            </option>
+          ))
+        }
+      </select>
+    </div>
+
+    <div class="lg:col-span-2">
+      <select name="ubicacion" id="ubicacion">
+        <option value="">Ciudad</option>
+        {
+          localities.map((loc) => (
+            <>
+              <option value={loc.name} selected={loc.name === ubicacion}>
+                {loc.name}
+              </option>
+              {loc.localities?.map((child) => (
+                <option value={child.name} selected={child.name === ubicacion}>
+                  &nbsp;&nbsp;{child.name}
+                </option>
+              ))}
+            </>
+          ))
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Button -->
+  <div class="rhl-finder-button">
+    <button
+      class="border border-white/60 text-white text-sm px-6 py-2 rounded font-medium w-full"
+      type="submit"
+      >Buscar
+    </button>
+  </div>
+</form>

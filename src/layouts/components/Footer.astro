@@ -1,0 +1,90 @@
+---
+import Logo from "../../components/Logo.astro";
+import { Mail, Phone, MapPin } from "@lucide/astro";
+
+const properties = [
+  { label: "En Venta", href: "/propiedades?operacion=sale" },
+  { label: "En Renta", href: "/propiedades?operacion=rental" },
+  { label: "Casas", href: "/propiedades?tipo=Casa" },
+  { label: "Departamentos", href: "/propiedades?tipo=Departamento" },
+];
+
+const contact = [
+  {
+    label: "contacto@rhlrealestate.cl",
+    href: "mailto:contacto@rhlrealestate.cl",
+    icon: Mail,
+  },
+  {
+    label: "+56 9 4804 3836",
+    href: "https://api.whatsapp.com/send/?phone=56948043836&text&type=phone_number&app_absent=0",
+    icon: Phone,
+  },
+  {
+    label: "Av. Chacabuco 473, Of 302 Concepción",
+    href: "https://maps.app.goo.gl/YnGwzEHrhVaVfAh78",
+    icon: MapPin,
+  },
+];
+---
+
+<footer class="rhl-footer">
+  <div class="rhl-footer__inner">
+    <div class="rhl-footer__container">
+      <!-- Top -->
+      <section class="rhl-footer__top">
+        <div class="max-w-96 grid gap-4">
+          <Logo class:list={["fill-white w-3xs"]} />
+          <p class="text-sm">
+            Desde Concepción al resto de Chile, en RHL Real Estate conectamos
+            personas con las propiedades correctas — ya sea para vender,
+            arrendar o invertir.
+          </p>
+        </div>
+
+        <div>
+          <ul class="grid gap-3">
+            <li class="font-display text-xl">Propiedades</li>
+            {
+              properties.map((p) => (
+                <li>
+                  <a href={p.href}>{p.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div>
+          <ul class="grid gap-3">
+            <li class="font-display text-xl">Contactanos</li>
+            {
+              contact.map((c) => (
+                <li>
+                  <a
+                    href={c.href}
+                    class="inline-flex items-center gap-2"
+                    target="_blank"
+                  >
+                    <c.icon class="size-4" />
+                    {c.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <!-- Bottom -->
+      <section class="rhl-footer__bottom">
+        <p>© 2026 RHL Real Estate. Todos los derechos reservados.</p>
+        <p>
+          <a href="https://octalink.cl"
+            >Desarrollado por <span class="font-semibold">Octalink</span></a
+          >
+        </p>
+      </section>
+    </div>
+  </div>
+</footer>
