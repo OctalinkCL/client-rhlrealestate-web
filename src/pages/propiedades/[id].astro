@@ -4,6 +4,7 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
+import { MapPin } from "@lucide/astro";
 
 import Bento from "../../components/detail/Bento.astro";
 
@@ -14,11 +15,66 @@ const property = await getProperty(id!);
 
 <Layout>
   <div class="rhl-page">
-    <div class="container mx-auto px-4 pt-9 lg:px-0">
+    <div class="container mx-auto px-4 lg:px-0 grid gap-6 lg:gap-12">
       <Bento images={property.property_images.slice(0, 4)} />
+
+      <!-- Content -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-9">
+        <aside class="col-span-1 lg:col-span-2">
+          <!-- Primary Data -->
+          <div>
+            <div class="grid">
+              <p
+                class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
+              >
+                <MapPin size={16} />
+                {property.location?.name}
+              </p>
+              <h1 class="font-display text-2xl lg:text-4xl">
+                {property.title}
+              </h1>
+              <p class="text-sm text-gray-600">ID: {property.public_id}</p>
+            </div>
+            <div class="grid grid-cols-3 border-t border-gray-200 my-4 py-4">
+              <div>
+                <span class="text-gray-600">Dorm.</span>
+                {property.bedrooms}
+              </div>
+              <div>
+                <span class="text-gray-600">Baños</span>
+                {property.bathrooms}
+              </div>
+              <div>
+                <span class="text-gray-600">Metros cuadrados</span>
+                {property.construction_size}
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div class="col-span-1 lg:col-span-3">
+          <div class="bg-white rounded-lg p-4">
+            <!-- Description -->
+            <section class="grid gap-3">
+              <h4 class="font-display text-xl">Detalles generales</h4>
+              <p>{property.description}</p>
+            </section>
+
+            <!-- Features -->
+            <section class="grid gap-3">
+              <h4 class="font-display text-xl">Características</h4>
+              <p>dsjldsjdlkdsjl</p>
+            </section>
+
+            <!-- Price -->
+            <section class="grid gap-3">
+              <h4 class="font-display text-xl">Precio</h4>
+              <p>dsjldsjdlkdsjl</p>
+            </section>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <h1>{property.title}</h1>
     <p>ID: {property.public_id}</p>
     <p>Tipo: {property.property_type}</p>
     <p>Operación: {property.operations?.[0]?.type}</p>

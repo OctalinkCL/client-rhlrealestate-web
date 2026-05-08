@@ -17,6 +17,18 @@ export interface Operation {
   unit: string;
 }
 
+export interface PropertyLocation {
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+  street: string | null;
+  postal_code: string | null;
+  show_exact_location: boolean;
+  hide_exact_location: boolean;
+  exterior_number: string | null;
+  interior_number: string | null;
+}
+
 export interface Property {
   public_id: string;
   title: string;
@@ -30,7 +42,7 @@ export interface Property {
   construction_size: number;
   lot_size: number;
   age: string;
-  location: string;
+  location: PropertyLocation | null;
   operations: Operation[];
   property_images: PropertyImage[];
   videos: string[];
