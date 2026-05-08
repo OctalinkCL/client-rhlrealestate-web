@@ -1,0 +1,25 @@
+/* ========================================================================== */
+/* Hero
+/* ========================================================================== */
+
+.home-hero {
+  @apply flex place-content-center items-center gap-2.5 w-full h-screen max-h-[1200px] relative overflow-hidden;
+}
+
+.home-hero__container {
+  @apply z-0 flex absolute inset-0;
+}
+
+/* Container */
+.home-hero__container--contents {
+  @apply contents;
+}
+
+.home-hero__container--video {
+  @apply w-full h-full block object-cover;
+}
+
+/* Cover */
+.home-hero__cover {
+  @apply flex bg-amber-500 h-full w-full relative;
+}

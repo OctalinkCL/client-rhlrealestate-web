@@ -1,0 +1,38 @@
+---
+import Buscador from "../Buscador.astro";
+import { getLocations } from "../../lib/easybroker";
+import { setCacheHeaders } from "../../lib/cache";
+
+setCacheHeaders(Astro.response);
+const { localities } = await getLocations();
+const videoUrl = "https://estatehubvideo.b-cdn.net/Untitled%20design%20(3).mp4";
+const videoPoster =
+  "https://framerusercontent.com/images/oFTAozKElqxglywix9lJ2dKkjm8.webp?width=4320&height=2160";
+---
+
+<section class="home-hero">
+  <!-- Container -->
+  <div class="home-hero__container">
+    <div class="home-hero__container--contents">
+      <!-- Video & Image Background -->
+      <video
+        src={videoUrl}
+        poster={videoPoster}
+        loop
+        playsinline
+        muted
+        class="home-hero__container--video"></video>
+    </div>
+  </div>
+  <!-- Cover -->
+  <div class="home-hero__cover">COVER</div>
+  <!-- Linear -->
+  <div></div>
+</section>
+
+<script>
+  // Autoplay fix for mobile devices
+  const isMobile = window.innerWidth < 768;
+  const video = document.querySelector("video") as HTMLVideoElement;
+  video.autoplay = true;
+</script>

@@ -2,40 +2,11 @@
 export const prerender = false;
 
 import Layout from "../layouts/Layout.astro";
-import Buscador from "../components/Buscador.astro";
-import { getLocations } from "../lib/easybroker";
-import { setCacheHeaders } from "../lib/cache";
-
-setCacheHeaders(Astro.response);
-const { localities } = await getLocations();
+import Hero from "../components/home/Hero.astro";
 ---
 
 <Layout>
   <div id="home-page">
-    <!-- section -->
-    <section class="bg-blue-100 h-[70vh] relative">
-      <!-- image -->
-      <img
-        src="https://rhlrealestate.cl/wp-content/uploads/2025/09/PIC-2-RHL-BG.jpg"
-        alt=""
-        class="absolute inset-0 w-full h-full object-cover"
-      />
-      <!-- gradient overlay -->
-      <div class="absolute inset-0 bg-blue-950/50"></div>
-      <!-- content -->
-      <div class="absolute inset-0 flex items-center justify-center px-9">
-        <div class="text-white text-center w-100 lg:min-w-[60vw]">
-          <h1 class="text-4xl lg:text-7xl mb-6">
-            La manera más <span class="font-serif italic">segura</span> de vender
-            tu <span class="font-serif italic">propiedad</span>
-          </h1>
-          <div
-            class="backdrop-blur-sm rounded-xl bg-white/5 border border-white/10 p-3 lg:p-4"
-          >
-            <Buscador localities={localities} />
-          </div>
-        </div>
-      </div>
-    </section>
+    <Hero />
   </div>
 </Layout>
