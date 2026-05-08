@@ -1,11 +1,41 @@
 ---
 import type { Property } from "../lib/easybroker";
+import Logo from "./Logo.astro";
 
 interface Props {
   property: Property;
 }
 
 const { property } = Astro.props;
+
+const operationType = (type: string) => {
+  return type === "sale" ? "En Venta" : "En Renta";
+};
 ---
 
-<div class="bg-white p-2 rounded">{property.title}</div>
+<div class="bg-white p-2 rounded">
+  <!-- Image -->
+  <div
+    class="relative bg-neutral-200 aspect-3/2 rounded flex justify-center items-center"
+  >
+    {
+      property.title_image_full ? (
+        <img
+          src={property.title_image_full}
+          alt={property.title}
+          class="w-full h-full object-cover rounded"
+        />
+      ) : (
+        <Logo class="w-50 opacity-30" />
+      )
+    }
+
+    <div class="absolute top-4 left-4 bg-white px-2.5 py-0.5 rounded text-sm">
+      {property.operations.map((op) => operationType(op.type))}
+    </div>
+  </div>
+
+  <span></span>
+
+  {property.title}
+</div>
