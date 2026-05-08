@@ -11,6 +11,8 @@ import Bento from "../../components/detail/Bento.astro";
 setCacheHeaders(Astro.response);
 const { id } = Astro.params;
 const property = await getProperty(id!);
+
+console.debug("decripcion", property.description);
 ---
 
 <Layout>
