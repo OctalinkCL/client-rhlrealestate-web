@@ -1,8 +1,10 @@
 @import "@fontsource-variable/inter-tight";
+@import "@fontsource/marcellus";
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter Tight Variable", sans-serif;
+  --font-display: "Marcellus", serif;
   --color-rhl-primary: #072c5a;
   --color-rhl-secondary: #7898c1;
 }
