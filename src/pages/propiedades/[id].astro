@@ -11,8 +11,6 @@ import Bento from "../../components/detail/Bento.astro";
 setCacheHeaders(Astro.response);
 const { id } = Astro.params;
 const property = await getProperty(id!);
-
-console.debug("decripcion", property.description);
 ---
 
 <Layout>
@@ -58,7 +56,7 @@ console.debug("decripcion", property.description);
             <!-- Description -->
             <section class="grid gap-3">
               <h4 class="font-display text-xl">Detalles generales</h4>
-              <p>{property.description}</p>
+              <p class="whitespace-pre-wrap">{property.description}</p>
             </section>
 
             <!-- Features -->
