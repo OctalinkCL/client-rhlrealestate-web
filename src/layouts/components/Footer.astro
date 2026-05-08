@@ -60,7 +60,11 @@ const contact = [
             {
               contact.map((c) => (
                 <li>
-                  <a href={c.href} class="inline-flex items-center gap-2">
+                  <a
+                    href={c.href}
+                    class="inline-flex items-center gap-2"
+                    target="_blank"
+                  >
                     <c.icon class="size-4" />
                     {c.label}
                   </a>
