@@ -28,13 +28,16 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>RHL Real Estate - Portal de propiedades</title>
     <meta name="description" content={description} />
-    <meta property="og:title" content="RHL Real Estate - Portal de propiedades" />
+    <meta
+      property="og:title"
+      content="RHL Real Estate - Portal de propiedades"
+    />
     <meta property="og:description" content={description} />
     {ogImage && <meta property="og:image" content={ogImage} />}
   </head>
   <body class="flex flex-col min-h-screen">
     <Header />
-    <main class="flex-1 pt-[67px] lg:pt-[90px]"><slot /></main>
+    <main><slot /></main>
     <Footer />
   </body>
 </html>
