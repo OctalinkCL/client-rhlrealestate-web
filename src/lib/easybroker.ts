@@ -1,6 +1,6 @@
-import { getCache, setCache } from './cache';
+import { getCache, setCache } from "./cache";
 
-const BASE_URL = 'https://api.easybroker.com/v1';
+const BASE_URL = "https://api.easybroker.com/v1";
 
 // --- Types ---
 
@@ -10,7 +10,7 @@ export interface PropertyImage {
 }
 
 export interface Operation {
-  type: 'sale' | 'rental';
+  type: "sale" | "rental";
   amount: number;
   currency: string;
   formatted_amount: string;
@@ -27,6 +27,11 @@ export interface PropertyLocation {
   hide_exact_location: boolean;
   exterior_number: string | null;
   interior_number: string | null;
+}
+
+export interface PropertyFeature {
+  name: string;
+  category: string;
 }
 
 export interface Property {
@@ -46,7 +51,7 @@ export interface Property {
   operations: Operation[];
   property_images: PropertyImage[];
   videos: string[];
-  features: string[];
+  features: PropertyFeature[];
   tags: string[];
 }
 
@@ -80,17 +85,17 @@ type Params = Record<string, string | number | null | undefined>;
 async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
   // String manual — URLSearchParams codifica [ ] como %5B%5D y EasyBroker rechaza eso
   const qs = Object.entries(params)
-    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .filter(([, v]) => v !== undefined && v !== null && v !== "")
     .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
-    .join('&');
+    .join("&");
 
-  const url = `${BASE_URL}${path}${qs ? `?${qs}` : ''}`;
+  const url = `${BASE_URL}${path}${qs ? `?${qs}` : ""}`;
 
   const cached = getCache<T>(url);
   if (cached) return cached;
 
   const res = await fetch(url, {
-    headers: { 'X-Authorization': import.meta.env.EB_API_KEY },
+    headers: { "X-Authorization": import.meta.env.EB_API_KEY },
   });
 
   if (!res.ok) {
@@ -98,15 +103,17 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
     throw new Error(`EasyBroker ${res.status}: ${text}`);
   }
 
-  const data = await res.json() as T;
+  const data = (await res.json()) as T;
   setCache(url, data);
   return data;
 }
 
 // --- API pública ---
 
-export function getProperties(filters: Params = {}): Promise<PropertiesResponse> {
-  return ebFetch<PropertiesResponse>('/properties', filters);
+export function getProperties(
+  filters: Params = {},
+): Promise<PropertiesResponse> {
+  return ebFetch<PropertiesResponse>("/properties", filters);
 }
 
 export function getProperty(id: string): Promise<Property> {
@@ -114,12 +121,12 @@ export function getProperty(id: string): Promise<Property> {
 }
 
 export function getPropertiesFeatures(): Promise<PropertiesResponse> {
-  return ebFetch<PropertiesResponse>('/properties', {
+  return ebFetch<PropertiesResponse>("/properties", {
     limit: 9,
-    'search[statuses][]': 'published',
+    "search[statuses][]": "published",
   });
 }
 
 export function getLocations(name?: string): Promise<LocationsResponse> {
-  return ebFetch<LocationsResponse>('/locations', name ? { name } : {});
+  return ebFetch<LocationsResponse>("/locations", name ? { name } : {});
 }

@@ -4,26 +4,54 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
-import { MapPin } from "@lucide/astro";
+import { MapPin, Pin } from "@lucide/astro";
 
 import Bento from "../../components/detail/Bento.astro";
 
 setCacheHeaders(Astro.response);
 const { id } = Astro.params;
 const property = await getProperty(id!);
+
+const operationType =
+  property.operations?.[0]?.type === "rental" ? "En Arriendo" : "En Venta";
+
+function toYouTubeEmbedUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const videoId =
+      parsed.searchParams.get("v") ||
+      (parsed.hostname === "youtu.be" ? parsed.pathname.slice(1) : null);
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch {
+    return null;
+  }
+}
+
+const videoEmbedUrl = property.videos?.[0]
+  ? toYouTubeEmbedUrl(property.videos[0])
+  : null;
 ---
 
 <Layout>
   <div class="rhl-page">
     <div class="container mx-auto px-4 lg:px-0 grid gap-6 lg:gap-12">
+      <!-- Bento -->
       <Bento images={property.property_images.slice(0, 4)} />
 
       <!-- Content -->
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-9">
-        <aside class="col-span-1 lg:col-span-2">
+        <aside
+          class="col-span-1 lg:col-span-2 lg:sticky lg:top-30 lg:self-start"
+        >
           <!-- Primary Data -->
           <div>
             <div class="grid">
+              <p
+                class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
+              >
+                <Pin size={16} />
+                {operationType}
+              </p>
               <p
                 class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
               >
@@ -52,43 +80,41 @@ const property = await getProperty(id!);
           </div>
         </aside>
         <div class="col-span-1 lg:col-span-3">
-          <div class="bg-white rounded-lg p-4">
+          <!-- Card -->
+          <div class="bg-white rounded-lg p-4 grid gap-9">
             <!-- Description -->
             <section class="grid gap-3">
-              <h4 class="font-display text-xl">Detalles generales</h4>
+              <h4 class="font-display text-2xl">Detalles generales</h4>
               <p class="whitespace-pre-wrap">{property.description}</p>
             </section>
 
             <!-- Features -->
             <section class="grid gap-3">
-              <h4 class="font-display text-xl">Características</h4>
-              <p>dsjldsjdlkdsjl</p>
+              <h4 class="font-display text-2xl">Características</h4>
+              <ul class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {property.features?.map((feature) => <li>{feature.name}</li>)}
+              </ul>
             </section>
 
-            <!-- Price -->
-            <section class="grid gap-3">
-              <h4 class="font-display text-xl">Precio</h4>
-              <p>dsjldsjdlkdsjl</p>
-            </section>
+            <!-- Video -->
+            {
+              videoEmbedUrl && (
+                <section class="grid gap-3">
+                  <h4 class="font-display text-2xl">Video</h4>
+                  <iframe
+                    class="w-full aspect-video"
+                    src={videoEmbedUrl}
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                  />
+                </section>
+              )
+            }
           </div>
         </div>
       </div>
     </div>
-
-    <p>ID: {property.public_id}</p>
-    <p>Tipo: {property.property_type}</p>
-    <p>Operación: {property.operations?.[0]?.type}</p>
-    <p>Ubicación: {property.location?.name}</p>
-    <p>{property.description}</p>
-
-    <hr />
-    <h2>Detalles</h2>
-    <p>Dormitorios: {property.bedrooms}</p>
-    <p>Baños: {property.bathrooms}</p>
-    <p>Construidos: {property.construction_size} m²</p>
-
-    <hr />
-    <h2>Raw data</h2>
-    <!-- <pre>{JSON.stringify(property, null, 2)}</pre> -->
   </div>
 </Layout>
