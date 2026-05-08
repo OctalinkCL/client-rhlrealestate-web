@@ -101,6 +101,13 @@ export function getProperty(id: string): Promise<Property> {
   return ebFetch<Property>(`/properties/${id}`);
 }
 
+export function getPropertiesFeatures(): Promise<PropertiesResponse> {
+  return ebFetch<PropertiesResponse>('/properties', {
+    limit: 9,
+    'search[statuses][]': 'published',
+  });
+}
+
 export function getLocations(name?: string): Promise<LocationsResponse> {
   return ebFetch<LocationsResponse>('/locations', name ? { name } : {});
 }
