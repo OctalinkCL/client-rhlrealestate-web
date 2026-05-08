@@ -34,6 +34,10 @@ const {
     />
     <meta property="og:description" content={description} />
     {ogImage && <meta property="og:image" content={ogImage} />}
+  <script is:inline>
+    history.scrollRestoration = "manual";
+    window.scrollTo({ top: 0, behavior: "instant" });
+  </script>
   </head>
   <body class="flex flex-col min-h-screen">
     <Header />
