@@ -3,6 +3,7 @@
 @import "tailwindcss";
 @import "./layout.css";
 @import "./home.css";
+@import "./buscador.css";
 
 @theme {
   --font-sans: "Inter Variable", sans-serif;
