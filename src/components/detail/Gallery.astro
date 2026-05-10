@@ -6,7 +6,7 @@ interface Props {
 const { images } = Astro.props;
 ---
 
-<div id="gallery-splide" class="splide">
+<div id="gallery-splide" class="splide rounded overflow-hidden">
   <div class="splide__track">
     <ul class="splide__list">
       {
@@ -16,7 +16,7 @@ const { images } = Astro.props;
           </li>
         ))
       }
-    </ul>x
+    </ul>
   </div>
 </div>
 
