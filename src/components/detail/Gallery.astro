@@ -2,11 +2,12 @@
 import type { Property } from "../../lib/easybroker";
 interface Props {
   images: Property["property_images"];
+  id?: string;
 }
-const { images } = Astro.props;
+const { images, id = "gallery-splide" } = Astro.props;
 ---
 
-<div id="gallery-splide" class="splide rounded overflow-hidden">
+<div data-gallery-root id={id} class="splide rounded overflow-hidden">
   <div class="splide__track">
     <ul class="splide__list">
       {
@@ -22,9 +23,11 @@ const { images } = Astro.props;
 
 <script>
   import Splide from "@splidejs/splide";
-  new Splide("#gallery-splide", {
-    type: "loop",
-    pagination: true,
-    arrows: true,
-  }).mount();
+  document.querySelectorAll<HTMLElement>("[data-gallery-root]").forEach((el) => {
+    new Splide(`#${el.id}`, {
+      type: "loop",
+      pagination: true,
+      arrows: true,
+    }).mount();
+  });
 </script>
