@@ -1,63 +1,53 @@
----
-import Buscador from "../Buscador.astro";
-import { getLocations } from "../../lib/easybroker";
-import { setCacheHeaders } from "../../lib/cache";
-
-setCacheHeaders(Astro.response);
-const { localities } = await getLocations();
-const videoUrl = "https://estatehubvideo.b-cdn.net/Untitled%20design%20(3).mp4";
-const videoPoster =
-  "https://framerusercontent.com/images/oFTAozKElqxglywix9lJ2dKkjm8.webp?width=4320&height=2160";
----
-
-<section class="home-hero">
+<!-- Hero -->
+<section
+  class="flex-none flex-row items-center w-full h-screen relarive max-h-[1200px] place-content-center overflow-hidden"
+>
   <!-- Container -->
-  <div class="home-hero__container">
-    <div class="home-hero__container--contents">
-      <!-- Video & Image Background -->
-      <video
-        src={videoUrl}
-        poster={videoPoster}
-        loop
-        playsinline
-        muted
-        class="home-hero__container--video"></video>
+  <div class="z-0 absolute inset-0 flex">
+    <div class="contents">
+      <img
+        src="https://placehold.co/600x400"
+        alt="RHL Real Estate"
+        class="size-full block object-cover"
+      />
     </div>
   </div>
+
   <!-- Cover -->
-  <div class="home-hero__cover">
+  <div
+    class="bg-primary h-full flex flex-1 relative overflow-hidden pt-28 pb-8 px-4 | lg:pt-40 lg:pb-10 lg:px-0"
+  >
     <!-- Inner -->
-    <div class="home-hero__cover--inner">
+    <div
+      class="container mx-auto relative flex flex-col items-start place-content-between"
+    >
       <!-- Title -->
-      <div class="home-hero__cover--title">
-        <div class="home-hero__cover--badge">
-          <div>Modo RHL</div>
-          <span>Ventas · Arriendo · Inversión</span>
+      <div
+        class="flex flex-col flex-none items-start gap-4 w-full overflow-hidden max-w-2xl"
+      >
+        <!-- Badge -->
+        <div
+          class="border border-white/30 rounded-full p-1 flex items-center text-xs lg:text-sm gap-3"
+        >
+          <div class="bg-white text-black rounded-full px-3 py-1">Modo RHL</div>
+          <span class="text-white pr-3">Ventas · Arriendo · Inversión</span>
         </div>
-        <h1 class="home-hero__cover--title--h1">
+        <!-- H1 -->
+        <h1 class="text-white font-display leading-none text-4xl | lg:text-7xl">
           La manera más segura de vender tu propiedad
         </h1>
       </div>
       <!-- Detail -->
-      <div class="home-hero__cover--detail">
-        <p>
+      <div class="border-t border-white/30 gap-9 w-full grid pt-6 | lg:gap-12">
+        <!-- Text -->
+        <p class="text-white text-sm | lg:max-w-lg lg:text-lg lg:font-light">
           En RHL Real Estate te acompañamos con un equipo de brokers, un proceso
           claro y el Modo RHL — nuestra forma de cuidar cada paso, desde la
           vitrina hasta el cierre.
         </p>
-        <div class="home-hero__cover--detail--searcher">
-          <Buscador {localities} />
-        </div>
+        <!-- Finder -->
+        <div class="">Buscador</div>
       </div>
     </div>
   </div>
-  <!-- Linear -->
-  <div></div>
 </section>
-
-<script>
-  // Autoplay fix for mobile devices
-  const isMobile = window.innerWidth < 768;
-  const video = document.querySelector("video") as HTMLVideoElement;
-  video.autoplay = true;
-</script>
