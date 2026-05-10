@@ -10,6 +10,7 @@ import { MapPin, Pin, Bed, Bath, Ruler } from "@lucide/astro";
 // Components
 import Bento from "../../components/detail/Bento.astro";
 import Badge from "@/components/ui/Badge.astro";
+import Gallery from "@/components/detail/Gallery.astro";
 
 const userAgent = Astro.request.headers.get("user-agent") || "";
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
@@ -47,7 +48,7 @@ const videoEmbedUrl = property.videos?.[0]
       <div>
         {
           isMobile ? (
-            <div>Contenido ligero para Teléfonos</div>
+            <Gallery images={property.property_images} />
           ) : (
             <Bento images={property.property_images.slice(0, 4)} />
           )
