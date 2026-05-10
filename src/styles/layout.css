@@ -23,7 +23,7 @@
 
 /* Menu */
 .rhl-header__menu-item {
-  @apply text-[15px] font-medium tracking-wide;
+  @apply text-sm hover:underline underline-offset-4 transition-all;
 }
 
 /* Actions */
