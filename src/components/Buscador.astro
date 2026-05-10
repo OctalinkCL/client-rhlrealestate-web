@@ -25,9 +25,13 @@ const TIPOS = [
 
 <form action="/propiedades" method="GET" class="rhl-finder">
   <!-- Inputs -->
-  <div class="rhl-finder-inputs">
-    <div class="lg:col-span-1">
-      <select name="operacion" id="operacion">
+  <div class="grid gap-3 grid-cols-2 lg:grid-cols-6">
+    <div class="col-span-1 lg:col-span-1">
+      <select
+        name="operacion"
+        id="operacion"
+        class="border pl-3 border-neutral-200 w-full h-11 rounded outline-0 text-sm font-medium lg:rounded-full lg:px-3"
+      >
         <option value="sale" selected={operacion === "" || operacion === "sale"}
           >Venta</option
         >
@@ -37,9 +41,13 @@ const TIPOS = [
       </select>
     </div>
 
-    <div class="lg:col-span-2">
-      <select name="tipo" id="tipo">
-        <option value="">Tipo de propiedad</option>
+    <div class="col-span-1 lg:col-span-2">
+      <select
+        name="tipo"
+        id="tipo"
+        class="border pl-3 border-neutral-200 w-full h-11 rounded outline-0 text-sm font-medium lg:rounded-full lg:px-3"
+      >
+        <option value="">Tipo</option>
         {
           TIPOS.map((t) => (
             <option value={t} selected={t === tipo}>
@@ -50,8 +58,12 @@ const TIPOS = [
       </select>
     </div>
 
-    <div class="lg:col-span-2">
-      <select name="ubicacion" id="ubicacion">
+    <div class="col-span-2">
+      <select
+        name="ubicacion"
+        id="ubicacion"
+        class="border pl-3 border-neutral-200 w-full h-11 rounded outline-0 text-sm font-medium lg:rounded-full lg:px-3"
+      >
         <option value="">Ciudad</option>
         {
           localities.map((loc) => (
@@ -69,10 +81,25 @@ const TIPOS = [
         }
       </select>
     </div>
-  </div>
 
-  <!-- Button -->
-  <div>
-    <button class="bg-primary text-white" type="submit">Buscar</button>
+    <!-- Button -->
+    <div class="col-span-2 lg:col-span-1">
+      <button
+        class="bg-primary text-white w-full h-11 text-base rounded outline-0 lg:rounded-full cursor-pointer lg:hover:bg-blue-950 transition-all"
+        type="submit"
+      >
+        Buscar
+      </button>
+    </div>
   </div>
 </form>
+
+<style>
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem 1rem;
+  }
+</style>
