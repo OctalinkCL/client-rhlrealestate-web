@@ -7,7 +7,7 @@
 /* Header
 /* ========================================================================== */
 .rhl-header {
-  @apply fixed top-0 w-full z-10 transition-all  border-b border-white/20;
+  @apply fixed top-0 w-full transition-all border-b border-white/20 shadow shadow-black/6;
 }
 .rhl-header__container {
   @apply container mx-auto px-4 text-white group-[.bg-white]:text-black lg:px-0;
@@ -23,21 +23,24 @@
 
 /* Menu */
 .rhl-header__menu-item {
-  @apply text-[15px] font-medium tracking-wide;
+  @apply text-sm hover:underline underline-offset-4 transition-all;
 }
 
 /* Actions */
 .button-mobile {
   @apply lg:hidden text-white group-[.bg-white]:text-rhl-primary;
 }
+
 .button-contact {
-  @apply p-1 text-[15px] font-medium tracking-wide bg-white rounded hidden items-center lg:inline-flex group-[.bg-white]:bg-rhl-primary;
+  @apply hidden lg:flex items-center p-1 rounded-full border border-white/30 backdrop-blur-lg bg-white/10 gap-3 hover:bg-white/50 group-[.bg-white]:border-black/20 group-[.bg-white]:hover:bg-neutral-50;
 }
+
 .button-contact span {
-  @apply px-4 text-rhl-primary group-[.bg-white]:text-white;
+  @apply text-sm pl-3.5;
 }
+
 .button-contact div {
-  @apply flex items-center justify-center bg-rhl-primary rounded-xs size-[32px] text-white group-[.bg-white]:bg-white group-[.bg-white]:text-rhl-primary;
+  @apply size-8 flex items-center justify-center rounded-full bg-white text-primary group-[.bg-white]:bg-primary group-[.bg-white]:text-white;
 }
 
 /* Menu Mobile */

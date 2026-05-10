@@ -2,8 +2,7 @@
 @import "@fontsource/marcellus";
 @import "tailwindcss";
 @import "./layout.css";
-@import "./home.css";
-@import "./buscador.css";
+@import "@splidejs/splide/css";
 
 @theme {
   --font-sans: "Inter Variable", sans-serif;
@@ -11,6 +10,8 @@
   --color-rhl-primary: #072c5a;
   --color-rhl-secondary: #7898c1;
   --color-rhl-soft-blue: #f0f4fa;
+
+  --color-primary: #000f24;
 }
 
 html,

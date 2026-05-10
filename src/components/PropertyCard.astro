@@ -1,7 +1,9 @@
 ---
 import type { Property } from "../lib/easybroker";
 import Logo from "./Logo.astro";
-import { Bed, Bath, RulerDimensionLine, ArrowUpRight } from "@lucide/astro";
+import { Bed, Bath, RulerDimensionLine, ArrowRight } from "@lucide/astro";
+
+import Badge from "@/components/ui/Badge.astro";
 
 interface Props {
   property: Property;
@@ -9,75 +11,87 @@ interface Props {
 
 const { property } = Astro.props;
 
+const link = `/propiedades/${property.public_id}`;
+
 const operationType = (type: string) => {
-  return type === "sale" ? "En Venta" : "En Renta";
+  return type === "sale" ? "En Venta" : "En Arriendo";
 };
 ---
 
-<div class="bg-white p-2 rounded grid gap-5">
+<div class="bg-white p-3 grid gap-5 rounded-4xl group hover:shadow">
   <!-- Image -->
-  <div
-    class="relative bg-neutral-200 aspect-3/2 rounded flex justify-center items-center"
+  <a
+    href={link}
+    class="relative bg-neutral-200 rounded-3xl overflow-hidden aspect-3/2"
   >
     {
       property.title_image_full ? (
         <img
           src={property.title_image_full}
           alt={property.title}
-          class="w-full h-full object-cover rounded"
+          class="size-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
         />
       ) : (
         <Logo class="w-50 opacity-30" />
       )
     }
 
-    <div class="absolute top-4 left-4 bg-white px-2.5 py-0.5 rounded text-sm">
-      {property.operations.map((op) => operationType(op.type))}
+    <div class="absolute top-4 left-4">
+      <Badge class="bg-white text-black">
+        {property.operations.map((op) => operationType(op.type))}
+      </Badge>
     </div>
-  </div>
+  </a>
 
-  <div class="grid gap-5 px-3 pb-3">
+  <div class="flex flex-col h-full place-content-between gap-5 px-3 pb-3">
     <div class="grid gap-3.5">
-      <ul class="flex gap-2">
+      <div class="flex items-center gap-1">
         {
           property.bedrooms && (
-            <li class="bg-taupe-100 text-neutral-600 rounded px-2 py-1 text-sm flex items-center gap-2">
+            <Badge class="bg-taupe-100 text-neutral-600 text-sm!">
               <Bed class="h-4 w-4" />
-              <span>{property.bedrooms}</span>
-            </li>
+              {property.bedrooms} Dorm.
+            </Badge>
           )
         }
         {
           property.bathrooms && (
-            <li class="bg-taupe-100 text-neutral-600 rounded px-2 py-1 text-sm flex items-center gap-2">
+            <Badge class="bg-taupe-100 text-neutral-600 text-sm!">
               <Bath class="h-4 w-4" />
-              <span>{property.bathrooms}</span>
-            </li>
+              {property.bathrooms} Baños
+            </Badge>
           )
         }
         {
           property.construction_size && (
-            <li class="bg-taupe-100 text-neutral-600 rounded px-2 py-1 text-sm flex items-center gap-2">
+            <Badge class="bg-taupe-100 text-neutral-600 text-sm!">
               <RulerDimensionLine class="h-4 w-4" />
-              {property.construction_size}m²
-            </li>
+              {property.construction_size} m²
+            </Badge>
           )
         }
-      </ul>
+      </div>
       <div class="grid gap-1">
-        <p class="font-display text-xl">{property.title}</p>
+        <a
+          href={link}
+          class="font-display text-xl group-hover:text-blue-900 hover:underline"
+          >{property.title}</a
+        >
         <p class="text-sm">{property.location}</p>
       </div>
     </div>
     <a
-      class="bg-taupe-200 flex pt-1 pr-1 pb-1 pl-4 items-center justify-between rounded hover:bg-rhl-primary hover:text-white transition-colors duration-200"
-      href={`/propiedades/${property.public_id}`}
+      href={link}
+      class="bg-taupe-200 flex items-center justify-between p-1 rounded-full | group-hover:bg-primary group-hover:text-white transition-colors duration-300 ease-in-out"
     >
-      <span class="text-sm font-medium">Ver Propiedad</span>
-      <span
-        class="bg-white size-[35px] flex items-center justify-center rounded-xs"
-        ><ArrowUpRight class="h-4 w-4 text-black" /></span
+      <span class="text-sm px-3 font-medium">Ver Propiedad</span>
+      <div
+        class="size-9 rounded-full bg-white flex items-center justify-center text-black"
       >
+        <ArrowRight
+          class="h-4 w-4 group-hover:-rotate-45 transition-transform duration-300 ease-in-out"
+        />
+      </div>
     </a>
   </div>
 </div>

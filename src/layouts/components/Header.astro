@@ -15,7 +15,7 @@ const contactButton =
 <header
   id="header"
   data-home={isHome}
-  class:list={["rhl-header group", !isHome && "bg-white"]}
+  class:list={["rhl-header group z-20", !isHome && "bg-white"]}
 >
   <!-- Header -->
   <nav class="rhl-header__container">
@@ -28,7 +28,7 @@ const contactButton =
       </div>
       <!-- Menu -->
       <div class="lg:col-span-3 hidden lg:block">
-        <div class="flex justify-center gap-9">
+        <div class="flex justify-center gap-15">
           {
             navigation.map((item) => (
               <a href={item.url} class="rhl-header__menu-item">
@@ -39,7 +39,7 @@ const contactButton =
         </div>
       </div>
       <!-- Actions -->
-      <div class="lg:col-span-1 flex items-center">
+      <div class="lg:col-span-1 flex items-center justify-end">
         <a href={contactButton} target="_blank" class="button-contact">
           <span>Hablemos</span>
           <div><ArrowUpRight size={18} /></div>
