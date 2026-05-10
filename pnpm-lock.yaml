@@ -20,6 +20,9 @@ importers:
       '@lucide/astro':
         specifier: ^1.14.0
         version: 1.14.0(astro@6.3.1(@vercel/functions@3.5.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.3))
+      '@splidejs/splide':
+        specifier: ^4.1.4
+        version: 4.1.4
       '@tailwindcss/vite':
         specifier: ^4.2.4
         version: 4.2.4(vite@7.3.3(jiti@2.7.0)(lightningcss@1.32.0))
@@ -582,6 +585,9 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
+
+  '@splidejs/splide@4.1.4':
+    resolution: {integrity: sha512-5I30evTJcAJQXt6vJ26g2xEkG+l1nXcpEw4xpKh0/FWQ8ozmAeTbtniVtVmz2sH1Es3vgfC4SS8B2X4o5JMptA==}
 
   '@tailwindcss/node@4.2.4':
     resolution: {integrity: sha512-Ai7+yQPxz3ddrDQzFfBKdHEVBg0w3Zl83jnjuwxnZOsnH9pGn93QHQtpU0p/8rYWxvbFZHneni6p1BSLK4DkGA==}
@@ -2253,6 +2259,8 @@ snapshots:
       '@types/hast': 3.0.4
 
   '@shikijs/vscode-textmate@10.0.2': {}
+
+  '@splidejs/splide@4.1.4': {}
 
   '@tailwindcss/node@4.2.4':
     dependencies:
