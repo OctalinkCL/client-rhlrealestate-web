@@ -1,3 +1,15 @@
+---
+import { Image } from "astro:assets";
+import HeroImg from "../../assets/home_hero.webp";
+
+import Buscador from "../Buscador.astro";
+import { getLocations } from "../../lib/easybroker";
+import { setCacheHeaders } from "../../lib/cache";
+
+setCacheHeaders(Astro.response);
+const { localities } = await getLocations();
+---
+
 <!-- Hero -->
 <section
   class="flex-none flex-row items-center w-full h-screen relarive max-h-[1200px] place-content-center overflow-hidden"
@@ -5,8 +17,13 @@
   <!-- Container -->
   <div class="z-0 absolute inset-0 flex">
     <div class="contents">
-      <img
-        src="https://placehold.co/600x400"
+      <!-- <img
+        src="/img/home_hero.webp"
+        alt="RHL Real Estate"
+        class="size-full block object-cover"
+      /> -->
+      <Image
+        src={HeroImg}
         alt="RHL Real Estate"
         class="size-full block object-cover"
       />
@@ -15,7 +32,7 @@
 
   <!-- Cover -->
   <div
-    class="bg-primary h-full flex flex-1 relative overflow-hidden pt-28 pb-8 px-4 | lg:pt-40 lg:pb-10 lg:px-0"
+    class="bg-primary/45 z-10 h-full flex flex-1 relative overflow-hidden pt-28 pb-8 px-4 | lg:pt-40 lg:pb-10 lg:px-0"
   >
     <!-- Inner -->
     <div
@@ -46,8 +63,20 @@
           vitrina hasta el cierre.
         </p>
         <!-- Finder -->
-        <div class="">Buscador</div>
+        <div class="bg-white/10 rounded-xl backdrop-blur lg:rounded-full p-2">
+          <div class="bg-white rounded-lg p-4 lg:rounded-full">
+            <Buscador {localities} />
+          </div>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- @apply w-full bg-[#000914]/60 backdrop-blur-lg p-4 rounded-lg; -->
+
+  <!-- Linear -->
+  <div
+    class="z-0 absolute inset-0 overflow-hidden h-screen bg-linear-to-r lg:from-40% from-primary/75 to-black/0"
+  >
   </div>
 </section>
