@@ -32,7 +32,7 @@
 }
 
 .button-contact {
-  @apply flex items-center p-1 rounded-full border border-white/30 backdrop-blur-lg bg-white/10 gap-3 hover:bg-white/50 group-[.bg-white]:border-black/20 group-[.bg-white]:hover:bg-neutral-50;
+  @apply hidden lg:flex items-center p-1 rounded-full border border-white/30 backdrop-blur-lg bg-white/10 gap-3 hover:bg-white/50 group-[.bg-white]:border-black/20 group-[.bg-white]:hover:bg-neutral-50;
 }
 
 .button-contact span {
