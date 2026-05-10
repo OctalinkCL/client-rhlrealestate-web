@@ -33,8 +33,13 @@ let filtered = data.content
   .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
   .filter((p) => !tipo || p.property_type === tipo)
   .filter(
-    (p) =>
-      !ubicacion || p.location.toLowerCase().includes(ubicacion.toLowerCase()),
+    (p) => {
+      if (!ubicacion) return true;
+      const loc = p.location;
+      if (!loc) return false;
+      const haystack = [loc.name, loc.street].filter(Boolean).join(" ").toLowerCase();
+      return haystack.includes(ubicacion.toLowerCase());
+    },
   );
 
 // Orden por precio client-side
