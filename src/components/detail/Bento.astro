@@ -8,10 +8,9 @@ interface Props {
 const { images } = Astro.props;
 ---
 
-<!-- {images.map((image) => <img src={image.url} alt="" class="rounded" />)} -->
 <div>
   <div
-    class="hidden lg:grid grid-cols-1 lg:grid-cols-4 grid-rows-2 gap-2 lg:h-[540px]"
+    class="hidden lg:grid grid-cols-1 lg:grid-cols-4 grid-rows-2 gap-4 lg:h-[540px]"
   >
     <div
       class="bg-neutral-200 col-span-2 row-span-2 relative overflow-hidden rounded"
@@ -43,6 +42,13 @@ const { images } = Astro.props;
     <div
       class="bg-neutral-200 col-span-1 row-span-1 relative overflow-hidden rounded"
     >
+      <div class="absolute inset-0 bg-primary/80 flex items-end justify-end">
+        <button
+          class="bg-white/90 m-4 rounded-md p-2 text-xs font-medium cursor-pointer"
+        >
+          Ver todas las imagenes
+        </button>
+      </div>
       <img
         src={images[3].url}
         alt="bento_image"
