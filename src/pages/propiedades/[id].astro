@@ -4,9 +4,12 @@ export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
-import { MapPin, Pin } from "@lucide/astro";
+// Icons
+import { MapPin, Pin, Bed, Bath, Ruler } from "@lucide/astro";
 
+// Components
 import Bento from "../../components/detail/Bento.astro";
+import Badge from "@/components/ui/Badge.astro";
 
 setCacheHeaders(Astro.response);
 const { id } = Astro.params;
@@ -42,6 +45,7 @@ const videoEmbedUrl = property.videos?.[0]
 
       <!-- Content -->
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-9">
+        <!-- Aside -->
         <aside
           class="col-span-1 lg:col-span-2 lg:sticky lg:top-30 lg:self-start"
         >
@@ -63,27 +67,35 @@ const videoEmbedUrl = property.videos?.[0]
               <h1 class="font-display text-2xl lg:text-4xl">
                 {property.title}
               </h1>
-              <p class="text-sm text-gray-600">ID: {property.public_id}</p>
+              <p class="text-sm text-gray-600 mt-2">ID: {property.public_id}</p>
             </div>
-            <div class="grid grid-cols-3 border-t border-gray-200 my-4 py-4">
-              <div>
-                <span class="text-gray-600">Dorm.</span>
-                {property.bedrooms}
-              </div>
-              <div>
-                <span class="text-gray-600">Baños</span>
-                {property.bathrooms}
-              </div>
-              <div>
-                <span class="text-gray-600">Metros cuadrados</span>
+            <ul
+              class="grid grid-cols-3 border-t border-gray-200 my-4 py-4 gap-3"
+            >
+              <li class="bg-taupe-200/60 p-3 rounded-lg grid gap-2">
+                <Bed size={27} stroke-width={1.5} class="text-taupe-700" />
+                <span
+                  class="text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis"
+                >
+                  {property.bedrooms} Dormitorios</span
+                >
+              </li>
+              <li class="bg-taupe-200/60 p-3 rounded-lg grid gap-2">
+                <Bath size={27} stroke-width={1.5} class="text-taupe-700" />
+                <span class="text-gray-600">{property.bathrooms} Baños</span>
+              </li>
+              <li class="bg-taupe-200/60 p-3 rounded-lg grid gap-2">
+                <Ruler size={27} stroke-width={1.5} class="text-taupe-700" />
                 {property.construction_size}
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
         </aside>
+
+        <!-- Main -->
         <div class="col-span-1 lg:col-span-3">
           <!-- Card -->
-          <div class="bg-white rounded-lg p-4 grid gap-9">
+          <div class="bg-white rounded-xl p-4 grid gap-9">
             <!-- Description -->
             <section class="grid gap-3">
               <h4 class="font-display text-2xl">Detalles generales</h4>
@@ -93,9 +105,15 @@ const videoEmbedUrl = property.videos?.[0]
             <!-- Features -->
             <section class="grid gap-3">
               <h4 class="font-display text-2xl">Características</h4>
-              <ul class="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                {property.features?.map((feature) => <li>{feature.name}</li>)}
-              </ul>
+              <div class="flex flex-wrap gap-2">
+                {
+                  property.features?.map((feature) => (
+                    <Badge class="bg-taupe-100 text-taupe-800 text-sm!">
+                      {feature.name}
+                    </Badge>
+                  ))
+                }
+              </div>
             </section>
 
             <!-- Video -->
