@@ -7,7 +7,7 @@
 /* Header
 /* ========================================================================== */
 .rhl-header {
-  @apply fixed top-0 w-full z-10 transition-all  border-b border-white/20;
+  @apply fixed top-0 w-full transition-all  border-b border-white/20;
 }
 .rhl-header__container {
   @apply container mx-auto px-4 text-white group-[.bg-white]:text-black lg:px-0;
