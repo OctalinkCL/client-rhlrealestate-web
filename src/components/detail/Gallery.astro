@@ -1,11 +1,30 @@
 ---
 import type { Property } from "../../lib/easybroker";
-
 interface Props {
   images: Property["property_images"];
 }
-
 const { images } = Astro.props;
 ---
 
-<div>Gallery {images.length}</div>
+<div id="gallery-splide" class="splide">
+  <div class="splide__track">
+    <ul class="splide__list">
+      {
+        images.map((img) => (
+          <li class="splide__slide">
+            <img src={img.url} alt="" class="w-full aspect-4/3 object-cover" />
+          </li>
+        ))
+      }
+    </ul>x
+  </div>
+</div>
+
+<script>
+  import Splide from "@splidejs/splide";
+  new Splide("#gallery-splide", {
+    type: "loop",
+    pagination: true,
+    arrows: true,
+  }).mount();
+</script>

@@ -2,6 +2,7 @@
 @import "@fontsource/marcellus";
 @import "tailwindcss";
 @import "./layout.css";
+@import "@splidejs/splide/css";
 
 @theme {
   --font-sans: "Inter Variable", sans-serif;
