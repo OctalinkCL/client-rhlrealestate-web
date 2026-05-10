@@ -48,7 +48,7 @@ const videoEmbedUrl = property.videos?.[0]
       <div>
         {
           isMobile ? (
-            <Gallery images={property.property_images} />
+            <Gallery images={property.property_images} id="gallery-mobile" />
           ) : (
             <Bento images={property.property_images.slice(0, 4)} />
           )

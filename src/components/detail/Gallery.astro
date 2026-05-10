@@ -23,11 +23,13 @@ const { images, id = "gallery-splide" } = Astro.props;
 
 <script>
   import Splide from "@splidejs/splide";
-  document.querySelectorAll<HTMLElement>("[data-gallery-root]").forEach((el) => {
-    new Splide(`#${el.id}`, {
-      type: "loop",
-      pagination: true,
-      arrows: true,
-    }).mount();
-  });
+  document
+    .querySelectorAll<HTMLElement>("[data-gallery-root]")
+    .forEach((el) => {
+      new Splide(`#${el.id}`, {
+        type: "loop",
+        pagination: true,
+        arrows: true,
+      }).mount();
+    });
 </script>
