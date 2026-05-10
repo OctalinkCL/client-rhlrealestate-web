@@ -10,7 +10,7 @@ const { images } = Astro.props;
 
 <div>
   <div
-    class="hidden lg:grid grid-cols-1 lg:grid-cols-4 grid-rows-2 gap-4 lg:h-[540px]"
+    class="lg:grid grid-cols-1 lg:grid-cols-4 grid-rows-2 gap-4 lg:h-[540px]"
   >
     <div
       class="bg-neutral-200 col-span-2 row-span-2 relative overflow-hidden rounded-xl"
@@ -55,13 +55,5 @@ const { images } = Astro.props;
         class="object-cover w-full h-full"
       />
     </div>
-  </div>
-
-  <div class="lg:hidden bg-neutral-200 aspect-video rounded overflow-hidden">
-    <img
-      src={images[0].url}
-      alt="bento_image"
-      class="object-cover w-full h-full"
-    />
   </div>
 </div>
