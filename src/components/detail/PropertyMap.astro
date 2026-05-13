@@ -1,0 +1,103 @@
+---
+interface Props {
+  lat?: number | null;
+  lng?: number | null;
+  title?: string;
+  showExactLocation?: boolean;
+}
+
+const { lat, lng, title = "", showExactLocation = true } = Astro.props;
+const hasCoords = lat != null && lng != null;
+---
+
+{
+  hasCoords && (
+    <section class="grid gap-3">
+      <h4 class="font-display text-2xl">Ubicación</h4>
+      <div
+        id="property-map"
+        class="w-full h-72 rounded-xl overflow-hidden"
+        data-lat={String(lat)}
+        data-lng={String(lng)}
+        data-title={title}
+        data-exact={String(showExactLocation)}
+      />
+    </section>
+  )
+}
+
+<script>
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+
+  const container = document.getElementById(
+    "property-map"
+  ) as HTMLElement | null;
+
+  if (container) {
+    const lat = parseFloat(container.dataset.lat!);
+    const lng = parseFloat(container.dataset.lng!);
+    const title = container.dataset.title ?? "";
+    const exact = container.dataset.exact !== "false";
+
+    const key = import.meta.env.PUBLIC_MAPTILER_KEY;
+    const style = key
+      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`
+      : "https://tiles.openfreemap.org/styles/bright";
+
+    const map = new maplibregl.Map({
+      container,
+      style,
+      center: [lng, lat],
+      zoom: 16,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
+      attributionControl: false,
+      cooperativeGestures: true,
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    if (exact) {
+      new maplibregl.Marker({ color: "#b8975a" })
+        .setLngLat([lng, lat])
+        .setPopup(
+          new maplibregl.Popup({ offset: 25 }).setHTML(
+            `<strong>${title}</strong>`
+          )
+        )
+        .addTo(map);
+    } else {
+      map.on("load", () => {
+        map.addSource("radius", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [lng, lat] },
+            properties: {},
+          },
+        });
+        map.addLayer({
+          id: "radius-fill",
+          type: "circle",
+          source: "radius",
+          paint: {
+            "circle-radius": [
+              "interpolate",
+              ["exponential", 2],
+              ["zoom"],
+              10, 40,
+              15, 200,
+            ],
+            "circle-color": "#b8975a",
+            "circle-opacity": 0.15,
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#b8975a",
+            "circle-stroke-opacity": 0.5,
+          },
+        });
+      });
+    }
+  }
+</script>
