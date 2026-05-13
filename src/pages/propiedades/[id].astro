@@ -147,12 +147,15 @@ const videoEmbedUrl = property.videos?.[0]
             }
 
             <!-- Map -->
-            <PropertyMap
-              lat={property.location?.latitude}
-              lng={property.location?.longitude}
-              title={property.title}
-              showExactLocation={property.location?.show_exact_location}
-            />
+            {
+              property.location && (
+                <PropertyMap
+                  lat={property.location?.latitude}
+                  lng={property.location?.longitude}
+                  title={property.title}
+                />
+              )
+            }
           </div>
         </div>
       </div>
