@@ -26,8 +26,9 @@ const { images, id = "gallery-splide" } = Astro.props;
   document
     .querySelectorAll<HTMLElement>("[data-gallery-root]")
     .forEach((el) => {
-      new Splide(`#${el.id}`, {
+      (el as any)._splide = new Splide(`#${el.id}`, {
         type: "loop",
+        perPage: 1,
         pagination: true,
         arrows: true,
       }).mount();
