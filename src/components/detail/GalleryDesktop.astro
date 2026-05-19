@@ -57,9 +57,6 @@ const { images } = Astro.props;
   const closeBtn = document.getElementById("gallery-desktop-close")!;
 
   const open = () => {
-    const sw = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.paddingRight = `${sw}px`;
-    document.body.style.overflow = "hidden";
     modal.classList.remove("opacity-0", "pointer-events-none");
     modal.classList.add("opacity-100", "pointer-events-auto");
     dialog.classList.remove("scale-95");
@@ -71,10 +68,6 @@ const { images } = Astro.props;
     modal.classList.add("opacity-0", "pointer-events-none");
     dialog.classList.remove("scale-100");
     dialog.classList.add("scale-95");
-    setTimeout(() => {
-      document.body.style.paddingRight = "";
-      document.body.style.overflow = "";
-    }, 200);
   };
 
   document.addEventListener("gallery:open", open);
