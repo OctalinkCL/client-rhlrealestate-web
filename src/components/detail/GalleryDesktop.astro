@@ -12,11 +12,13 @@ const { images } = Astro.props;
 <!-- Backdrop -->
 <div
   id="gallery-desktop"
-  style="display:none"
-  class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6"
+  class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-200"
 >
   <!-- Dialog -->
-  <div class="bg-white  w-full max-w-3xl h-screen flex flex-col shadow-2xl">
+  <div
+    id="gallery-desktop-dialog"
+    class="bg-white w-full max-w-3xl h-screen flex flex-col shadow-2xl scale-95 transition-transform duration-200"
+  >
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
       <span class="font-medium text-gray-700">{images.length} fotos</span>
@@ -51,16 +53,28 @@ const { images } = Astro.props;
 
 <script>
   const modal = document.getElementById("gallery-desktop")!;
+  const dialog = document.getElementById("gallery-desktop-dialog")!;
   const closeBtn = document.getElementById("gallery-desktop-close")!;
 
   const open = () => {
-    modal.style.display = "flex";
+    const sw = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.paddingRight = `${sw}px`;
     document.body.style.overflow = "hidden";
+    modal.classList.remove("opacity-0", "pointer-events-none");
+    modal.classList.add("opacity-100", "pointer-events-auto");
+    dialog.classList.remove("scale-95");
+    dialog.classList.add("scale-100");
   };
 
   const close = () => {
-    modal.style.display = "none";
-    document.body.style.overflow = "";
+    modal.classList.remove("opacity-100", "pointer-events-auto");
+    modal.classList.add("opacity-0", "pointer-events-none");
+    dialog.classList.remove("scale-100");
+    dialog.classList.add("scale-95");
+    setTimeout(() => {
+      document.body.style.paddingRight = "";
+      document.body.style.overflow = "";
+    }, 200);
   };
 
   document.addEventListener("gallery:open", open);
