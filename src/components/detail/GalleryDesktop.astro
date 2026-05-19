@@ -1,0 +1,74 @@
+---
+import type { Property } from "../../lib/easybroker";
+import { XIcon } from "@lucide/astro";
+
+interface Props {
+  images: Property["property_images"];
+}
+
+const { images } = Astro.props;
+---
+
+<!-- Backdrop -->
+<div
+  id="gallery-desktop"
+  style="display:none"
+  class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6"
+>
+  <!-- Dialog -->
+  <div class="bg-white  w-full max-w-3xl h-screen flex flex-col shadow-2xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+      <span class="font-medium text-gray-700">{images.length} fotos</span>
+      <button
+        id="gallery-desktop-close"
+        class="text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-full p-2 cursor-pointer transition-colors"
+        aria-label="Cerrar"
+      >
+        <XIcon class="w-5 h-5" />
+      </button>
+    </div>
+
+    <!-- Images -->
+    <div class="overflow-y-auto flex-1 px-6 py-4">
+      <div class="grid gap-3">
+        {
+          images.map((img) => (
+            <div class="overflow-hidden rounded-xl">
+              <img
+                src={img.url}
+                alt=""
+                class="w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById("gallery-desktop")!;
+  const closeBtn = document.getElementById("gallery-desktop-close")!;
+
+  const open = () => {
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  };
+
+  const close = () => {
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  };
+
+  document.addEventListener("gallery:open", open);
+  closeBtn.addEventListener("click", close);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) close();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+</script>
