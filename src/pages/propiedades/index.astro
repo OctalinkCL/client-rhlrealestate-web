@@ -22,45 +22,51 @@ const tipo = Astro.url.searchParams.get("tipo") ?? "";
 const ubicacion = Astro.url.searchParams.get("ubicacion") ?? "";
 const orden = Astro.url.searchParams.get("orden") ?? "updated_at-desc";
 
+// operacion, ubicacion y orden precio no tienen equiv. en la API → filtrado client-side
+const needsClientFilter = !!operacion || !!ubicacion || orden === "price-asc" || orden === "price-desc";
 const sortServer = orden.startsWith("updated_at") ? orden : "updated_at-desc";
 
+const apiParams = {
+  "search[statuses][]": "published",
+  "search[sort_by]": sortServer,
+  ...(tipo ? { "search[property_types][]": tipo } : {}),
+  ...(needsClientFilter
+    ? { page: 1, limit: 50 }
+    : { page, limit: PER_PAGE }),
+};
+
 const [data, { localities }] = await Promise.all([
-  getProperties({
-    page: 1,
-    limit: 50,
-    "search[statuses][]": "published",
-    "search[sort_by]": sortServer,
-  }),
+  getProperties(apiParams),
   getLocations(),
 ]);
 
-let filtered = data.content
-  .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
-  .filter((p) => !tipo || p.property_type === tipo)
-  .filter((p) => {
-    if (!ubicacion) return true;
-    const loc = p.location;
-    if (!loc) return false;
-    const haystack = [loc.name, loc.street]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return haystack.includes(ubicacion.toLowerCase());
-  });
+let filtered = data.content;
 
-// Orden por precio client-side
-if (orden === "price-asc") {
-  filtered = filtered.sort(
-    (a, b) => (a.operations[0]?.amount ?? 0) - (b.operations[0]?.amount ?? 0),
-  );
-} else if (orden === "price-desc") {
-  filtered = filtered.sort(
-    (a, b) => (b.operations[0]?.amount ?? 0) - (a.operations[0]?.amount ?? 0),
-  );
+if (needsClientFilter) {
+  filtered = filtered
+    .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
+    .filter((p) => {
+      if (!ubicacion) return true;
+      const loc = p.location;
+      if (!loc) return false;
+      const haystack = [loc.name, loc.street].filter(Boolean).join(" ").toLowerCase();
+      return haystack.includes(ubicacion.toLowerCase());
+    });
+
+  if (orden === "price-asc") {
+    filtered = filtered.sort((a, b) => (a.operations[0]?.amount ?? 0) - (b.operations[0]?.amount ?? 0));
+  } else if (orden === "price-desc") {
+    filtered = filtered.sort((a, b) => (b.operations[0]?.amount ?? 0) - (a.operations[0]?.amount ?? 0));
+  }
 }
 
-const totalPages = Math.ceil(filtered.length / PER_PAGE);
-const properties = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+const totalPages = needsClientFilter
+  ? Math.ceil(filtered.length / PER_PAGE)
+  : Math.ceil(data.pagination.total / PER_PAGE);
+
+const properties = needsClientFilter
+  ? filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+  : filtered;
 
 const params = `&operacion=${operacion}&tipo=${tipo}&ubicacion=${ubicacion}&orden=${orden}`;
 
@@ -103,7 +109,7 @@ const ORDEN_OPCIONES = [
       <!-- Order -->
       <div class="flex justify-between items-center">
         <Badge class="bg-white px-3 py-2">
-          <span>{filtered.length} propiedades</span>
+          <span>{needsClientFilter ? filtered.length : data.pagination.total} propiedades</span>
         </Badge>
 
         <select
