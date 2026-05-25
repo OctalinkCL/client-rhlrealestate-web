@@ -1,26 +1,15 @@
 ---
-import type { EBLocation } from "../lib/easybroker";
+import type { EBLocation, PropertyType } from "../lib/easybroker";
 
 interface Props {
   localities: EBLocation[];
+  propertyTypes: PropertyType[];
   operacion?: string;
   tipo?: string;
   ubicacion?: string;
 }
 
-const { localities, operacion = "", tipo = "", ubicacion = "" } = Astro.props;
-
-const TIPOS = [
-  "Casa",
-  "Departamento",
-  "Cabaña",
-  "Local",
-  "Comercial",
-  "Edificio",
-  "Estacionamiento",
-  "Oficina",
-  "Terreno",
-];
+const { localities, propertyTypes, operacion = "", tipo = "", ubicacion = "" } = Astro.props;
 ---
 
 <form action="/propiedades" method="GET" class="rhl-finder">
@@ -49,9 +38,9 @@ const TIPOS = [
       >
         <option value="">Tipo</option>
         {
-          TIPOS.map((t) => (
-            <option value={t} selected={t === tipo}>
-              {t}
+          propertyTypes.map(({ name }) => (
+            <option value={name} selected={name === tipo}>
+              {name}
             </option>
           ))
         }

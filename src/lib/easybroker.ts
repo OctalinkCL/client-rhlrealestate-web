@@ -124,3 +124,15 @@ export function getPropertiesFeatures(): Promise<PropertiesResponse> {
 export function getLocations(name?: string): Promise<LocationsResponse> {
   return ebFetch<LocationsResponse>("/locations", name ? { name } : {});
 }
+
+export interface PropertyType {
+  name: string;
+}
+
+export interface PropertyTypesResponse {
+  content: PropertyType[];
+}
+
+export function getPropertyTypes(): Promise<PropertyTypesResponse> {
+  return ebFetch<PropertyTypesResponse>("/property_types", { limit: 100, locale: "es" });
+}
