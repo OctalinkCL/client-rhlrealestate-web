@@ -1,0 +1,52 @@
+---
+import PageHeader from "../PageHeader.astro";
+import { Target, Handshake, SearchCheck, ShieldCheck } from "@lucide/astro";
+
+const items = [
+    {
+        icon: Target,
+        title: "Estrategia",
+        description:
+            "Combinamos tecnología de punta con un acompañamiento cercano y personalizado.",
+    },
+    {
+        icon: Handshake,
+        title: "Evaluación",
+        description:
+            "Nos dedicamos a ofrecer un servicio inmobiliario profesional, formal, simple y transparente.",
+    },
+    {
+        icon: SearchCheck,
+        title: "Seguimiento",
+        description:
+            "Asesoría clara, segura e informada en cada etapa del proceso de compra, venta o arriendo de propiedades.",
+    },
+    {
+        icon: ShieldCheck,
+        title: "Seguridad",
+        description:
+            "En RHL desarrollamos un modelo propio de trabajo que acompaña a cada cliente desde el primer paso hasta la firma.",
+    },
+];
+---
+
+<section class="pb-9 lg:pb-24">
+    <div class="grid gap-9 container mx-auto px-4 lg:px-0 lg:gap-24">
+        <PageHeader
+            tagLabel="Como Trabajamos"
+            title="La manera más segura de vender tu propiedad"
+        />
+        <!--  -->
+        <div class="grid gap-6 lg:grid-cols-4 lg:gap-15">
+            {
+                items.map((item) => (
+                    <div class="text-center">
+                        <item.icon class="mx-auto text-primary" stroke-width={1.5} size={36} />
+                        <h4 class="text-2xl font-display">{item.title}</h4>
+                        <p class="text-sm">{item.description}</p>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
