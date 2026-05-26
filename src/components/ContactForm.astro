@@ -1,0 +1,124 @@
+---
+const tiposPropiedad = [
+  "Casa",
+  "Departamento",
+  "Terreno",
+  "Parcela",
+  "Estacionamiento",
+  "Hotel",
+  "Cabaña",
+];
+
+const modalidades = ["Venta", "Arriendo", "Compra"];
+
+const classForm = "h-10 bg-white/5 px-3 rounded-sm outline-0 ring-0";
+---
+
+<form id="contact-form" novalidate>
+  <h5 class="font-display text-white mb-4 text-xl">Contacto</h5>
+  <div class="grid gap-4 lg:grid-cols-3">
+    <!-- Name -->
+    <input
+      name="nombre"
+      type="text"
+      placeholder="Tu nombre"
+      required
+      class={classForm}
+    />
+    <!-- Email -->
+    <input
+      name="email"
+      type="email"
+      placeholder="tu@email.com"
+      required
+      class={classForm}
+    />
+    <!-- Phone -->
+    <input
+      name="telefono"
+      type="tel"
+      placeholder="9 1234 5678"
+      required
+      class={classForm}
+    />
+    <!-- Type -->
+    <select id="cf-tipo" name="tipo" required class={classForm}>
+      <option value="">Selecciona un tipo</option>
+      {tiposPropiedad.map((t) => <option value={t}>{t}</option>)}
+    </select>
+    <!-- Opration -->
+    <select id="cf-modalidad" name="modalidad" required class={classForm}>
+      <option value="">Selecciona una modalidad</option>
+      {modalidades.map((m) => <option value={m}>{m}</option>)}
+    </select>
+
+    <!-- Button -->
+    <button
+      type="submit"
+      id="cf-submit"
+      class="bg-black text-white text-sm font-medium rounded-md px-5 py-2.5 hover:bg-black/80 transition-colors disabled:opacity-50"
+    >
+      Enviar mensaje
+    </button>
+  </div>
+  <div class="mt-4 text-end">
+    <!-- Alert: Error -->
+    <p id="cf-error" class="text-xs text-red-300 italic"></p>
+    <!-- Alert: Success -->
+    <p id="cf-success" class="text-xs text-green-300 italic hidden">
+      Mensaje enviado. Te contactaremos pronto.
+    </p>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById("contact-form") as HTMLFormElement;
+  const submit = document.getElementById("cf-submit") as HTMLButtonElement;
+  const error = document.getElementById("cf-error") as HTMLParagraphElement;
+  const success = document.getElementById("cf-success") as HTMLParagraphElement;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    error.classList.add("hidden");
+    success.classList.add("hidden");
+
+    const data = Object.fromEntries(new FormData(form));
+
+    if (
+      !data.nombre ||
+      !data.email ||
+      !data.telefono ||
+      !data.tipo ||
+      !data.modalidad
+    ) {
+      error.textContent = "Por favor completa todos los campos.";
+      error.classList.remove("hidden");
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = "Enviando…";
+
+    try {
+      const res = await fetch("/api/contacto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        form.reset();
+        success.classList.remove("hidden");
+      } else {
+        error.textContent = "Ocurrió un error. Intenta nuevamente.";
+        error.classList.remove("hidden");
+      }
+    } catch {
+      error.textContent = "Ocurrió un error. Intenta nuevamente.";
+      error.classList.remove("hidden");
+    } finally {
+      submit.disabled = false;
+      submit.textContent = "Enviar mensaje";
+    }
+  });
+</script>

@@ -1,6 +1,7 @@
 ---
 import Logo from "../../components/Logo.astro";
 import { Mail, Phone, MapPin } from "@lucide/astro";
+import ContactForm from "@/components/ContactForm.astro";
 
 const properties = [
   { label: "En Venta", href: "/propiedades?operacion=sale" },
@@ -31,6 +32,11 @@ const contact = [
 <footer class="rhl-footer">
   <div class="rhl-footer__inner">
     <div class="rhl-footer__container">
+      <!-- Form -->
+      <div class="pt-2 pb-6 lg:border-b lg:border-white/20 lg:pb-9">
+        <ContactForm />
+      </div>
+
       <!-- Top -->
       <section class="rhl-footer__top">
         <div class="max-w-96 grid gap-4">

@@ -1,4 +1,3 @@
-import { getCache, setCache } from "./cache";
 
 const BASE_URL = "https://api.easybroker.com/v1";
 
@@ -91,9 +90,6 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
 
   const url = `${BASE_URL}${path}${qs ? `?${qs}` : ""}`;
 
-  const cached = getCache<T>(url);
-  if (cached) return cached;
-
   const res = await fetch(url, {
     headers: { "X-Authorization": import.meta.env.EB_API_KEY },
   });
@@ -103,9 +99,7 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
     throw new Error(`EasyBroker ${res.status}: ${text}`);
   }
 
-  const data = (await res.json()) as T;
-  setCache(url, data);
-  return data;
+  return (await res.json()) as T;
 }
 
 // --- API pública ---
@@ -129,4 +123,16 @@ export function getPropertiesFeatures(): Promise<PropertiesResponse> {
 
 export function getLocations(name?: string): Promise<LocationsResponse> {
   return ebFetch<LocationsResponse>("/locations", name ? { name } : {});
+}
+
+export interface PropertyType {
+  name: string;
+}
+
+export interface PropertyTypesResponse {
+  content: PropertyType[];
+}
+
+export function getPropertyTypes(): Promise<PropertyTypesResponse> {
+  return ebFetch<PropertyTypesResponse>("/property_types", { limit: 100, locale: "es" });
 }

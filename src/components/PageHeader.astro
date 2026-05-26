@@ -2,7 +2,7 @@
 interface Props {
   tagLabel: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
 }
 const { tagLabel, title, subtitle } = Astro.props as Props;
 ---
@@ -17,12 +17,12 @@ const { tagLabel, title, subtitle } = Astro.props as Props;
       </span>
       <span class="h-px bg-black/10 flex-1"></span>
     </div>
-    <h2 class="font-display text-3xl lg:text-[53px]">{title}</h2>
+    <h2 class="font-display text-3xl lg:text-[53px] lg:px-30">{title}</h2>
   </div>
   <!-- Subtitle -->
   {
     subtitle && (
-      <div class="max-w-[480px]">
+      <div class="max-w-120">
         <p class="text-xs lg:text-base">{subtitle}</p>
       </div>
     )
