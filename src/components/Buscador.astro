@@ -22,12 +22,9 @@ const { content: propertyTypes } = await getPropertyTypes();
         id="operacion"
         class="border pl-3 border-neutral-200 w-full h-11 rounded outline-0 text-sm font-medium lg:rounded-full lg:px-3"
       >
-        <option value="sale" selected={operacion === "" || operacion === "sale"}
-          >Venta</option
-        >
-        <option value="rental" selected={operacion === "rental"}
-          >Arriendo</option
-        >
+        <option value="" selected={operacion === ""}>Todos</option>
+        <option value="sale" selected={operacion === "sale"}>Venta</option>
+        <option value="rental" selected={operacion === "rental"}>Arriendo</option>
       </select>
     </div>
 
