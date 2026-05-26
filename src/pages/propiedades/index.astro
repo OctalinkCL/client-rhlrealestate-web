@@ -3,7 +3,7 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import Buscador from "../../components/Buscador.astro";
-import { getProperties, getLocations, getPropertyTypes } from "../../lib/easybroker";
+import { getProperties, getLocations } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
 import PropertyCard from "../../components/PropertyCard.astro";
 
@@ -35,10 +35,9 @@ const apiParams = {
     : { page, limit: PER_PAGE }),
 };
 
-const [data, { localities }, { content: propertyTypes }] = await Promise.all([
+const [data, { localities }] = await Promise.all([
   getProperties(apiParams),
   getLocations(),
-  getPropertyTypes(),
 ]);
 
 let filtered = data.content;
@@ -96,7 +95,6 @@ const ORDEN_OPCIONES = [
         <div class="bg-white p-3 rounded-2xl">
           <Buscador
             localities={localities}
-            propertyTypes={propertyTypes}
             operacion={operacion}
             tipo={tipo}
             ubicacion={ubicacion}

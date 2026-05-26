@@ -1,15 +1,16 @@
 ---
-import type { EBLocation, PropertyType } from "../lib/easybroker";
+import type { EBLocation } from "../lib/easybroker";
+import { getPropertyTypes } from "../lib/easybroker";
 
 interface Props {
   localities: EBLocation[];
-  propertyTypes: PropertyType[];
   operacion?: string;
   tipo?: string;
   ubicacion?: string;
 }
 
-const { localities, propertyTypes, operacion = "", tipo = "", ubicacion = "" } = Astro.props;
+const { localities, operacion = "", tipo = "", ubicacion = "" } = Astro.props;
+const { content: propertyTypes } = await getPropertyTypes();
 ---
 
 <form action="/propiedades" method="GET" class="rhl-finder">
