@@ -37,10 +37,7 @@ const hasCoords = lat != null && lng != null;
     const lng = parseFloat(container.dataset.lng!);
     const title = container.dataset.title ?? "";
 
-    const key = import.meta.env.PUBLIC_MAPTILER_KEY;
-    const style = key
-      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`
-      : "https://tiles.openfreemap.org/styles/bright";
+    const style = "https://tiles.openfreemap.org/styles/bright"
 
     const map = new maplibregl.Map({
       container,

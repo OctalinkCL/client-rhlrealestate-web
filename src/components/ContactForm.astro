@@ -1,0 +1,123 @@
+---
+const asuntos = [
+  "Consulta general",
+  "Quiero vender mi propiedad",
+  "Quiero arrendar mi propiedad",
+  "Quiero comprar una propiedad",
+  "Otro",
+];
+---
+
+<form id="contact-form" novalidate>
+  <div class="grid gap-4">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="grid gap-1.5">
+        <label for="cf-nombre" class="text-sm font-medium">Nombre</label>
+        <input
+          id="cf-nombre"
+          name="nombre"
+          type="text"
+          placeholder="Tu nombre"
+          required
+          class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+        />
+      </div>
+
+      <div class="grid gap-1.5">
+        <label for="cf-email" class="text-sm font-medium">Email</label>
+        <input
+          id="cf-email"
+          name="email"
+          type="email"
+          placeholder="tu@email.com"
+          required
+          class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+        />
+      </div>
+    </div>
+
+    <div class="grid gap-1.5">
+      <label for="cf-asunto" class="text-sm font-medium">Asunto</label>
+      <select
+        id="cf-asunto"
+        name="asunto"
+        class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+      >
+        <option value="">Selecciona un asunto</option>
+        {asuntos.map((a) => <option value={a}>{a}</option>)}
+      </select>
+    </div>
+
+    <div class="grid gap-1.5">
+      <label for="cf-mensaje" class="text-sm font-medium">Mensaje</label>
+      <textarea
+        id="cf-mensaje"
+        name="mensaje"
+        rows="4"
+        placeholder="¿En qué podemos ayudarte?"
+        required
+        class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20 resize-none"
+      ></textarea>
+    </div>
+
+    <p id="cf-error" class="text-sm text-red-600 hidden"></p>
+
+    <button
+      type="submit"
+      id="cf-submit"
+      class="bg-black text-white text-sm font-medium rounded-md px-5 py-2.5 hover:bg-black/80 transition-colors disabled:opacity-50"
+    >
+      Enviar mensaje
+    </button>
+
+    <p id="cf-success" class="text-sm text-green-700 hidden">
+      Mensaje enviado. Te contactaremos pronto.
+    </p>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById("contact-form") as HTMLFormElement;
+  const submit = document.getElementById("cf-submit") as HTMLButtonElement;
+  const error = document.getElementById("cf-error") as HTMLParagraphElement;
+  const success = document.getElementById("cf-success") as HTMLParagraphElement;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    error.classList.add("hidden");
+    success.classList.add("hidden");
+
+    const data = Object.fromEntries(new FormData(form));
+
+    if (!data.nombre || !data.email || !data.mensaje) {
+      error.textContent = "Por favor completa los campos requeridos.";
+      error.classList.remove("hidden");
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = "Enviando…";
+
+    try {
+      const res = await fetch("/api/contacto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        form.reset();
+        success.classList.remove("hidden");
+      } else {
+        error.textContent = "Ocurrió un error. Intenta nuevamente.";
+        error.classList.remove("hidden");
+      }
+    } catch {
+      error.textContent = "Ocurrió un error. Intenta nuevamente.";
+      error.classList.remove("hidden");
+    } finally {
+      submit.disabled = false;
+      submit.textContent = "Enviar mensaje";
+    }
+  });
+</script>
