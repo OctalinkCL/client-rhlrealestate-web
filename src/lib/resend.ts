@@ -3,21 +3,21 @@ const strip = (str: string) => str.replace(/<[^>]*>/g, "").trim();
 export interface ContactPayload {
   nombre: string;
   email: string;
-  asunto?: string;
-  mensaje: string;
+  telefono: string;
+  tipo: string;
+  modalidad: string;
 }
 
 export async function sendContactEmail(raw: ContactPayload) {
   const nombre = strip(raw.nombre ?? "");
   const email = strip(raw.email ?? "");
-  const asunto = strip(raw.asunto ?? "");
-  const mensaje = strip(raw.mensaje ?? "");
+  const telefono = strip(raw.telefono ?? "");
+  const tipo = strip(raw.tipo ?? "");
+  const modalidad = strip(raw.modalidad ?? "");
 
-  if (!nombre || !email || !mensaje) {
+  if (!nombre || !email || !telefono || !tipo || !modalidad) {
     return { ok: false, status: 422, error: "Campos requeridos faltantes" };
   }
-
-  console.debug("API_KEY", import.meta.env.RESEND_API_KEY)
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -29,8 +29,8 @@ export async function sendContactEmail(raw: ContactPayload) {
       from: "RHL Contacto <no-reply@rhlrealestate.cl>",
       to: "contacto@rhlrealestate.cl",
       reply_to: email,
-      subject: `Contacto web${asunto ? ` — ${asunto}` : ""}`,
-      text: `Nombre: ${nombre}\nEmail: ${email}\nAsunto: ${asunto || "—"}\n\n${mensaje}`,
+      subject: `Contacto Web — ${tipo} / ${modalidad}`,
+      text: `Nombre: ${nombre}\nEmail: ${email}\nTeléfono: +56 ${telefono}\nTipo de propiedad: ${tipo}\nModalidad: ${modalidad}`,
     }),
   });
 

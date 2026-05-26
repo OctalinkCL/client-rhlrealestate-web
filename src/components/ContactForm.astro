@@ -1,11 +1,15 @@
 ---
-const asuntos = [
-  "Consulta general",
-  "Quiero vender mi propiedad",
-  "Quiero arrendar mi propiedad",
-  "Quiero comprar una propiedad",
-  "Otro",
+const tiposPropiedad = [
+  "Casa",
+  "Departamento",
+  "Terreno",
+  "Parcela",
+  "Estacionamiento",
+  "Hotel",
+  "Cabaña",
 ];
+
+const modalidades = ["Venta", "Arriendo", "Compra"];
 ---
 
 <form id="contact-form" novalidate>
@@ -37,27 +41,46 @@ const asuntos = [
     </div>
 
     <div class="grid gap-1.5">
-      <label for="cf-asunto" class="text-sm font-medium">Asunto</label>
-      <select
-        id="cf-asunto"
-        name="asunto"
-        class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
-      >
-        <option value="">Selecciona un asunto</option>
-        {asuntos.map((a) => <option value={a}>{a}</option>)}
-      </select>
+      <label for="cf-telefono" class="text-sm font-medium">Teléfono</label>
+      <div class="flex items-center border rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-black/20">
+        <span class="px-3 py-2 text-sm bg-gray-50 border-r text-gray-500 select-none">+56</span>
+        <input
+          id="cf-telefono"
+          name="telefono"
+          type="tel"
+          placeholder="9 1234 5678"
+          required
+          class="flex-1 px-3 py-2 text-sm focus:outline-none"
+        />
+      </div>
     </div>
 
-    <div class="grid gap-1.5">
-      <label for="cf-mensaje" class="text-sm font-medium">Mensaje</label>
-      <textarea
-        id="cf-mensaje"
-        name="mensaje"
-        rows="4"
-        placeholder="¿En qué podemos ayudarte?"
-        required
-        class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20 resize-none"
-      ></textarea>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="grid gap-1.5">
+        <label for="cf-tipo" class="text-sm font-medium">Tipo de propiedad</label>
+        <select
+          id="cf-tipo"
+          name="tipo"
+          required
+          class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+        >
+          <option value="">Selecciona un tipo</option>
+          {tiposPropiedad.map((t) => <option value={t}>{t}</option>)}
+        </select>
+      </div>
+
+      <div class="grid gap-1.5">
+        <label for="cf-modalidad" class="text-sm font-medium">Modalidad</label>
+        <select
+          id="cf-modalidad"
+          name="modalidad"
+          required
+          class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+        >
+          <option value="">Selecciona una modalidad</option>
+          {modalidades.map((m) => <option value={m}>{m}</option>)}
+        </select>
+      </div>
     </div>
 
     <p id="cf-error" class="text-sm text-red-600 hidden"></p>
@@ -89,8 +112,8 @@ const asuntos = [
 
     const data = Object.fromEntries(new FormData(form));
 
-    if (!data.nombre || !data.email || !data.mensaje) {
-      error.textContent = "Por favor completa los campos requeridos.";
+    if (!data.nombre || !data.email || !data.telefono || !data.tipo || !data.modalidad) {
+      error.textContent = "Por favor completa todos los campos.";
       error.classList.remove("hidden");
       return;
     }
