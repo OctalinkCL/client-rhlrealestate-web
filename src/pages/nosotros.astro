@@ -5,7 +5,7 @@ import { Image } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
 import ImageAbout from "@/assets/about_hero.webp";
 import PageHeader from "@/components/PageHeader.astro";
-import { Mail, Phone, MapPin } from "@lucide/astro";
+import { ClipboardList, Lightbulb, ShieldCheck } from "@lucide/astro";
 
 // Team
 import team1 from "@/assets/team/01.webp";
@@ -20,19 +20,19 @@ import team9 from "@/assets/team/09.webp";
 
 const items = [
   {
-    icon: Mail,
+    icon: ClipboardList,
     title: "Evaluación",
     subtitle:
       "Nos dedicamos a ofrecer un servicio inmobiliario profesional, formal, simple y transparente.",
   },
   {
-    icon: Phone,
+    icon: Lightbulb,
     title: "Estrategia",
     subtitle:
       "Combinamos tecnología de punta con un acompañamiento cercano y personalizado.",
   },
   {
-    icon: MapPin,
+    icon: ShieldCheck,
     title: "Seguimiento",
     subtitle:
       "Asesoría clara, segura e informada en cada etapa del proceso de compra, venta o arriendo de propiedades.",
@@ -150,9 +150,9 @@ const team = [
         <!-- Header -->
         <div class="max-w-4xl flex justify-center mx-auto">
           <PageHeader
-            tagLabel="Nuestros Agentes"
+            tagLabel="Nuestros Equipo"
             title="Conozca a los expertos que guían cada movimiento"
-            subtitle="Nuestros agentes combinan conocimiento del mercado, experiencia y conocimiento local para ayudar a los clientes a encontrar propiedades con confianza."
+            subtitle="Combinanamos conocimiento del mercado, experiencia y conocimiento local para ayudar a los clientes a encontrar propiedades con confianza."
           />
         </div>
         <!-- Team list -->
@@ -161,7 +161,7 @@ const team = [
             {
               team.map((t) => (
                 <li class="bg-white overflow-hidden rounded-xl">
-                  <div class="h-60 lg:h-[350px] w-full overflow-hidden">
+                  <div class="h-60 lg:h-87 w-full overflow-hidden">
                     <Image
                       src={t.image}
                       alt={t.name}
