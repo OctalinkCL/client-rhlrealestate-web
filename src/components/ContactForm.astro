@@ -11,11 +11,14 @@ const tiposPropiedad = [
 
 const modalidades = ["Venta", "Arriendo", "Compra"];
 
-const classForm = "h-10 bg-white/5 px-3 rounded-sm outline-0 ring-0";
+const classForm =
+  "h-10 bg-white/5 px-3 rounded-sm outline-0 ring-0 transition hover:bg-white/15 focus:ring-2 focus:ring-white/30 | lg:h-12";
 ---
 
 <form id="contact-form" novalidate>
-  <h5 class="font-display text-white mb-4 text-xl">Contacto</h5>
+  <h5 class="font-display text-white mb-4 text-xl">
+    Quiero publicar mi propiedad
+  </h5>
   <div class="grid gap-4 lg:grid-cols-3">
     <!-- Name -->
     <input
