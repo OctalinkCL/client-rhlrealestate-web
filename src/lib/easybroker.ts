@@ -67,6 +67,30 @@ export interface PropertiesResponse {
   pagination: Pagination;
 }
 
+// Estructura que retorna el endpoint /properties (listado)
+// location es un string plano, no un objeto PropertyLocation
+export interface PropertyListItem {
+  public_id: string;
+  title: string;
+  title_image_full: string;
+  title_image_thumb: string;
+  property_type: string;
+  bedrooms: number;
+  bathrooms: number;
+  parking_spaces: number;
+  construction_size: number;
+  lot_size: number;
+  location: string | null;
+  operations: Operation[];
+  tags: string[];
+  exclusive: boolean | null;
+}
+
+export interface PropertiesListResponse {
+  content: PropertyListItem[];
+  pagination: Pagination;
+}
+
 export interface EBLocation {
   name: string;
   level: string;
@@ -107,16 +131,16 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
 
 export function getProperties(
   filters: Params = {},
-): Promise<PropertiesResponse> {
-  return ebFetch<PropertiesResponse>("/properties", filters);
+): Promise<PropertiesListResponse> {
+  return ebFetch<PropertiesListResponse>("/properties", filters);
 }
 
 export function getProperty(id: string): Promise<Property> {
   return ebFetch<Property>(`/properties/${id}`);
 }
 
-export function getPropertiesFeatures(): Promise<PropertiesResponse> {
-  return ebFetch<PropertiesResponse>("/properties", {
+export function getPropertiesFeatures(): Promise<PropertiesListResponse> {
+  return ebFetch<PropertiesListResponse>("/properties", {
     limit: 9,
     "search[statuses][]": "published",
   });
@@ -138,8 +162,8 @@ export function getPropertyTypes(): Promise<PropertyTypesResponse> {
   return ebFetch<PropertyTypesResponse>("/property_types", { limit: 100, locale: "es" });
 }
 
-export function getExclusiveProperties(): Promise<PropertiesResponse> {
-  return ebFetch<PropertiesResponse>("/properties", {
+export function getExclusiveProperties(): Promise<PropertiesListResponse> {
+  return ebFetch<PropertiesListResponse>("/properties", {
     limit: 50,
     "search[statuses][]": "published",
     "search[tags][]": "exclusiva",

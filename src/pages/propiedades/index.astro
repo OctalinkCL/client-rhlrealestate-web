@@ -47,10 +47,8 @@ if (needsClientFilter) {
     .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
     .filter((p) => {
       if (!ubicacion) return true;
-      const loc = p.location;
-      if (!loc) return false;
-      const haystack = [loc.name, loc.street].filter(Boolean).join(" ").toLowerCase();
-      return haystack.includes(ubicacion.toLowerCase());
+      const loc = (p.location ?? "").normalize("NFC").toLowerCase();
+      return loc.includes(ubicacion.normalize("NFC").toLowerCase());
     });
 
   if (orden === "price-asc") {
