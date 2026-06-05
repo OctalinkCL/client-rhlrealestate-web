@@ -58,7 +58,13 @@ const items = [
         <div class="border-t border-white/30"></div>
         <div class="grid gap-3.5 lg:max-w-3xl">
           <h1 class="font-display text-5xl text-white lg:text-6xl">
-            Un equipo comprometido. Un proceso confiable
+            Un equipo <span
+              class="font-display italic font-semibold tracking-tight"
+              >comprometido</span
+            >. Un proceso <span
+              class="font-display italic font-semibold tracking-tight"
+              >confiable</span
+            >
           </h1>
           <p class="text-lg text-white">
             Nuestro equipo de brokers altamente capacitados y con profundo
@@ -78,7 +84,7 @@ const items = [
             items.map((item) => (
               <li class="grid gap-4 bg-white p-8 rounded-lg lg:p-6">
                 <item.icon stroke-width="1" class="text-primary" size={36} />
-                <h3 class="font-display text-xl lg:text-2xl">{item.title}</h3>
+                <h3 class="text-xl lg:text-2xl">{item.title}</h3>
                 <p class="text-gray-500 text-sm">{item.subtitle}</p>
               </li>
             ))
@@ -112,7 +118,7 @@ const items = [
                     />
                   </div>
                   <div class="grid p-4">
-                    <h3 class="font-display text-lg">{t.name}</h3>
+                    <h3 class="text-lg">{t.name}</h3>
                     <p class="text-gray-500 text-sm">{t.role}</p>
                   </div>
                 </li>

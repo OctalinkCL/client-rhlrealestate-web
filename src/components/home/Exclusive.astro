@@ -1,0 +1,15 @@
+---
+import { getExclusiveProperties } from "../../lib/easybroker";
+
+const response = await getExclusiveProperties();
+const properties = response.content;
+---
+
+<section>
+  <p>Total exclusivas: {properties.length}</p>
+  <ul>
+    {properties.map((p) => (
+      <li>{p.public_id} — {p.title}</li>
+    ))}
+  </ul>
+</section>

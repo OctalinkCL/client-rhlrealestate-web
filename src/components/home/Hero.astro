@@ -12,7 +12,7 @@ const { localities } = await getLocations();
 
 <!-- Hero -->
 <section
-  class="flex-none flex-row items-center w-full h-screen relarive max-h-[1200px] place-content-center overflow-hidden"
+  class="flex-none flex-row items-center w-full h-screen relarive max-h-300 place-content-center overflow-hidden"
 >
   <!-- Container -->
   <div class="z-0 absolute inset-0 flex">
@@ -50,17 +50,25 @@ const { localities } = await getLocations();
           <span class="text-white pr-3">Ventas · Arriendo · Inversión</span>
         </div>
         <!-- H1 -->
-        <h1 class="text-white font-display leading-none text-4xl | lg:text-7xl">
-          La manera más segura de vender tu propiedad
+        <h1 class="text-white leading-none text-4xl | lg:text-7xl">
+          La manera más <span
+            class="font-display italic font-semibold tracking-tight"
+            >segura</span
+          > de vender tu <span
+            class="font-display italic font-semibold tracking-tight"
+            >propiedad</span
+          >
         </h1>
       </div>
       <!-- Detail -->
       <div class="border-t border-white/30 gap-9 w-full grid pt-6 | lg:gap-12">
         <!-- Text -->
         <p class="text-white text-sm | lg:max-w-lg lg:text-lg lg:font-light">
-          En RHL Real Estate te acompañamos con un equipo de brokers, un proceso
-          claro y el Modo RHL — nuestra forma de cuidar cada paso, desde la
-          vitrina hasta el cierre.
+          En <span class="font-semibold">RHL Real Estate</span>, te acompañamos
+          con un modelo probado, un equipo de brokers profesionales y un sistema
+          que cuida cada paso. Desde la vitrina hasta el cierre, aplicamos el <span
+            class="font-semibold">Modo RHL</span
+          >.
         </p>
         <!-- Finder -->
         <div class="bg-white/10 rounded-xl backdrop-blur lg:rounded-full p-2">

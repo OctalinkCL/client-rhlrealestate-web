@@ -47,10 +47,8 @@ if (needsClientFilter) {
     .filter((p) => !operacion || p.operations.some((op) => op.type === operacion))
     .filter((p) => {
       if (!ubicacion) return true;
-      const loc = p.location;
-      if (!loc) return false;
-      const haystack = [loc.name, loc.street].filter(Boolean).join(" ").toLowerCase();
-      return haystack.includes(ubicacion.toLowerCase());
+      const loc = (p.location ?? "").normalize("NFC").toLowerCase();
+      return loc.includes(ubicacion.normalize("NFC").toLowerCase());
     });
 
   if (orden === "price-asc") {
@@ -84,9 +82,6 @@ const ORDEN_OPCIONES = [
     <header class="bg-rhl-soft-blue py-9 lg:py-12">
       <div class="container mx-auto px-4 lg:px-0 grid gap-4 lg:gap-12">
         <div>
-          <span class="uppercase text-xs font-medium opacity-60"
-            >Nuestra Oferta</span
-          >
           <h1 class="font-display text-2xl lg:text-4xl">
             Encuentra la propiedad que buscas
           </h1>

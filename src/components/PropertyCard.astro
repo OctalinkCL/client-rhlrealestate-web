@@ -1,12 +1,12 @@
 ---
-import type { Property } from "../lib/easybroker";
+import type { PropertyListItem } from "../lib/easybroker";
 import Logo from "./Logo.astro";
 import { Bed, Bath, RulerDimensionLine, ArrowRight } from "@lucide/astro";
 
 import Badge from "@/components/ui/Badge.astro";
 
 interface Props {
-  property: Property;
+  property: PropertyListItem;
 }
 
 const { property } = Astro.props;
@@ -72,9 +72,7 @@ const operationType = (type: string) => {
         }
       </div>
       <div class="grid gap-1">
-        <a
-          href={link}
-          class="font-display text-xl group-hover:text-blue-900 hover:underline"
+        <a href={link} class="text-lg group-hover:text-blue-900 hover:underline font-medium"
           >{property.title}</a
         >
         <p class="text-sm">{property.location}</p>

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
 @import "@fontsource-variable/inter";
 @import "@fontsource/marcellus";
 @import "tailwindcss";
@@ -6,7 +7,7 @@
 
 @theme {
   --font-sans: "Inter Variable", sans-serif;
-  --font-display: "Marcellus", serif;
+  --font-display: "EB Garamond", serif;
   --color-rhl-primary: #072c5a;
   --color-rhl-secondary: #7898c1;
   --color-rhl-soft-blue: #f0f4fa;
