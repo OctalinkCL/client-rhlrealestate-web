@@ -52,6 +52,7 @@ export interface Property {
   videos: string[];
   features: PropertyFeature[];
   tags: string[];
+  exclusive: boolean | null;
 }
 
 export interface Pagination {
@@ -135,4 +136,12 @@ export interface PropertyTypesResponse {
 
 export function getPropertyTypes(): Promise<PropertyTypesResponse> {
   return ebFetch<PropertyTypesResponse>("/property_types", { limit: 100, locale: "es" });
+}
+
+export function getExclusiveProperties(): Promise<PropertiesResponse> {
+  return ebFetch<PropertiesResponse>("/properties", {
+    limit: 50,
+    "search[statuses][]": "published",
+    "search[tags][]": "exclusiva",
+  });
 }
