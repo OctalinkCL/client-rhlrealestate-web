@@ -12,12 +12,12 @@ const { tagLabel, title, subtitle } = Astro.props as Props;
   <div class="w-full grid gap-3">
     <div class="flex w-full justify-center gap-4 items-center">
       <span class="h-px bg-black/10 flex-1"></span>
-      <span class="whitespace-nowrap text-neutral-500 text-xs lg:text-sm">
+      <span class="whitespace-nowrap font-semibold text-neutral-500 text-xs lg:text-sm font-display italic">
         {tagLabel}
       </span>
       <span class="h-px bg-black/10 flex-1"></span>
     </div>
-    <h2 class="font-display text-3xl lg:text-[53px] lg:px-30">{title}</h2>
+    <h2 class="text-3xl lg:text-[53px] lg:px-30">{title}</h2>
   </div>
   <!-- Subtitle -->
   {
