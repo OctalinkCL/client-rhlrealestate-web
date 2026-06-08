@@ -37,13 +37,16 @@ const classForm =
       class={classForm}
     />
     <!-- Phone -->
-    <input
-      name="telefono"
-      type="tel"
-      placeholder="9 1234 5678"
-      required
-      class={classForm}
-    />
+    <div class="relative flex items-center">
+      <span class="absolute left-3 text-white/50 text-md pointer-events-none select-none">+56 9</span>
+      <input
+        name="telefono"
+        type="tel"
+        placeholder="1234 5678"
+        required
+        class={`${classForm} pl-15 w-full`}
+      />
+    </div>
     <!-- Type -->
     <select id="cf-tipo" name="tipo" required class={classForm}>
       <option value="">Selecciona un tipo</option>
