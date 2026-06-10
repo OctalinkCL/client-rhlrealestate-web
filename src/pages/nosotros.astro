@@ -3,7 +3,7 @@ export const prerender = true;
 
 import { Image } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
-import ImageAbout from "@/assets/about_hero.webp";
+import ImageAbout from "@/assets/staff/team.webp";
 import PageHeader from "@/components/PageHeader.astro";
 import { ClipboardList, Lightbulb, ShieldCheck } from "@lucide/astro";
 
@@ -42,7 +42,7 @@ const items = [
         <Image
           src={ImageAbout}
           alt="RHL"
-          class="absolute size-full object-cover object-center"
+          class="absolute size-full object-cover lg:object-[0%_25%]"
         />
       </div>
       <!-- linear -->
