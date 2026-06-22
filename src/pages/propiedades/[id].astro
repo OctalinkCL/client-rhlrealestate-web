@@ -5,7 +5,7 @@ import Layout from "../../layouts/Layout.astro";
 import { getProperty } from "../../lib/easybroker";
 import { setCacheHeaders } from "../../lib/cache";
 // Icons
-import { MapPin, Pin, Bed, Bath, Ruler } from "@lucide/astro";
+import { MapPin, Hash, Bed, Bath, Ruler, Pin } from "@lucide/astro";
 
 // Components
 import Bento from "../../components/detail/Bento.astro";
@@ -77,10 +77,23 @@ const videoEmbedUrl = property.videos?.[0]
                 <MapPin size={16} />
                 {property.location?.name}
               </p>
-              <h1 class="font-display text-2xl lg:text-4xl">
+              <p
+                class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
+              >
+                <Hash size={16} />
+                {property.public_id}
+              </p>
+              <h1 class="text-2xl lg:text-4xl font-semibold text-primary mt-4">
                 {property.title}
               </h1>
-              <p class="text-sm text-gray-600 mt-2">ID: {property.public_id}</p>
+
+              {
+                property.operations[0].formatted_amount && (
+                  <p class="text-2xl lg:text-3xl font-semibold mt-4">
+                    {property.operations[0].formatted_amount}
+                  </p>
+                )
+              }
             </div>
             <ul
               class="grid grid-cols-3 border-t border-gray-200 my-4 py-4 gap-3"
@@ -111,13 +124,13 @@ const videoEmbedUrl = property.videos?.[0]
           <div class="bg-white rounded-xl p-4 grid gap-9">
             <!-- Description -->
             <section class="grid gap-3">
-              <h4 class="font-display text-2xl">Detalles generales</h4>
+              <h4 class="text-xl font-semibold">Detalles generales</h4>
               <p class="whitespace-pre-wrap">{property.description}</p>
             </section>
 
             <!-- Features -->
             <section class="grid gap-3">
-              <h4 class="font-display text-2xl">Características</h4>
+              <h4 class="text-xl font-semibold">Características</h4>
               <div class="flex flex-wrap gap-2">
                 {
                   property.features?.map((feature) => (
@@ -133,7 +146,7 @@ const videoEmbedUrl = property.videos?.[0]
             {
               videoEmbedUrl && (
                 <section class="grid gap-3">
-                  <h4 class="font-display text-2xl">Video</h4>
+                  <h4 class="text-xl font-semibold">Video</h4>
                   <iframe
                     class="w-full aspect-video"
                     src={videoEmbedUrl}

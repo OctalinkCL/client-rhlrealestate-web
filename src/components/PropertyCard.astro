@@ -72,10 +72,15 @@ const operationType = (type: string) => {
         }
       </div>
       <div class="grid gap-1">
-        <a href={link} class="text-lg group-hover:text-blue-900 hover:underline font-medium"
+        <a
+          href={link}
+          class="text-lg group-hover:text-blue-900 hover:underline font-medium"
           >{property.title}</a
         >
         <p class="text-sm">{property.location}</p>
+        <p class="text-xl font-semibold text-primary">
+          {property.operations[0].formatted_amount}
+        </p>
       </div>
     </div>
     <a

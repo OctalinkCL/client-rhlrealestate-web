@@ -40,7 +40,7 @@
 }
 
 .button-contact div {
-  @apply size-8 flex items-center justify-center rounded-full bg-white text-primary group-[.bg-white]:bg-primary group-[.bg-white]:text-white;
+  @apply size-8 flex items-center justify-center rounded-full bg-white text-primary group-[.bg-white]:bg-green-300 group-[.bg-white]:text-white;
 }
 
 /* Menu Mobile */

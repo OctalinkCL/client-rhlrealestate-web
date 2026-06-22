@@ -1,4 +1,3 @@
-
 const BASE_URL = "https://api.easybroker.com/v1";
 
 // --- Types ---
@@ -143,6 +142,7 @@ export function getPropertiesFeatures(): Promise<PropertiesListResponse> {
   return ebFetch<PropertiesListResponse>("/properties", {
     limit: 9,
     "search[statuses][]": "published",
+    "search[sort_by]": "published_at-desc",
   });
 }
 
@@ -159,7 +159,10 @@ export interface PropertyTypesResponse {
 }
 
 export function getPropertyTypes(): Promise<PropertyTypesResponse> {
-  return ebFetch<PropertyTypesResponse>("/property_types", { limit: 100, locale: "es" });
+  return ebFetch<PropertyTypesResponse>("/property_types", {
+    limit: 100,
+    locale: "es",
+  });
 }
 
 export function getExclusiveProperties(): Promise<PropertiesListResponse> {

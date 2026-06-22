@@ -12,7 +12,7 @@ const hasCoords = lat != null && lng != null;
 {
   hasCoords && (
     <section class="grid gap-3">
-      <h4 class="font-display text-2xl">Ubicación</h4>
+      <h4 class="text-xl font-semibold">Ubicación</h4>
       <div
         id="property-map"
         class="w-full h-72 rounded-xl overflow-hidden"
@@ -29,7 +29,7 @@ const hasCoords = lat != null && lng != null;
   import "maplibre-gl/dist/maplibre-gl.css";
 
   const container = document.getElementById(
-    "property-map"
+    "property-map",
   ) as HTMLElement | null;
 
   if (container) {
@@ -37,7 +37,7 @@ const hasCoords = lat != null && lng != null;
     const lng = parseFloat(container.dataset.lng!);
     const title = container.dataset.title ?? "";
 
-    const style = "https://tiles.openfreemap.org/styles/bright"
+    const style = "https://tiles.openfreemap.org/styles/bright";
 
     const map = new maplibregl.Map({
       container,
@@ -56,7 +56,9 @@ const hasCoords = lat != null && lng != null;
     new maplibregl.Marker({ color: "#b8975a" })
       .setLngLat([lng, lat])
       .setPopup(
-        new maplibregl.Popup({ offset: 25 }).setHTML(`<strong>${title}</strong>`)
+        new maplibregl.Popup({ offset: 25 }).setHTML(
+          `<strong>${title}</strong>`,
+        ),
       )
       .addTo(map);
   }
