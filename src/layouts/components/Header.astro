@@ -1,7 +1,10 @@
 ---
 const isHome = Astro.url.pathname === "/";
 import Logo from "../../components/Logo.astro";
-import { Menu, ArrowUpRight } from "@lucide/astro";
+import { Menu } from "@lucide/astro";
+
+import { Image } from "astro:assets";
+import IconWhatsapp from "../../assets/icon_whatsapp.svg";
 
 const navigation = [
   { title: "Inicio", url: "/" },
@@ -43,8 +46,11 @@ const contactButton =
       <div class="lg:col-span-1 flex items-center justify-end">
         <a href={contactButton} target="_blank" class="button-contact">
           <span>Hablemos</span>
-          <div><ArrowUpRight size={18} /></div>
+          <div>
+            <Image class="w-6 h-6" src={IconWhatsapp} alt="whatsapp" />
+          </div>
         </a>
+
         <button id="button" class="button-mobile">
           <Menu size={24} stroke-width={1} />
         </button>
@@ -68,7 +74,9 @@ const contactButton =
         class="button-contact flex! justify-between mt-4"
       >
         <span>Hablemos</span>
-        <div><ArrowUpRight size={14} /></div>
+        <div>
+          <Image class="w-6 h-6" src={IconWhatsapp} alt="whatsapp" />
+        </div>
       </a>
     </div>
   </nav>
