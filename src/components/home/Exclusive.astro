@@ -3,41 +3,122 @@
 ---
 
 <section>
-  <div id="exclusive-loading">
-    <p>Buscando exclusivas para ti...</p>
+  <div
+    class="container mx-auto px-4 gap-8 grid bg-primary text-white lg:px-0 lg:rounded-lg"
+  >
+    <div id="exclusive-loading">
+      <p>Buscando exclusivas para ti...</p>
+    </div>
+    <ul id="exclusive-list" style="display:none"></ul>
   </div>
-  <ul id="exclusive-list" style="display:none"></ul>
 </section>
 
 <script>
-  async function loadExclusiveProperties() {
-    const loading = document.getElementById("exclusive-loading");
-    const list = document.getElementById("exclusive-list");
+  // --- MOCK para desarrollo — reemplazar por fetch real cuando el UI esté listo ---
+  const MOCK_PROPERTIES = [
+    {
+      public_id: "EB-AA0001",
+      title: "Casa moderna en Concepción",
+      property_type: "Casa",
+      location: "Las Higueras, Concepción, Biobío",
+      price: "UF 4.500",
+    },
+    {
+      public_id: "EB-AA0002",
+      title: "Departamento con vista al mar",
+      property_type: "Departamento",
+      location: "Pelluco, Puerto Montt, Los Lagos",
+      price: "UF 3.200",
+    },
+    {
+      public_id: "EB-AA0003",
+      title: "Casa en condominio Brisas del Sol",
+      property_type: "Casa",
+      location: "Brisas del Sol, Talcahuano, Biobío",
+      price: "$1.200.000 CLP",
+    },
+    {
+      public_id: "EB-AA0004",
+      title: "Departamento en Barrio Universitario",
+      property_type: "Departamento",
+      location: "Centro, Concepción, Biobío",
+      price: "UF 2.100",
+    },
+    {
+      public_id: "EB-AA0005",
+      title: "Casa remodelada con quincho",
+      property_type: "Casa",
+      location: "San Pedro de la Paz, Biobío",
+      price: "UF 5.800",
+    },
+    {
+      public_id: "EB-AA0006",
+      title: "Oficina en edificio corporativo",
+      property_type: "Oficina",
+      location: "Centro, Concepción, Biobío",
+      price: "UF 1.800",
+    },
+    {
+      public_id: "EB-AA0007",
+      title: "Casa amplia en Lomas de San Andrés",
+      property_type: "Casa",
+      location: "Lomas de San Andrés, Concepción, Biobío",
+      price: "UF 8.500",
+    },
+    {
+      public_id: "EB-AA0008",
+      title: "Departamento nuevo entrega inmediata",
+      property_type: "Departamento",
+      location: "Chiguayante, Biobío",
+      price: "UF 2.750",
+    },
+    {
+      public_id: "EB-AA0009",
+      title: "Terreno en sector privilegiado",
+      property_type: "Terreno",
+      location: "Penco, Biobío",
+      price: "UF 12.000",
+    },
+    {
+      public_id: "EB-AA0010",
+      title: "Casa en Hualpén con amplio jardín",
+      property_type: "Casa",
+      location: "Hualpén, Biobío",
+      price: "UF 3.900",
+    },
+    {
+      public_id: "EB-AA0011",
+      title: "Duplex en sector residencial exclusivo",
+      property_type: "Departamento",
+      location: "Mirador, Concepción, Biobío",
+      price: "UF 6.200",
+    },
+  ];
 
-    try {
-      const res = await fetch("/api/exclusive-properties");
-      if (!res.ok) throw new Error("Error al cargar exclusivas");
-
-      const properties = await res.json();
-
-      console.debug(properties);
-
-      if (loading) loading.style.display = "none";
-
-      if (list) {
-        list.style.display = "";
-        list.innerHTML = properties
-          .map(
-            (p: { public_id: string; title: string }) =>
-              `<li>${p.public_id} — ${p.title}</li>`,
-          )
-          .join("");
-      }
-    } catch {
-      if (loading)
-        loading.innerHTML = "<p>No se pudieron cargar las exclusivas.</p>";
+  function renderProperties(
+    properties: {
+      public_id: string;
+      title: string;
+      property_type: string;
+      location: string;
+      price: string;
+    }[],
+    loading: HTMLElement | null,
+    list: HTMLElement | null,
+  ) {
+    if (loading) loading.style.display = "none";
+    if (list) {
+      list.style.display = "";
+      list.innerHTML = properties
+        .map(
+          (p) =>
+            `<li>${p.public_id} — ${p.title} | ${p.property_type} | ${p.location} | ${p.price}</li>`,
+        )
+        .join("");
     }
   }
 
-  loadExclusiveProperties();
+  const loading = document.getElementById("exclusive-loading");
+  const list = document.getElementById("exclusive-list");
+  renderProperties(MOCK_PROPERTIES, loading, list);
 </script>
