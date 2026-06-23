@@ -1,15 +1,43 @@
 ---
-import { getExclusiveProperties } from "../../lib/easybroker";
-
-const response = await getExclusiveProperties();
-const properties = response.content;
+// No server-side fetch — data loads client-side from /api/exclusive-properties
 ---
 
 <section>
-  <p>Total exclusivas: {properties.length}</p>
-  <ul>
-    {properties.map((p) => (
-      <li>{p.public_id} — {p.title}</li>
-    ))}
-  </ul>
+  <div id="exclusive-loading">
+    <p>Buscando exclusivas para ti...</p>
+  </div>
+  <ul id="exclusive-list" style="display:none"></ul>
 </section>
+
+<script>
+  async function loadExclusiveProperties() {
+    const loading = document.getElementById("exclusive-loading");
+    const list = document.getElementById("exclusive-list");
+
+    try {
+      const res = await fetch("/api/exclusive-properties");
+      if (!res.ok) throw new Error("Error al cargar exclusivas");
+
+      const properties = await res.json();
+
+      console.debug(properties);
+
+      if (loading) loading.style.display = "none";
+
+      if (list) {
+        list.style.display = "";
+        list.innerHTML = properties
+          .map(
+            (p: { public_id: string; title: string }) =>
+              `<li>${p.public_id} — ${p.title}</li>`,
+          )
+          .join("");
+      }
+    } catch {
+      if (loading)
+        loading.innerHTML = "<p>No se pudieron cargar las exclusivas.</p>";
+    }
+  }
+
+  loadExclusiveProperties();
+</script>

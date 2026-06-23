@@ -52,6 +52,7 @@ export interface Property {
   features: PropertyFeature[];
   tags: string[];
   exclusive: boolean | null;
+  published_at: string | null;
 }
 
 export interface Pagination {
@@ -165,10 +166,45 @@ export function getPropertyTypes(): Promise<PropertyTypesResponse> {
   });
 }
 
-export function getExclusiveProperties(): Promise<PropertiesListResponse> {
-  return ebFetch<PropertiesListResponse>("/properties", {
-    limit: 50,
-    "search[statuses][]": "published",
-    "search[tags][]": "exclusiva",
-  });
+async function fetchInBatches<T>(
+  ids: string[],
+  fetcher: (id: string) => Promise<T>,
+  batchSize = 5,
+  delayMs = 600,
+): Promise<T[]> {
+  const results: T[] = [];
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(fetcher));
+    results.push(...batchResults);
+    if (i + batchSize < ids.length) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  return results;
+}
+
+export async function getExclusiveProperties(): Promise<Property[]> {
+  const allIds: string[] = [];
+  let page = 1;
+
+  while (true) {
+    const response = await ebFetch<PropertiesListResponse>("/properties", {
+      limit: 50,
+      page,
+      "search[statuses][]": "published",
+    });
+    allIds.push(...response.content.map((p) => p.public_id));
+    if (!response.pagination.next_page) break;
+    page++;
+  }
+
+  const details = await fetchInBatches(allIds, getProperty);
+  return details
+    .filter((p) => p.exclusive === true)
+    .sort((a, b) => {
+      const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return dateB - dateA;
+    });
 }

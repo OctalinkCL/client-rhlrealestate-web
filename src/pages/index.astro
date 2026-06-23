@@ -4,13 +4,15 @@ export const prerender = false;
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/home/Hero.astro";
 import Propreties from "../components/home/Propreties.astro";
-import Mode from "../components/home/Mode.astro"
+import Exclusive from "@/components/home/Exclusive.astro";
+import Mode from "../components/home/Mode.astro";
 ---
 
 <Layout>
   <div id="home-page">
     <Hero />
     <Propreties />
+    <Exclusive />
     <Mode />
   </div>
 </Layout>
