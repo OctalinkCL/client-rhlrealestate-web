@@ -1,124 +1,159 @@
 ---
-// No server-side fetch — data loads client-side from /api/exclusive-properties
+import PageHeader from "../PageHeader.astro";
+import { ArrowRight } from "@lucide/astro";
 ---
 
-<section>
-  <div
-    class="container mx-auto px-4 gap-8 grid bg-primary text-white lg:px-0 lg:rounded-lg"
-  >
-    <div id="exclusive-loading">
-      <p>Buscando exclusivas para ti...</p>
+<!-- Template oculto: Tailwind escanea estas clases en build time -->
+<template id="exclusive-slide-template">
+  <li class="splide__slide">
+    <!-- PropertyCard -->
+    <div
+      class="bg-white p-3 grid gap-5 rounded-4xl group hover:shadow min-h-[464px]"
+    >
+      <!-- image -->
+      <a
+        data-href
+        class="relative bg-neutral-200 rounded-3xl overflow-hidden aspect-3/2 block"
+      >
+        <img
+          data-src
+          data-alt
+          class="size-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
+        />
+      </a>
+      <!-- ./image -->
+
+      <!-- content -->
+      <div class="flex flex-col h-full place-content-between gap-5 px-3 pb-3">
+        <div class="grid gap-1">
+          <a
+            data-href
+            class="text-lg font-medium group-hover:text-blue-900 hover:underline"
+            data-title></a>
+          <p class="text-sm" data-location></p>
+          <p class="text-xl font-semibold text-primary" data-price></p>
+        </div>
+        <!-- button -->
+        <a
+          data-href
+          class="bg-taupe-200 flex items-center justify-between p-1 rounded-full group-hover:bg-primary group-hover:text-white transition-colors duration-300 ease-in-out"
+        >
+          <span class="text-sm px-3 font-medium">Ver Propiedad</span>
+          <div
+            class="size-9 rounded-full bg-white flex items-center justify-center text-black"
+          >
+            <ArrowRight
+              class="h-4 w-4 group-hover:-rotate-45 transition-transform duration-300 ease-in-out"
+            />
+          </div>
+        </a>
+      </div>
     </div>
-    <ul id="exclusive-list" style="display:none"></ul>
+    <!-- ./PropertyCard -->
+  </li>
+</template>
+
+<section class="bg-rhl-primary mb-10 py-10">
+  <div class="container mx-auto px-4 | lg:px-0">
+    <header class="text-center">
+      <h1 class="text-white text-2xl lg:text-5xl font-semibold">
+        Nuestras Propiedades Exclusivas
+      </h1>
+    </header>
+
+    <!-- loading -->
+    <div id="exclusive-loading" class="mt-10">
+      <ul class="grid grid-cols-1 gap-4 | lg:grid-cols-4">
+        <li
+          class="bg-white p-3 grid gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px]"
+        >
+        </li>
+        <li
+          class="bg-white p-3 gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px] hidden lg:block"
+        >
+        </li>
+        <li
+          class="bg-white p-3 gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px] hidden lg:block"
+        >
+        </li>
+        <li
+          class="bg-white p-3 gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px] hidden lg:block"
+        >
+        </li>
+      </ul>
+    </div>
+
+    <!-- carousel -->
+    <div
+      id="carousel"
+      class="splide hidden mt-10"
+      aria-labelledby="carousel-heading"
+    >
+      <div class="splide__track">
+        <ul class="splide__list" id="exclusive-list"></ul>
+      </div>
+    </div>
   </div>
 </section>
 
 <script>
-  // --- MOCK para desarrollo — reemplazar por fetch real cuando el UI esté listo ---
-  const MOCK_PROPERTIES = [
-    {
-      public_id: "EB-AA0001",
-      title: "Casa moderna en Concepción",
-      property_type: "Casa",
-      location: "Las Higueras, Concepción, Biobío",
-      price: "UF 4.500",
-    },
-    {
-      public_id: "EB-AA0002",
-      title: "Departamento con vista al mar",
-      property_type: "Departamento",
-      location: "Pelluco, Puerto Montt, Los Lagos",
-      price: "UF 3.200",
-    },
-    {
-      public_id: "EB-AA0003",
-      title: "Casa en condominio Brisas del Sol",
-      property_type: "Casa",
-      location: "Brisas del Sol, Talcahuano, Biobío",
-      price: "$1.200.000 CLP",
-    },
-    {
-      public_id: "EB-AA0004",
-      title: "Departamento en Barrio Universitario",
-      property_type: "Departamento",
-      location: "Centro, Concepción, Biobío",
-      price: "UF 2.100",
-    },
-    {
-      public_id: "EB-AA0005",
-      title: "Casa remodelada con quincho",
-      property_type: "Casa",
-      location: "San Pedro de la Paz, Biobío",
-      price: "UF 5.800",
-    },
-    {
-      public_id: "EB-AA0006",
-      title: "Oficina en edificio corporativo",
-      property_type: "Oficina",
-      location: "Centro, Concepción, Biobío",
-      price: "UF 1.800",
-    },
-    {
-      public_id: "EB-AA0007",
-      title: "Casa amplia en Lomas de San Andrés",
-      property_type: "Casa",
-      location: "Lomas de San Andrés, Concepción, Biobío",
-      price: "UF 8.500",
-    },
-    {
-      public_id: "EB-AA0008",
-      title: "Departamento nuevo entrega inmediata",
-      property_type: "Departamento",
-      location: "Chiguayante, Biobío",
-      price: "UF 2.750",
-    },
-    {
-      public_id: "EB-AA0009",
-      title: "Terreno en sector privilegiado",
-      property_type: "Terreno",
-      location: "Penco, Biobío",
-      price: "UF 12.000",
-    },
-    {
-      public_id: "EB-AA0010",
-      title: "Casa en Hualpén con amplio jardín",
-      property_type: "Casa",
-      location: "Hualpén, Biobío",
-      price: "UF 3.900",
-    },
-    {
-      public_id: "EB-AA0011",
-      title: "Duplex en sector residencial exclusivo",
-      property_type: "Departamento",
-      location: "Mirador, Concepción, Biobío",
-      price: "UF 6.200",
-    },
-  ];
+  import Splide from "@splidejs/splide";
 
-  function renderProperties(
-    properties: {
-      public_id: string;
-      title: string;
-      property_type: string;
-      location: string;
-      price: string;
-    }[],
-    loading: HTMLElement | null,
-    list: HTMLElement | null,
-  ) {
-    if (loading) loading.style.display = "none";
-    if (list) {
-      list.style.display = "";
-      list.innerHTML = properties
-        .map(
-          (p) =>
-            `<li>${p.public_id} — ${p.title} | ${p.property_type} | ${p.location} | ${p.price}</li>`,
-        )
-        .join("");
+  async function loadExclusiveProperties() {
+    const loading = document.getElementById("exclusive-loading");
+    const carousel = document.getElementById("carousel");
+    const list = document.getElementById("exclusive-list")!;
+    const template = document.getElementById(
+      "exclusive-slide-template",
+    ) as HTMLTemplateElement;
+
+    try {
+      const res = await fetch("/api/exclusive-properties");
+      if (!res.ok) throw new Error("Error al cargar exclusivas");
+
+      const properties = await res.json();
+
+      for (const p of properties) {
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+
+        clone
+          .querySelectorAll("[data-href]")
+          .forEach((el) =>
+            el.setAttribute("href", `/propiedades/${p.public_id}`),
+          );
+
+        const img = clone.querySelector("img")!;
+        img.src = p.images[0].url;
+        img.alt = p.title;
+
+        clone.querySelector("[data-title]")!.textContent = p.title;
+        clone.querySelector("[data-location]")!.textContent =
+          p.location.name ?? "";
+        clone.querySelector("[data-price]")!.textContent =
+          p.operations?.[0]?.formatted_amount ?? "";
+
+        list.appendChild(clone);
+      }
+
+      loading?.remove();
+      carousel?.classList.remove("hidden");
+
+      new Splide("#carousel", {
+        perPage: 4,
+        autoplay: true,
+        type: "loop",
+        gap: "1rem",
+        breakpoints: {
+          768: {
+            perPage: 1,
+          },
+        },
+      }).mount();
+    } catch {
+      if (loading)
+        loading.textContent = "No se pudieron cargar las exclusivas.";
     }
   }
 
-  const loading = document.getElementById("exclusive-loading");
-  const list = document.getElementById("exclusive-list");
-  renderProperties(MOCK_PROPERTIES, loading, list);
+  loadExclusiveProperties();
 </script>
