@@ -1,15 +1,159 @@
 ---
-import { getExclusiveProperties } from "../../lib/easybroker";
-
-const response = await getExclusiveProperties();
-const properties = response.content;
+import PageHeader from "../PageHeader.astro";
+import { ArrowRight } from "@lucide/astro";
 ---
 
-<section>
-  <p>Total exclusivas: {properties.length}</p>
-  <ul>
-    {properties.map((p) => (
-      <li>{p.public_id} — {p.title}</li>
-    ))}
-  </ul>
+<!-- Template oculto: Tailwind escanea estas clases en build time -->
+<template id="exclusive-slide-template">
+  <li class="splide__slide">
+    <!-- PropertyCard -->
+    <div
+      class="bg-white p-3 grid gap-5 rounded-4xl group hover:shadow min-h-[464px]"
+    >
+      <!-- image -->
+      <a
+        data-href
+        class="relative bg-neutral-200 rounded-3xl overflow-hidden aspect-3/2 block"
+      >
+        <img
+          data-src
+          data-alt
+          class="size-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
+        />
+      </a>
+      <!-- ./image -->
+
+      <!-- content -->
+      <div class="flex flex-col h-full place-content-between gap-5 px-3 pb-3">
+        <div class="grid gap-1">
+          <a
+            data-href
+            class="text-lg font-medium group-hover:text-blue-900 hover:underline"
+            data-title></a>
+          <p class="text-sm" data-location></p>
+          <p class="text-xl font-semibold text-primary" data-price></p>
+        </div>
+        <!-- button -->
+        <a
+          data-href
+          class="bg-taupe-200 flex items-center justify-between p-1 rounded-full group-hover:bg-primary group-hover:text-white transition-colors duration-300 ease-in-out"
+        >
+          <span class="text-sm px-3 font-medium">Ver Propiedad</span>
+          <div
+            class="size-9 rounded-full bg-white flex items-center justify-center text-black"
+          >
+            <ArrowRight
+              class="h-4 w-4 group-hover:-rotate-45 transition-transform duration-300 ease-in-out"
+            />
+          </div>
+        </a>
+      </div>
+    </div>
+    <!-- ./PropertyCard -->
+  </li>
+</template>
+
+<section class="bg-rhl-primary mb-10 py-10">
+  <div class="container mx-auto px-4 | lg:px-0">
+    <header class="text-center">
+      <h1 class="text-white text-2xl lg:text-5xl font-semibold">
+        Nuestras Propiedades Exclusivas
+      </h1>
+    </header>
+
+    <!-- loading -->
+    <div id="exclusive-loading" class="mt-10">
+      <ul class="grid grid-cols-1 gap-4 | lg:grid-cols-4">
+        <li
+          class="bg-white p-3 grid gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px]"
+        >
+        </li>
+        <li
+          class="bg-white p-3 gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px] hidden lg:block"
+        >
+        </li>
+        <li
+          class="bg-white p-3 gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px] hidden lg:block"
+        >
+        </li>
+        <li
+          class="bg-white p-3 gap-5 rounded-4xl group hover:shadow animate-pulse h-[464px] hidden lg:block"
+        >
+        </li>
+      </ul>
+    </div>
+
+    <!-- carousel -->
+    <div
+      id="carousel"
+      class="splide hidden mt-10"
+      aria-labelledby="carousel-heading"
+    >
+      <div class="splide__track">
+        <ul class="splide__list" id="exclusive-list"></ul>
+      </div>
+    </div>
+  </div>
 </section>
+
+<script>
+  import Splide from "@splidejs/splide";
+
+  async function loadExclusiveProperties() {
+    const loading = document.getElementById("exclusive-loading");
+    const carousel = document.getElementById("carousel");
+    const list = document.getElementById("exclusive-list")!;
+    const template = document.getElementById(
+      "exclusive-slide-template",
+    ) as HTMLTemplateElement;
+
+    try {
+      const res = await fetch("/api/exclusive-properties");
+      if (!res.ok) throw new Error("Error al cargar exclusivas");
+
+      const properties = await res.json();
+
+      for (const p of properties) {
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+
+        clone
+          .querySelectorAll("[data-href]")
+          .forEach((el) =>
+            el.setAttribute("href", `/propiedades/${p.public_id}`),
+          );
+
+        const img = clone.querySelector("img")!;
+        img.src = p.images[0].url;
+        img.alt = p.title;
+
+        clone.querySelector("[data-title]")!.textContent = p.title;
+        clone.querySelector("[data-location]")!.textContent =
+          p.location.name ?? "";
+        clone.querySelector("[data-price]")!.textContent =
+          p.operations?.[0]?.formatted_amount ?? "";
+
+        list.appendChild(clone);
+      }
+
+      loading?.remove();
+      carousel?.classList.remove("hidden");
+
+      new Splide("#carousel", {
+        perPage: 4,
+        autoplay: true,
+        type: "loop",
+        gap: "1rem",
+        breakpoints: {
+          768: {
+            perPage: 1,
+          },
+        },
+      }).mount();
+    } catch {
+      if (loading)
+        loading.textContent = "No se pudieron cargar las exclusivas.";
+    }
+  }
+
+  loadExclusiveProperties();
+</script>
