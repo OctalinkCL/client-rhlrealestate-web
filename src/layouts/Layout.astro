@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-
+import Analytics from "@vercel/analytics/astro";
 import Header from "./components/Header.astro";
 import Footer from "./components/Footer.astro";
 
@@ -38,6 +38,7 @@ const {
       history.scrollRestoration = "manual";
       window.scrollTo({ top: 0, behavior: "instant" });
     </script>
+    <Analytics />
   </head>
   <body class="flex flex-col min-h-screen">
     <Header />
