@@ -38,7 +38,10 @@ const classForm =
     />
     <!-- Phone -->
     <div class="relative flex items-center">
-      <span class="absolute left-3 text-white/50 text-md pointer-events-none select-none">+56 9</span>
+      <span
+        class="absolute left-3 text-white/50 text-md pointer-events-none select-none"
+        >+56 9</span
+      >
       <input
         name="telefono"
         type="tel"
@@ -49,13 +52,25 @@ const classForm =
     </div>
     <!-- Type -->
     <select id="cf-tipo" name="tipo" required class={classForm}>
-      <option value="">Selecciona un tipo</option>
-      {tiposPropiedad.map((t) => <option value={t}>{t}</option>)}
+      <option class="text-black" value="">Selecciona un tipo</option>
+      {
+        tiposPropiedad.map((t) => (
+          <option class="text-black" value={t}>
+            {t}
+          </option>
+        ))
+      }
     </select>
     <!-- Opration -->
     <select id="cf-modalidad" name="modalidad" required class={classForm}>
-      <option value="">Selecciona una modalidad</option>
-      {modalidades.map((m) => <option value={m}>{m}</option>)}
+      <option class="text-black" value="">Selecciona una modalidad</option>
+      {
+        modalidades.map((m) => (
+          <option class="text-black" value={m}>
+            {m}
+          </option>
+        ))
+      }
     </select>
 
     <!-- Button -->
