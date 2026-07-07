@@ -12,6 +12,7 @@ import Bento from "../../components/detail/Bento.astro";
 import Badge from "@/components/ui/Badge.astro";
 import Gallery from "@/components/detail/Gallery.astro";
 import PropertyMap from "@/components/detail/PropertyMap.astro";
+import WhatsappFloatingButton from "@/components/detail/WhatsappFloatingButton.astro";
 
 const userAgent = Astro.request.headers.get("user-agent") || "";
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
@@ -174,4 +175,6 @@ const videoEmbedUrl = property.videos?.[0]
       </div>
     </div>
   </div>
+
+  <WhatsappFloatingButton title={property.title} publicId={property.public_id} />
 </Layout>
