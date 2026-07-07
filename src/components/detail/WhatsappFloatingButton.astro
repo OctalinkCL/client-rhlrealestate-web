@@ -1,0 +1,24 @@
+---
+import { Image } from "astro:assets";
+import IconWhatsapp from "../../assets/icon_whatsapp_white.svg";
+
+interface Props {
+  title: string;
+  publicId: string;
+}
+
+const { title, publicId } = Astro.props;
+
+const message = `Hola, me interesa la propiedad "${title}" (ID: ${publicId})`;
+const contactButton = `https://api.whatsapp.com/send/?phone=56948043836&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
+---
+
+<a
+  href={contactButton}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Consultar por esta propiedad vía WhatsApp"
+  class="fixed bottom-5 right-5 lg:bottom-8 lg:right-8 z-40 size-14 flex items-center justify-center rounded-full bg-[#25D366] shadow-lg shadow-black/20 transition-transform hover:scale-105"
+>
+  <Image class="w-7 h-7" src={IconWhatsapp} alt="" />
+</a>
