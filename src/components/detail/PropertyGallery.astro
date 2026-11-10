@@ -1,0 +1,13 @@
+---
+import type { Property } from "@/lib/easybroker";
+
+interface Props {
+  images: Property["property_images"];
+}
+
+const { images } = Astro.props;
+---
+
+<div>
+  <img src={images[0].url} alt="image_cover" class="rounded" />
+</div>
