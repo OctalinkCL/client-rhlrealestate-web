@@ -1,0 +1,135 @@
+---
+import type { Property } from "@/lib/easybroker";
+import { ChevronLeft, ChevronRight, X } from "@lucide/astro";
+
+interface Props {
+  images: Property["property_images"];
+  title: string;
+}
+
+const { images, title } = Astro.props;
+const total = images.length;
+---
+
+<!-- Se abre con cualquier elemento que tenga data-lightbox-open (y data-index opcional) -->
+<dialog
+  data-lightbox
+  aria-label={`Fotos de ${title}`}
+  class="m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-white p-0 text-black backdrop:bg-white"
+>
+  <div class="relative h-full w-full">
+    <div
+      data-lightbox-track
+      class="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {
+        images.map((image, i) => (
+          <div class="flex h-full w-full shrink-0 snap-center snap-always items-center justify-center lg:px-24">
+            <img
+              src={image.url}
+              alt={image.title ?? `${title} - foto ${i + 1}`}
+              loading="lazy"
+              decoding="async"
+              class="max-h-full max-w-full object-contain"
+            />
+          </div>
+        ))
+      }
+    </div>
+
+    <button
+      type="button"
+      data-lightbox-close
+      autofocus
+      aria-label="Cerrar galería"
+      class="absolute top-4 left-4 flex size-11 cursor-pointer items-center justify-center rounded-full bg-white text-black shadow-md ring-1 ring-black/5 hover:bg-gray-100"
+    >
+      <X size={22} />
+    </button>
+
+    <button
+      type="button"
+      data-lightbox-prev
+      aria-label="Foto anterior"
+      class="absolute top-1/2 left-4 hidden size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-black hover:bg-black/5 disabled:pointer-events-none disabled:opacity-30 lg:flex"
+    >
+      <ChevronLeft size={32} />
+    </button>
+
+    <button
+      type="button"
+      data-lightbox-next
+      aria-label="Foto siguiente"
+      class="absolute top-1/2 right-4 hidden size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-black hover:bg-black/5 disabled:pointer-events-none disabled:opacity-30 lg:flex"
+    >
+      <ChevronRight size={32} />
+    </button>
+
+    <span
+      class="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-gray-100 px-4 py-1.5 text-sm font-semibold text-black"
+    >
+      <span data-lightbox-counter>1</span> de {total}
+    </span>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>("[data-lightbox]");
+
+  if (dialog) {
+    const track = dialog.querySelector<HTMLElement>("[data-lightbox-track]")!;
+    const counter = dialog.querySelector<HTMLElement>("[data-lightbox-counter]")!;
+    const prev = dialog.querySelector<HTMLButtonElement>("[data-lightbox-prev]")!;
+    const next = dialog.querySelector<HTMLButtonElement>("[data-lightbox-next]")!;
+    const close = dialog.querySelector<HTMLButtonElement>("[data-lightbox-close]")!;
+    const total = track.children.length;
+
+    const currentIndex = () => Math.round(track.scrollLeft / track.clientWidth);
+
+    const goTo = (index: number, behavior: ScrollBehavior = "smooth") => {
+      const i = Math.min(Math.max(index, 0), total - 1);
+      track.scrollTo({ left: i * track.clientWidth, behavior });
+    };
+
+    const update = () => {
+      const i = currentIndex();
+      counter.textContent = String(i + 1);
+      prev.disabled = i === 0;
+      next.disabled = i === total - 1;
+    };
+
+    document.addEventListener("click", (event) => {
+      const opener = (event.target as Element).closest<HTMLElement>("[data-lightbox-open]");
+      if (!opener) return;
+
+      dialog.showModal();
+      // El dialog no bloquea el scroll de la página por sí solo
+      document.documentElement.style.overflow = "hidden";
+      goTo(Number(opener.dataset.index ?? 0), "instant");
+      update();
+    });
+
+    dialog.addEventListener("close", () => {
+      document.documentElement.style.overflow = "";
+    });
+
+    close.addEventListener("click", () => dialog.close());
+    prev.addEventListener("click", () => goTo(currentIndex() - 1));
+    next.addEventListener("click", () => goTo(currentIndex() + 1));
+
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") goTo(currentIndex() - 1);
+      if (event.key === "ArrowRight") goTo(currentIndex() + 1);
+    });
+
+    let frame = 0;
+    track.addEventListener(
+      "scroll",
+      () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(update);
+      },
+      { passive: true },
+    );
+  }
+</script>
