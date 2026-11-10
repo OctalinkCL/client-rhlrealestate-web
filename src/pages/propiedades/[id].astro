@@ -7,6 +7,8 @@ import { setCacheHeaders } from "@/lib/cache";
 
 import PropertyGallery from "@/components/detail/PropertyGallery.astro";
 
+import { ChevronLeft, Share2 } from "@lucide/astro";
+
 const { id = "" } = Astro.params;
 
 // Los IDs de EasyBroker tienen la forma "EB-XXXX".
@@ -23,20 +25,42 @@ setCacheHeaders(Astro.response, 300);
 <Layout>
   <!-- page -->
   <div class="pt-15 mx-4 lg:pt-20 lg:mx-0">
+    <!-- header: sticky bajo el header principal, fondo a todo el ancho -->
+    <header
+      class="sticky top-(--header-height) z-10 -mx-4 px-4 bg-[#f7f7f7] lg:top-(--header-height-lg) lg:mx-0 lg:px-0"
+    >
+      <div
+        class="container mx-auto max-w-6xl py-4 flex items-center justify-between text-xs lg:py-6"
+      >
+        <a
+          href="/propiedades"
+          data-back
+          class="flex items-center gap-1 hover:underline"
+        >
+          <ChevronLeft size={18} />
+          Volver
+        </a>
+        <button
+          type="button"
+          data-share
+          class="flex items-center gap-1 cursor-pointer hover:underline"
+        >
+          <Share2 size={18} />
+          <span data-share-label>Compartir</span>
+        </button>
+      </div>
+    </header>
+
     <!-- container -->
     <div class="container mx-auto max-w-6xl">
-      <!-- header -->
-      <header class="py-4">
-        <button>dsdklslkds</button>
-      </header>
       <!-- cover -->
       <section>
-        <PropertyGallery images={property.property_images} />
+        <PropertyGallery images={property.property_images} title={property.title} />
       </section>
       <!-- content -->
       <div class="grid lg:gap-8 lg:grid-cols-[360px_1fr]">
         <!-- aside -->
-        <aside class="lg:sticky lg:top-30 lg:self-start">
+        <aside class="lg:sticky lg:top-40 lg:self-start">
           <ul>
             <li>Datos generales</li>
             <li>Ubicación</li>
@@ -55,3 +79,35 @@ setCacheHeaders(Astro.response, 300);
       class="bg-white_ rounded-xl p-4 text-xs overflow-auto">{JSON.stringify(property, null, 2)}</pre>
   </div>
 </Layout>
+
+<script>
+  // Volver: si venimos del listado, retrocedemos en el historial
+  // para conservar los filtros que el usuario tenía en la URL.
+  const backLink = document.querySelector<HTMLAnchorElement>("[data-back]");
+  backLink?.addEventListener("click", (e) => {
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    const fromListing =
+      referrer?.origin === location.origin &&
+      referrer.pathname.startsWith("/propiedades") &&
+      history.length > 1;
+
+    if (fromListing) {
+      e.preventDefault();
+      history.back();
+    }
+  });
+
+  // Compartir: copia el link de la propiedad al portapapeles
+  const shareBtn = document.querySelector<HTMLButtonElement>("[data-share]");
+  const shareLabel = shareBtn?.querySelector("[data-share-label]");
+  shareBtn?.addEventListener("click", async () => {
+    if (!shareLabel) return;
+    try {
+      await navigator.clipboard.writeText(location.href);
+      shareLabel.textContent = "¡Link copiado!";
+    } catch {
+      shareLabel.textContent = "No se pudo copiar";
+    }
+    setTimeout(() => (shareLabel.textContent = "Compartir"), 2000);
+  });
+</script>

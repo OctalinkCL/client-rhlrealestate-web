@@ -1,13 +1,71 @@
 ---
 import type { Property } from "@/lib/easybroker";
+import { ImageOff, LayoutGrid } from "@lucide/astro";
 
 interface Props {
   images: Property["property_images"];
+  title: string;
 }
 
-const { images } = Astro.props;
+const { images, title } = Astro.props;
+
+const total = images.length;
+const [cover, ...rest] = images;
+const thumbs = rest.slice(0, 4);
+// El bento solo se arma con 5 imágenes; con menos, la portada va a todo el ancho
+const isBento = thumbs.length === 4;
 ---
 
-<div>
-  <img src={images[0].url} alt="image_cover" class="rounded" />
-</div>
+{
+  total === 0 ? (
+    <div class="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 lg:aspect-auto lg:h-[480px]">
+      <ImageOff size={40} />
+      <span class="text-sm">Sin fotos disponibles</span>
+    </div>
+  ) : (
+    <div
+      class:list={[
+        "relative grid gap-2 overflow-hidden rounded-xl",
+        "aspect-[4/3] lg:aspect-auto lg:h-[480px]",
+        isBento && "lg:grid-cols-4 lg:grid-rows-2",
+      ]}
+    >
+      <img
+        src={cover.url}
+        alt={cover.title ?? title}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        class:list={[
+          "h-full w-full object-cover",
+          isBento && "lg:col-span-2 lg:row-span-2",
+        ]}
+      />
+
+      {isBento &&
+        thumbs.map((image, i) => (
+          <img
+            src={image.url}
+            alt={image.title ?? `${title} - foto ${i + 2}`}
+            loading="lazy"
+            decoding="async"
+            class="hidden h-full w-full object-cover lg:block"
+          />
+        ))}
+
+      <span class="absolute right-3 bottom-3 rounded-md bg-black/70 px-3 py-1 text-sm font-medium text-white lg:hidden">
+        1 de {total}
+      </span>
+
+      {total > 1 && (
+        <button
+          type="button"
+          class="absolute right-4 bottom-4 hidden items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-black shadow-md hover:bg-gray-100 lg:flex"
+        >
+          <LayoutGrid size={18} />
+          Ver las {total} fotos
+        </button>
+      )}
+    </div>
+  )
+}
