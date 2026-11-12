@@ -8,6 +8,12 @@ import { setCacheHeaders } from "@/lib/cache";
 import PropertyGallery from "@/components/detail/PropertyGallery.astro";
 import PropertyContactCard from "@/components/detail/PropertyContactCard.astro";
 import PropertyContactBar from "@/components/detail/PropertyContactBar.astro";
+import PropertySummary from "@/components/detail/PropertySummary.astro";
+import PropertyStats from "@/components/detail/PropertyStats.astro";
+import PropertyDescription from "@/components/detail/PropertyDescription.astro";
+import PropertyFeatures from "@/components/detail/PropertyFeatures.astro";
+import PropertyVideo from "@/components/detail/PropertyVideo.astro";
+import PropertyMap from "@/components/detail/PropertyMap.astro";
 
 import { ChevronLeft, Share2 } from "@lucide/astro";
 
@@ -60,9 +66,22 @@ setCacheHeaders(Astro.response, 300);
         <PropertyGallery images={property.property_images} title={property.title} />
       </section>
       <!-- content -->
-      <div class="grid lg:gap-8 lg:grid-cols-[1fr_360px]">
+      <div class="mt-6 grid gap-4 lg:mt-8 lg:gap-8 lg:grid-cols-[1fr_360px]">
         <!-- information -->
-        <div>Content</div>
+        <div class="grid min-w-0 content-start gap-4">
+          <div class="grid gap-6 rounded-3xl bg-white p-6">
+            <PropertySummary property={property} />
+            <PropertyStats property={property} />
+          </div>
+          <div
+            class="grid gap-10 rounded-3xl bg-white p-6 [&>section~section]:border-t [&>section~section]:border-neutral-100 [&>section~section]:pt-10"
+          >
+            <PropertyDescription description={property.description} />
+            <PropertyFeatures features={property.features} />
+            <PropertyVideo videos={property.videos} title={property.title} />
+            <PropertyMap location={property.location} seed={property.public_id} />
+          </div>
+        </div>
         <!-- aside -->
         <aside class="hidden lg:block lg:sticky lg:top-40 lg:self-start">
           <PropertyContactCard
@@ -72,9 +91,6 @@ setCacheHeaders(Astro.response, 300);
         </aside>
       </div>
     </div>
-
-    <pre
-      class="bg-white_ rounded-xl p-4 text-xs overflow-auto">{JSON.stringify(property, null, 2)}</pre>
   </div>
 
   <PropertyContactBar title={property.title} publicId={property.public_id} />

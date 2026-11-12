@@ -41,10 +41,15 @@ export interface Property {
   property_type: string;
   bedrooms: number;
   bathrooms: number;
+  half_bathrooms?: number | null;
   parking_spaces: number;
   construction_size: number;
   lot_size: number;
+  floors?: number | null;
+  floor?: number | null;
   age: string;
+  maintenance_amount?: number | null;
+  maintenance_currency?: string | null;
   location: PropertyLocation | null;
   operations: Operation[];
   property_images: PropertyImage[];

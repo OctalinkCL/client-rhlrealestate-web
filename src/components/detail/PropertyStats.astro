@@ -1,0 +1,89 @@
+---
+import {
+  BedDouble,
+  Bath,
+  Toilet,
+  Car,
+  Ruler,
+  LandPlot,
+  Layers,
+  Building2,
+  CalendarDays,
+} from "@lucide/astro";
+import type { Property } from "@/lib/easybroker";
+import { formatNumber } from "@/lib/format";
+
+interface Props {
+  property: Property;
+}
+
+const { property: p } = Astro.props;
+
+const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
+// EasyBroker manda `age` como texto: a veces el año ("2017"), a veces los años ("8").
+const age = String(p.age ?? "").trim();
+const ageStat = /^\d{4}$/.test(age)
+  ? { label: "Año", value: age }
+  : /^\d+$/.test(age) && Number(age) > 0
+    ? { label: "Antigüedad", value: `${age} ${plural(Number(age), "año", "años")}` }
+    : null;
+
+// Solo mostramos los datos que la propiedad tiene (un terreno no tiene baños,
+// un depto no tiene m² de terreno, etc.).
+const stats = [
+  p.bedrooms > 0 && {
+    icon: BedDouble,
+    value: p.bedrooms,
+    label: plural(p.bedrooms, "Dormitorio", "Dormitorios"),
+  },
+  p.bathrooms > 0 && {
+    icon: Bath,
+    value: p.bathrooms,
+    label: plural(p.bathrooms, "Baño", "Baños"),
+  },
+  p.half_bathrooms && {
+    icon: Toilet,
+    value: p.half_bathrooms,
+    label: plural(p.half_bathrooms, "Medio baño", "Medios baños"),
+  },
+  p.parking_spaces > 0 && {
+    icon: Car,
+    value: p.parking_spaces,
+    label: plural(p.parking_spaces, "Estacionamiento", "Estacionamientos"),
+  },
+  p.construction_size > 0 && {
+    icon: Ruler,
+    value: `${formatNumber(p.construction_size)} m²`,
+    label: "Construidos",
+  },
+  p.lot_size > 0 && {
+    icon: LandPlot,
+    value: `${formatNumber(p.lot_size)} m²`,
+    label: "Terreno",
+  },
+  p.floors && {
+    icon: Layers,
+    value: p.floors,
+    label: plural(p.floors, "Piso", "Pisos"),
+  },
+  p.floor && { icon: Building2, value: `${p.floor}°`, label: "Piso" },
+  ageStat && { icon: CalendarDays, ...ageStat },
+].filter(Boolean) as { icon: typeof Bath; value: string | number; label: string }[];
+---
+
+{
+  stats.length > 0 && (
+    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {stats.map(({ icon: Icon, value, label }) => (
+        <li class="grid gap-3 rounded-2xl bg-[#f7f7f7] p-4">
+          <Icon size={22} stroke-width={1.5} class="text-neutral-500" />
+          <div>
+            <p class="text-lg font-semibold leading-tight">{value}</p>
+            <p class="text-xs text-neutral-500">{label}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}

@@ -1,25 +1,68 @@
 ---
+import type { PropertyLocation } from "@/lib/easybroker";
+
 interface Props {
-  lat?: number | null;
-  lng?: number | null;
-  title?: string;
+  location?: PropertyLocation | null;
+  /** Semilla para el desplazamiento de la ubicación aproximada (ej. public_id). */
+  seed: string;
 }
 
-const { lat, lng, title = "" } = Astro.props;
+const { location, seed } = Astro.props;
+
+const lat = location?.latitude;
+const lng = location?.longitude;
 const hasCoords = lat != null && lng != null;
+
+// Si la propiedad no quiere mostrar su ubicación exacta, NO mandamos las
+// coordenadas reales al navegador: movemos el centro hasta OFFSET_M metros
+// (de forma determinista, siempre igual para la misma propiedad) y dibujamos
+// un círculo de RADIUS_M que sigue conteniendo el punto real.
+const approximate =
+  !!location?.hide_exact_location || location?.show_exact_location === false;
+
+const OFFSET_M = 200;
+const RADIUS_M = 400;
+
+function hash(str: string) {
+  let h = 2166136261;
+  for (const ch of str) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return (h >>> 0) / 2 ** 32; // 0..1
+}
+
+let center: [number, number] | null = null;
+if (hasCoords) {
+  if (approximate) {
+    const angle = hash(seed) * 2 * Math.PI;
+    const dist = OFFSET_M * (0.5 + hash(seed + "d") / 2);
+    const dLat = (dist * Math.cos(angle)) / 111_320;
+    const dLng =
+      (dist * Math.sin(angle)) / (111_320 * Math.cos((lat * Math.PI) / 180));
+    center = [lng + dLng, lat + dLat];
+  } else {
+    center = [lng, lat];
+  }
+}
 ---
 
 {
-  hasCoords && (
-    <section class="grid gap-3">
-      <h4 class="text-xl font-semibold">Ubicación</h4>
+  center && (
+    <section>
+      <h2 class="text-xl font-semibold">Ubicación</h2>
       <div
         id="property-map"
-        class="w-full h-72 rounded-xl overflow-hidden"
-        data-lat={String(lat)}
-        data-lng={String(lng)}
-        data-title={title}
+        class="mt-4 h-72 w-full overflow-hidden rounded-2xl bg-[#f7f7f7]"
+        data-lng={String(center[0])}
+        data-lat={String(center[1])}
+        data-radius={approximate ? String(RADIUS_M) : undefined}
       />
+      {location?.name && (
+        <p class="mt-3 text-sm text-neutral-600">
+          {location.name}
+          {approximate && (
+            <span class="text-neutral-400"> · Ubicación aproximada</span>
+          )}
+        </p>
+      )}
     </section>
   )
 }
@@ -28,22 +71,38 @@ const hasCoords = lat != null && lng != null;
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
 
-  const container = document.getElementById(
-    "property-map",
-  ) as HTMLElement | null;
+  const container = document.getElementById("property-map");
+
+  /** Polígono que aproxima un círculo de `radius` metros alrededor de [lng, lat]. */
+  function circle([lng, lat]: [number, number], radius: number, steps = 64) {
+    const coords: [number, number][] = [];
+    const dLat = radius / 111_320;
+    const dLng = radius / (111_320 * Math.cos((lat * Math.PI) / 180));
+    for (let i = 0; i <= steps; i++) {
+      const a = (i / steps) * 2 * Math.PI;
+      coords.push([lng + dLng * Math.cos(a), lat + dLat * Math.sin(a)]);
+    }
+    return {
+      type: "Feature" as const,
+      properties: {},
+      geometry: { type: "Polygon" as const, coordinates: [coords] },
+    };
+  }
 
   if (container) {
-    const lat = parseFloat(container.dataset.lat!);
-    const lng = parseFloat(container.dataset.lng!);
-    const title = container.dataset.title ?? "";
-
-    const style = "https://tiles.openfreemap.org/styles/bright";
+    const center: [number, number] = [
+      parseFloat(container.dataset.lng!),
+      parseFloat(container.dataset.lat!),
+    ];
+    const radius = container.dataset.radius
+      ? parseFloat(container.dataset.radius)
+      : null;
 
     const map = new maplibregl.Map({
       container,
-      style,
-      center: [lng, lat],
-      zoom: 16,
+      style: "https://tiles.openfreemap.org/styles/bright",
+      center,
+      zoom: radius ? 14 : 16,
       dragRotate: false,
       pitchWithRotate: false,
       touchPitch: false,
@@ -53,13 +112,24 @@ const hasCoords = lat != null && lng != null;
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
-    new maplibregl.Marker({ color: "#b8975a" })
-      .setLngLat([lng, lat])
-      .setPopup(
-        new maplibregl.Popup({ offset: 25 }).setHTML(
-          `<strong>${title}</strong>`,
-        ),
-      )
-      .addTo(map);
+    if (radius) {
+      map.on("load", () => {
+        map.addSource("area", { type: "geojson", data: circle(center, radius) });
+        map.addLayer({
+          id: "area-fill",
+          type: "fill",
+          source: "area",
+          paint: { "fill-color": "#171717", "fill-opacity": 0.12 },
+        });
+        map.addLayer({
+          id: "area-line",
+          type: "line",
+          source: "area",
+          paint: { "line-color": "#171717", "line-width": 1.5 },
+        });
+      });
+    } else {
+      new maplibregl.Marker({ color: "#171717" }).setLngLat(center).addTo(map);
+    }
   }
 </script>

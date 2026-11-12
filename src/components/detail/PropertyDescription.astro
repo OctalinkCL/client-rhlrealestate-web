@@ -1,0 +1,65 @@
+---
+import { ChevronDown } from "@lucide/astro";
+
+interface Props {
+  description?: string | null;
+}
+
+const description = Astro.props.description?.trim();
+---
+
+{
+  description && (
+    <section data-description>
+      <h2 class="text-xl font-semibold">Descripción</h2>
+      <div class="relative mt-4">
+        <p
+          data-description-text
+          class="line-clamp-8 whitespace-pre-line text-sm leading-relaxed text-neutral-700"
+        >
+          {description}
+        </p>
+        <div
+          data-description-fade
+          class="pointer-events-none absolute inset-x-0 bottom-0 hidden h-16 bg-linear-to-t from-white"
+          aria-hidden="true"
+        />
+      </div>
+      <button
+        type="button"
+        data-description-toggle
+        aria-expanded="false"
+        class="mt-3 hidden cursor-pointer items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+      >
+        <span data-description-label>Ver más</span>
+        <ChevronDown size={16} class="transition-transform" />
+      </button>
+    </section>
+  )
+}
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-description]");
+  const text = root?.querySelector<HTMLElement>("[data-description-text]");
+  const fade = root?.querySelector<HTMLElement>("[data-description-fade]");
+  const toggle = root?.querySelector<HTMLButtonElement>(
+    "[data-description-toggle]",
+  );
+  const label = toggle?.querySelector("[data-description-label]");
+  const icon = toggle?.querySelector("svg");
+
+  // Solo mostramos "Ver más" si el texto realmente está recortado.
+  if (text && fade && toggle && text.scrollHeight > text.clientHeight + 1) {
+    fade.classList.remove("hidden");
+    toggle.classList.replace("hidden", "flex");
+
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      text.classList.toggle("line-clamp-8", expanded);
+      fade.classList.toggle("hidden", !expanded);
+      icon?.classList.toggle("rotate-180", !expanded);
+      if (label) label.textContent = expanded ? "Ver más" : "Ver menos";
+    });
+  }
+</script>
