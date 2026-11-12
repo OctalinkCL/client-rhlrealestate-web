@@ -6,6 +6,8 @@ import { findProperty } from "@/lib/easybroker";
 import { setCacheHeaders } from "@/lib/cache";
 
 import PropertyGallery from "@/components/detail/PropertyGallery.astro";
+import PropertyContactCard from "@/components/detail/PropertyContactCard.astro";
+import PropertyContactBar from "@/components/detail/PropertyContactBar.astro";
 
 import { ChevronLeft, Share2 } from "@lucide/astro";
 
@@ -62,15 +64,11 @@ setCacheHeaders(Astro.response, 300);
         <!-- information -->
         <div>Content</div>
         <!-- aside -->
-        <aside class="lg:sticky lg:top-40 lg:self-start">
-          <ul>
-            <li>Datos generales</li>
-            <li>Ubicación</li>
-            <li>Características</li>
-            <li>Distribución</li>
-            <li>Amenidades</li>
-            <li>Precio</li>
-          </ul>
+        <aside class="hidden lg:block lg:sticky lg:top-40 lg:self-start">
+          <PropertyContactCard
+            title={property.title}
+            publicId={property.public_id}
+          />
         </aside>
       </div>
     </div>
@@ -79,12 +77,7 @@ setCacheHeaders(Astro.response, 300);
       class="bg-white_ rounded-xl p-4 text-xs overflow-auto">{JSON.stringify(property, null, 2)}</pre>
   </div>
 
-  <!-- barra inferior fija (solo mobile) -->
-  <div
-    class="fixed inset-x-0 bottom-0 z-20 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden"
-  >
-    <p class="text-center">Hola mundo</p>
-  </div>
+  <PropertyContactBar title={property.title} publicId={property.public_id} />
 </Layout>
 
 <style is:global>
@@ -92,7 +85,7 @@ setCacheHeaders(Astro.response, 300);
      así no tapa el final del footer del sitio. */
   @media (max-width: 1023px) {
     body {
-      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
     }
   }
 </style>
