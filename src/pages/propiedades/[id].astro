@@ -58,7 +58,9 @@ setCacheHeaders(Astro.response, 300);
         <PropertyGallery images={property.property_images} title={property.title} />
       </section>
       <!-- content -->
-      <div class="grid lg:gap-8 lg:grid-cols-[360px_1fr]">
+      <div class="grid lg:gap-8 lg:grid-cols-[1fr_360px]">
+        <!-- information -->
+        <div>Content</div>
         <!-- aside -->
         <aside class="lg:sticky lg:top-40 lg:self-start">
           <ul>
@@ -70,15 +72,30 @@ setCacheHeaders(Astro.response, 300);
             <li>Precio</li>
           </ul>
         </aside>
-        <!-- information -->
-        <div>Content</div>
       </div>
     </div>
 
     <pre
       class="bg-white_ rounded-xl p-4 text-xs overflow-auto">{JSON.stringify(property, null, 2)}</pre>
   </div>
+
+  <!-- barra inferior fija (solo mobile) -->
+  <div
+    class="fixed inset-x-0 bottom-0 z-20 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden"
+  >
+    <p class="text-center">Hola mundo</p>
+  </div>
 </Layout>
+
+<style is:global>
+  /* Reserva espacio para la barra fija inferior en mobile,
+     así no tapa el final del footer del sitio. */
+  @media (max-width: 1023px) {
+    body {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+  }
+</style>
 
 <script>
   // Volver: si venimos del listado, retrocedemos en el historial
