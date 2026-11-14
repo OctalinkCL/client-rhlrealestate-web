@@ -54,6 +54,7 @@ export interface Property {
   operations: Operation[];
   property_images: PropertyImage[];
   videos: string[];
+  virtual_tour?: string | null;
   features: PropertyFeature[];
   tags: string[];
   exclusive: boolean | null;

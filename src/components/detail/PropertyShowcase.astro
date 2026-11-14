@@ -1,0 +1,469 @@
+---
+import { Image } from "astro:assets";
+import { ImageOff, MapPin, Pause, Play, Rotate3d } from "@lucide/astro";
+import type { Property } from "@/lib/easybroker";
+import PropertyLightbox from "@/components/detail/PropertyLightbox.astro";
+import { youTubeId } from "@/lib/video";
+
+interface Props {
+  property: Property;
+}
+
+const { property } = Astro.props;
+const { title } = property;
+const images = property.property_images ?? [];
+
+/** Cuántas fotos rotan en el showcase. El resto se ve en el lightbox. */
+const MAX_SLIDES = 4;
+/** Duración de cada foto, en ms (la barra de progreso y el avance la usan). */
+const SLIDE_MS = 6000;
+
+const slides = images.slice(0, MAX_SLIDES);
+const total = images.length;
+
+// Accesos directos: solo los que la propiedad tiene.
+const videoId = property.videos?.map(youTubeId).find(Boolean) ?? null;
+const hasMap =
+  property.location?.latitude != null && property.location?.longitude != null;
+const virtualTour = property.virtual_tour || null;
+// Para la ficha "Fotos" usamos una foto que no esté rotando, si existe.
+const photosThumb = images[MAX_SLIDES] ?? images[0];
+
+// Cada foto tiene su propio movimiento (zoom / paneo) para que no se repita.
+const MOTIONS = ["kb-in", "kb-left", "kb-out", "kb-right"];
+
+const IMAGE_WIDTHS = [640, 828, 1080, 1200];
+const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
+---
+
+{
+  total === 0 ? (
+    <div class="flex aspect-4/3 w-full flex-col items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 lg:aspect-auto lg:h-130">
+      <ImageOff size={40} />
+      <span class="text-sm">Sin fotos disponibles</span>
+    </div>
+  ) : (
+    <>
+      <section
+        data-showcase
+        data-slide-ms={SLIDE_MS}
+        aria-roledescription="carrusel"
+        aria-label={`Fotos de ${title}`}
+        class="showcase relative isolate aspect-4/3 w-full touch-pan-y overflow-hidden rounded-xl bg-neutral-900 sm:aspect-video lg:aspect-auto lg:h-130"
+        style={`--slide-ms: ${SLIDE_MS}ms`}
+      >
+        {/* Fotos apiladas: solo la activa es visible (fundido entre ellas) */}
+        {slides.map((image, i) => (
+          <button
+            type="button"
+            data-slide
+            data-lightbox-open
+            data-index={i}
+            aria-label={`Ver foto ${i + 1} de ${total}`}
+            aria-hidden={i === 0 ? undefined : "true"}
+            tabindex={i === 0 ? undefined : -1}
+            class:list={[
+              "showcase-slide absolute inset-0 cursor-pointer",
+              i === 0 && "is-active",
+            ]}
+          >
+            <Image
+              src={image.url}
+              alt={image.title ?? `${title} - foto ${i + 1}`}
+              width={1200}
+              height={675}
+              widths={IMAGE_WIDTHS}
+              sizes={IMAGE_SIZES}
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchpriority={i === 0 ? "high" : undefined}
+              data-caption={image.title ?? ""}
+              class:list={["showcase-img h-full w-full object-cover", MOTIONS[i % MOTIONS.length]]}
+            />
+          </button>
+        ))}
+
+        {/* Degradados para que los controles se lean sobre cualquier foto */}
+        <div
+          class="pointer-events-none absolute inset-x-0 top-0 h-20 bg-linear-to-b from-black/40 lg:hidden"
+          aria-hidden="true"
+        />
+        <div
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-black/70 lg:h-56"
+          aria-hidden="true"
+        />
+
+        {/* Accesos directos */}
+        <nav
+          aria-label="Contenido de la propiedad"
+          class="absolute bottom-4 left-4 flex gap-2 lg:bottom-8 lg:left-8 lg:gap-4"
+        >
+          <button type="button" data-lightbox-open data-index="0" class="showcase-tile group">
+            <span class="showcase-tile-media">
+              <Image
+                src={photosThumb.url}
+                alt=""
+                width={240}
+                height={160}
+                widths={[640]}
+                sizes="160px"
+                loading="lazy"
+                class="h-full w-full object-cover"
+              />
+            </span>
+            <span class="showcase-tile-label">Fotos ({total})</span>
+          </button>
+
+          {videoId && (
+            <a href="#video" data-scroll-to="video" class="showcase-tile group">
+              <span class="showcase-tile-media relative">
+                <img
+                  src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
+                  alt=""
+                  loading="lazy"
+                  class="h-full w-full object-cover"
+                />
+                <span class="absolute inset-0 grid place-items-center bg-black/20">
+                  <Play size={20} fill="currentColor" class="text-white" />
+                </span>
+              </span>
+              <span class="showcase-tile-label">Video</span>
+            </a>
+          )}
+
+          {hasMap && (
+            <a href="#ubicacion" data-scroll-to="ubicacion" class="showcase-tile group">
+              <span class="showcase-tile-media grid place-items-center bg-[#f2e2d8] text-neutral-900">
+                <MapPin size={26} stroke-width={1.75} />
+              </span>
+              <span class="showcase-tile-label">Mapa</span>
+            </a>
+          )}
+
+          {virtualTour && (
+            <a
+              href={virtualTour}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="showcase-tile group"
+            >
+              <span class="showcase-tile-media grid place-items-center bg-white text-neutral-900">
+                <Rotate3d size={26} stroke-width={1.75} />
+              </span>
+              <span class="showcase-tile-label">Tour 360°</span>
+            </a>
+          )}
+        </nav>
+
+        {/* Progreso + pausa: arriba en mobile (estilo historias), abajo a la derecha en desktop */}
+        {slides.length > 1 && (
+          <div class="absolute inset-x-3 top-3 flex items-center gap-3 lg:inset-x-auto lg:top-auto lg:right-8 lg:bottom-8 lg:w-[38%]">
+            <button
+              type="button"
+              data-showcase-toggle
+              aria-label="Pausar presentación"
+              class="grid size-7 shrink-0 cursor-pointer place-items-center rounded-full text-white hover:bg-white/15"
+            >
+              <Pause size={16} fill="currentColor" data-icon-pause />
+              <Play size={16} fill="currentColor" data-icon-play class="hidden" />
+            </button>
+            <div class="flex flex-1 gap-1.5">
+              {slides.map((_, i) => (
+                <button
+                  type="button"
+                  data-showcase-dot={i}
+                  aria-label={`Ir a la foto ${i + 1}`}
+                  class="group relative h-5 flex-1 cursor-pointer"
+                >
+                  <span class="absolute inset-x-0 top-1/2 h-0.75 -translate-y-1/2 overflow-hidden rounded-full bg-white/35">
+                    <span
+                      data-showcase-progress
+                      class:list={["showcase-progress block h-full w-full origin-left bg-white", i === 0 && "is-running"]}
+                    />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Título de la foto actual (EasyBroker trae "Living comedor", "Cocina", …) */}
+        <p
+          data-showcase-caption
+          aria-live="polite"
+          class="pointer-events-none absolute right-8 bottom-16 hidden text-sm font-medium tracking-wide text-white/90 lg:block"
+        >
+          {slides[0]?.title ?? ""}
+        </p>
+      </section>
+
+      <PropertyLightbox images={images} title={title} />
+    </>
+  )
+}
+
+<style>
+  /* ---------- Fotos y fundido ---------- */
+  .showcase-slide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+  .showcase-slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ---------- Efecto Ken Burns ----------
+     Dura un poco más que la foto para que siga moviéndose durante el fundido. */
+  .showcase-img {
+    animation-duration: calc(var(--slide-ms) + 1s);
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-play-state: paused;
+    will-change: transform;
+  }
+  .showcase-slide.is-moving .showcase-img {
+    animation-play-state: running;
+  }
+  .kb-in { animation-name: kb-in; }
+  .kb-out { animation-name: kb-out; }
+  .kb-left { animation-name: kb-left; }
+  .kb-right { animation-name: kb-right; }
+
+  @keyframes kb-in {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+  }
+  @keyframes kb-out {
+    from { transform: scale(1.12); }
+    to { transform: scale(1.02); }
+  }
+  @keyframes kb-left {
+    from { transform: scale(1.1) translateX(3%); }
+    to { transform: scale(1.1) translateX(-3%); }
+  }
+  @keyframes kb-right {
+    from { transform: scale(1.1) translateX(-3%); }
+    to { transform: scale(1.1) translateX(3%); }
+  }
+
+  /* ---------- Barra de progreso ---------- */
+  .showcase-progress {
+    transform: scaleX(0);
+  }
+  .showcase-progress.is-done {
+    transform: scaleX(1);
+  }
+  .showcase-progress.is-running {
+    animation: showcase-progress var(--slide-ms) linear forwards;
+  }
+  @keyframes showcase-progress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  /* Pausa (botón, foto fuera de pantalla, pestaña oculta o lightbox abierto) */
+  .showcase[data-paused] .showcase-img,
+  .showcase[data-paused] .showcase-progress {
+    animation-play-state: paused !important;
+  }
+
+  /* ---------- Accesos directos ---------- */
+  .showcase-tile {
+    display: grid;
+    gap: 0.375rem;
+    cursor: pointer;
+    color: white;
+    text-align: left;
+  }
+  .showcase-tile-media {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 2.5rem;
+    overflow: hidden;
+    border-radius: 0.375rem;
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.9);
+    transition: transform 0.2s ease;
+  }
+  .showcase-tile:hover .showcase-tile-media {
+    transform: translateY(-2px);
+  }
+  .showcase-tile-media :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .showcase-tile-label {
+    font-size: 0.625rem;
+    font-weight: 500;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+  @media (min-width: 1024px) {
+    .showcase-tile-media {
+      width: 7.5rem;
+      height: 5.25rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9);
+    }
+    .showcase-tile-media :global(svg) {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+    .showcase-tile-label {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Sin animaciones si el usuario las desactivó en su sistema */
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-img {
+      animation: none !important;
+    }
+    .showcase-slide {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-showcase]");
+
+  if (root) {
+    const slides = [...root.querySelectorAll<HTMLElement>("[data-slide]")];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>("[data-showcase-dot]")];
+    const bars = [...root.querySelectorAll<HTMLElement>("[data-showcase-progress]")];
+    const toggle = root.querySelector<HTMLButtonElement>("[data-showcase-toggle]");
+    const caption = root.querySelector<HTMLElement>("[data-showcase-caption]");
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let current = 0;
+
+    // --- Pausa ---------------------------------------------------------
+    // userPaused: lo decide el usuario con el botón.
+    // autoPaused: razones externas (fuera de pantalla, pestaña oculta, lightbox).
+    let userPaused = reducedMotion;
+    const autoPaused = new Set<string>();
+
+    const syncPaused = () => {
+      const paused = userPaused || autoPaused.size > 0;
+      root.toggleAttribute("data-paused", paused);
+      if (toggle) {
+        toggle.setAttribute("aria-label", userPaused ? "Reanudar presentación" : "Pausar presentación");
+        toggle.querySelector("[data-icon-pause]")?.classList.toggle("hidden", userPaused);
+        toggle.querySelector("[data-icon-play]")?.classList.toggle("hidden", !userPaused);
+      }
+    };
+
+    const setAutoPaused = (reason: string, on: boolean) => {
+      on ? autoPaused.add(reason) : autoPaused.delete(reason);
+      syncPaused();
+    };
+
+    // --- Cambio de foto ------------------------------------------------
+    /** Reinicia una animación CSS quitando y volviendo a poner la clase. */
+    const restart = (el: Element, className: string) => {
+      el.classList.remove(className);
+      void (el as HTMLElement).offsetWidth; // fuerza reflow
+      el.classList.add(className);
+    };
+
+    const show = (index: number) => {
+      const next = (index + slides.length) % slides.length;
+
+      slides.forEach((slide, i) => {
+        const active = i === next;
+        slide.classList.toggle("is-active", active);
+        slide.toggleAttribute("aria-hidden", !active);
+        slide.tabIndex = active ? 0 : -1;
+      });
+      // La foto entrante arranca su movimiento desde cero; la saliente
+      // sigue moviéndose mientras se desvanece.
+      restart(slides[next], "is-moving");
+
+      bars.forEach((bar, i) => {
+        bar.classList.remove("is-running");
+        bar.classList.toggle("is-done", i < next);
+      });
+      if (bars[next]) restart(bars[next], "is-running");
+
+      if (caption) {
+        caption.textContent = slides[next].querySelector("img")?.dataset.caption ?? "";
+      }
+      current = next;
+    };
+
+    // El avance lo marca el fin de la barra de progreso: así la pausa
+    // (animation-play-state) congela todo sin manejar timers.
+    bars.forEach((bar, i) =>
+      bar.addEventListener("animationend", () => {
+        if (i === current) show(current + 1);
+      }),
+    );
+
+    dots.forEach((dot, i) => dot.addEventListener("click", () => show(i)));
+
+    toggle?.addEventListener("click", () => {
+      userPaused = !userPaused;
+      syncPaused();
+    });
+
+    // --- Swipe en mobile -----------------------------------------------
+    let startX = 0;
+    let swiped = false;
+    root.addEventListener("pointerdown", (e) => {
+      startX = e.clientX;
+      swiped = false;
+    });
+    root.addEventListener("pointerup", (e) => {
+      const dx = e.clientX - startX;
+      if (e.pointerType !== "mouse" && Math.abs(dx) > 40 && slides.length > 1) {
+        swiped = true;
+        show(current + (dx < 0 ? 1 : -1));
+      }
+    });
+    // Un swipe no debe abrir el lightbox
+    root.addEventListener(
+      "click",
+      (e) => {
+        if (swiped) {
+          e.stopPropagation();
+          e.preventDefault();
+          swiped = false;
+        }
+      },
+      true,
+    );
+
+    // --- Pausas automáticas --------------------------------------------
+    new IntersectionObserver(([entry]) =>
+      setAutoPaused("offscreen", !entry.isIntersecting),
+    ).observe(root);
+
+    document.addEventListener("visibilitychange", () =>
+      setAutoPaused("hidden", document.hidden),
+    );
+
+    const lightbox = document.querySelector<HTMLDialogElement>("[data-lightbox]");
+    root.addEventListener("click", (e) => {
+      if ((e.target as Element).closest("[data-lightbox-open]")) {
+        setAutoPaused("lightbox", true);
+      }
+    });
+    lightbox?.addEventListener("close", () => setAutoPaused("lightbox", false));
+
+    // --- Accesos a secciones (video, mapa) -----------------------------
+    root.querySelectorAll<HTMLAnchorElement>("[data-scroll-to]").forEach((link) =>
+      link.addEventListener("click", (e) => {
+        const target = document.getElementById(link.dataset.scrollTo!);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
+      }),
+    );
+
+    syncPaused();
+    if (slides.length > 1) restart(slides[0], "is-moving");
+    else slides[0]?.classList.add("is-moving");
+  }
+</script>

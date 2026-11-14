@@ -5,7 +5,7 @@ import Layout from "@/layouts/Layout.astro";
 import { findProperty } from "@/lib/easybroker";
 import { setCacheHeaders } from "@/lib/cache";
 
-import PropertyGallery from "@/components/detail/PropertyGallery.astro";
+import PropertyShowcase from "@/components/detail/PropertyShowcase.astro";
 import PropertyContactCard from "@/components/detail/PropertyContactCard.astro";
 import PropertyContactBar from "@/components/detail/PropertyContactBar.astro";
 import PropertySummary from "@/components/detail/PropertySummary.astro";
@@ -63,7 +63,7 @@ setCacheHeaders(Astro.response, 300);
     <div class="container mx-auto max-w-6xl">
       <!-- cover -->
       <section>
-        <PropertyGallery images={property.property_images} title={property.title} />
+        <PropertyShowcase property={property} />
       </section>
       <!-- content -->
       <div class="mt-6 grid gap-4 lg:mt-8 lg:gap-8 lg:grid-cols-[1fr_360px]">
