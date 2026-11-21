@@ -1,0 +1,336 @@
+---
+import { Image } from "astro:assets";
+import { ImageOff, MapPin, Pause, Play, Rotate3d } from "@lucide/astro";
+import type { Property } from "@/lib/easybroker";
+import PropertyLightbox from "@/components/detail/PropertyLightbox.astro";
+import { youTubeId } from "@/lib/video";
+
+interface Props {
+  property: Property;
+}
+
+const { property } = Astro.props;
+const { title } = property;
+const images = property.property_images ?? [];
+
+/** Cuántas fotos rotan en el showcase. El resto se ve en el lightbox. */
+const MAX_SLIDES = 4;
+/** Duración de cada foto, en ms (la usan el paneo y la barra de progreso vía --slide-ms). */
+const SLIDE_MS = 6000;
+
+const slides = images.slice(0, MAX_SLIDES);
+const total = images.length;
+
+// Accesos directos: solo los que la propiedad tiene.
+const videoId = property.videos?.map(youTubeId).find(Boolean) ?? null;
+const hasMap =
+  property.location?.latitude != null && property.location?.longitude != null;
+const virtualTour = property.virtual_tour || null;
+// Para la ficha "Fotos" usamos una foto que no esté rotando, si existe.
+const photosThumb = images[MAX_SLIDES] ?? images[0];
+
+const IMAGE_WIDTHS = [640, 828, 1080, 1200];
+const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
+
+// Pausa global: botón, foto fuera de pantalla, pestaña oculta o lightbox abierto.
+const pausable = "group-data-paused/showcase:[animation-play-state:paused]";
+
+// Accesos directos (fotos, video, mapa, tour)
+const tile = "group/tile grid cursor-pointer gap-1.5 text-left text-white";
+const tileMedia =
+  "grid h-10 w-13 place-items-center overflow-hidden rounded-md ring-[1.5px] ring-white/90 transition-transform duration-200 group-hover/tile:-translate-y-0.5 lg:h-21 lg:w-30 lg:rounded-lg lg:ring-2";
+const tileLabel =
+  "text-[0.625rem] leading-none font-medium text-shadow-[0_1px_2px_rgb(0_0_0/0.5)] lg:text-sm";
+const tileIcon = "size-5 lg:size-7";
+---
+
+{
+  total === 0 ? (
+    <div class="flex aspect-4/3 w-full flex-col items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 lg:aspect-auto lg:h-130">
+      <ImageOff size={40} />
+      <span class="text-sm">Sin fotos disponibles</span>
+    </div>
+  ) : (
+    <>
+      <section
+        data-showcase
+        aria-roledescription="carrusel"
+        aria-label={`Fotos de ${title}`}
+        class="group/showcase relative isolate aspect-4/3 w-full touch-pan-y overflow-hidden rounded-xl bg-neutral-900 sm:aspect-video lg:aspect-auto lg:h-130"
+        style={`--slide-ms: ${SLIDE_MS}ms`}
+      >
+        {/* Fotos apiladas: solo la activa es visible (fundido); las demás quedan inert */}
+        {slides.map((image, i) => (
+          <button
+            type="button"
+            data-slide
+            data-lightbox-open
+            data-index={i}
+            aria-label={`Ver foto ${i + 1} de ${total}`}
+            inert={i !== 0}
+            class="absolute inset-0 cursor-pointer transition-opacity duration-1000 inert:opacity-0 motion-reduce:transition-none"
+          >
+            {/* Paneo lateral alternando dirección (izq → der, der → izq) */}
+            <Image
+              src={image.url}
+              alt={image.title ?? `${title} - foto ${i + 1}`}
+              width={1200}
+              height={675}
+              widths={IMAGE_WIDTHS}
+              sizes={IMAGE_SIZES}
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchpriority={i === 0 ? "high" : undefined}
+              data-caption={image.title ?? ""}
+              class:list={[
+                "size-full scale-110 object-cover motion-reduce:scale-100 motion-reduce:animate-none",
+                i % 2 === 0 ? "animate-pan-left" : "animate-pan-right",
+                pausable,
+              ]}
+            />
+          </button>
+        ))}
+
+        {/* Degradados para que los controles se lean sobre cualquier foto */}
+        <div
+          class="pointer-events-none absolute inset-x-0 top-0 h-20 bg-linear-to-b from-black/40 lg:hidden"
+          aria-hidden="true"
+        />
+        <div
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-black/70 lg:h-56"
+          aria-hidden="true"
+        />
+
+        {/* Accesos directos */}
+        <nav
+          aria-label="Contenido de la propiedad"
+          class="absolute bottom-4 left-4 flex gap-2 lg:bottom-8 lg:left-8 lg:gap-4"
+        >
+          <button type="button" data-lightbox-open data-index="0" class={tile}>
+            <span class={tileMedia}>
+              <Image
+                src={photosThumb.url}
+                alt=""
+                width={240}
+                height={168}
+                widths={[120, 240]}
+                sizes="(min-width: 1024px) 120px, 52px"
+                loading="lazy"
+                class="size-full object-cover"
+              />
+            </span>
+            <span class={tileLabel}>Fotos ({total})</span>
+          </button>
+
+          {videoId && (
+            <a href="#video" data-scroll-to="video" class={tile}>
+              <span class:list={[tileMedia, "relative"]}>
+                <img
+                  src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
+                  alt=""
+                  loading="lazy"
+                  class="size-full object-cover"
+                />
+                <span class="absolute inset-0 grid place-items-center bg-black/20">
+                  <Play size={20} fill="currentColor" class="text-white" />
+                </span>
+              </span>
+              <span class={tileLabel}>Video</span>
+            </a>
+          )}
+
+          {hasMap && (
+            <a href="#ubicacion" data-scroll-to="ubicacion" class={tile}>
+              <span class:list={[tileMedia, "bg-rhl-sand text-neutral-900"]}>
+                <MapPin stroke-width={1.75} class={tileIcon} />
+              </span>
+              <span class={tileLabel}>Mapa</span>
+            </a>
+          )}
+
+          {virtualTour && (
+            <a href={virtualTour} target="_blank" rel="noopener noreferrer" class={tile}>
+              <span class:list={[tileMedia, "bg-white text-neutral-900"]}>
+                <Rotate3d stroke-width={1.75} class={tileIcon} />
+              </span>
+              <span class={tileLabel}>Tour 360°</span>
+            </a>
+          )}
+        </nav>
+
+        {/* Progreso + pausa: arriba en mobile (estilo historias), abajo a la derecha en desktop */}
+        {slides.length > 1 && (
+          <div class="absolute inset-x-3 top-3 flex items-center gap-3 lg:inset-x-auto lg:top-auto lg:right-8 lg:bottom-8 lg:w-[38%]">
+            <button
+              type="button"
+              data-showcase-toggle
+              aria-label="Pausar presentación"
+              aria-pressed="false"
+              class="group/toggle grid size-7 shrink-0 cursor-pointer place-items-center rounded-full text-white hover:bg-white/15"
+            >
+              <Pause size={16} fill="currentColor" class="group-aria-pressed/toggle:hidden" />
+              <Play size={16} fill="currentColor" class="hidden group-aria-pressed/toggle:block" />
+            </button>
+            <div class="flex flex-1 gap-1.5">
+              {slides.map((_, i) => (
+                <button
+                  type="button"
+                  data-showcase-dot
+                  aria-label={`Ir a la foto ${i + 1}`}
+                  class="relative h-5 flex-1 cursor-pointer"
+                >
+                  <span class="absolute inset-x-0 top-1/2 h-0.75 -translate-y-1/2 overflow-hidden rounded-full bg-white/35">
+                    <span
+                      data-showcase-progress
+                      data-running={i === 0 ? "" : undefined}
+                      class:list={[
+                        "block size-full origin-left scale-x-0 bg-white data-done:scale-x-100 data-running:animate-progress",
+                        pausable,
+                      ]}
+                    />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Título de la foto actual (EasyBroker trae "Living comedor", "Cocina", …).
+            Solo se anuncia al lector de pantalla cuando la presentación está en pausa. */}
+        <p
+          data-showcase-caption
+          aria-live="off"
+          class="pointer-events-none absolute right-8 bottom-16 hidden text-sm font-medium tracking-wide text-white/90 lg:block"
+        >
+          {slides[0]?.title ?? ""}
+        </p>
+      </section>
+
+      <PropertyLightbox images={images} title={title} />
+    </>
+  )
+}
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-showcase]");
+
+  if (root) {
+    const slides = [...root.querySelectorAll<HTMLElement>("[data-slide]")];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>("[data-showcase-dot]")];
+    const bars = [...root.querySelectorAll<HTMLElement>("[data-showcase-progress]")];
+    const toggle = root.querySelector<HTMLButtonElement>("[data-showcase-toggle]");
+    const caption = root.querySelector<HTMLElement>("[data-showcase-caption]");
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let current = 0;
+
+    // --- Pausa ---------------------------------------------------------
+    // userPaused: lo decide el usuario con el botón.
+    // autoPaused: razones externas (fuera de pantalla, pestaña oculta, lightbox).
+    // Todo se pausa con data-paused en la raíz (animation-play-state), sin timers.
+    let userPaused = reducedMotion;
+    const autoPaused = new Set<string>();
+
+    const syncPaused = () => {
+      root.toggleAttribute("data-paused", userPaused || autoPaused.size > 0);
+      toggle?.setAttribute("aria-pressed", String(userPaused));
+      caption?.setAttribute("aria-live", userPaused ? "polite" : "off");
+    };
+
+    const setAutoPaused = (reason: string, on: boolean) => {
+      on ? autoPaused.add(reason) : autoPaused.delete(reason);
+      syncPaused();
+    };
+
+    // --- Cambio de foto ------------------------------------------------
+    const show = (index: number) => {
+      const next = (index + slides.length) % slides.length;
+
+      slides.forEach((slide, i) => (slide.inert = i !== next));
+
+      // La foto entrante reinicia su paneo; la saliente sigue moviéndose
+      // mientras se desvanece.
+      slides[next].querySelector("img")?.getAnimations().forEach((a) => (a.currentTime = 0));
+
+      bars.forEach((bar, i) => {
+        bar.removeAttribute("data-running");
+        bar.toggleAttribute("data-done", i < next);
+      });
+      void bars[next]?.offsetWidth; // reflow para que la barra reinicie
+      bars[next]?.setAttribute("data-running", "");
+
+      if (caption) {
+        caption.textContent = slides[next].querySelector("img")?.dataset.caption ?? "";
+      }
+      current = next;
+    };
+
+    // El avance lo marca el fin de la barra de progreso: así la pausa
+    // (animation-play-state) congela todo sin manejar timers.
+    bars.forEach((bar, i) =>
+      bar.addEventListener("animationend", () => {
+        if (i === current) show(current + 1);
+      }),
+    );
+
+    dots.forEach((dot, i) => dot.addEventListener("click", () => show(i)));
+
+    toggle?.addEventListener("click", () => {
+      userPaused = !userPaused;
+      syncPaused();
+    });
+
+    // --- Swipe en mobile -----------------------------------------------
+    let startX = 0;
+    let swiped = false;
+    root.addEventListener("pointerdown", (e) => {
+      startX = e.clientX;
+      swiped = false;
+    });
+    root.addEventListener("pointerup", (e) => {
+      const dx = e.clientX - startX;
+      if (e.pointerType !== "mouse" && Math.abs(dx) > 40 && slides.length > 1) {
+        swiped = true;
+        show(current + (dx < 0 ? 1 : -1));
+      }
+    });
+    // Un swipe no debe abrir el lightbox; un click en una foto/ficha lo abre y pausa.
+    root.addEventListener(
+      "click",
+      (e) => {
+        if (swiped) {
+          e.stopPropagation();
+          e.preventDefault();
+          swiped = false;
+        } else if ((e.target as Element).closest("[data-lightbox-open]")) {
+          setAutoPaused("lightbox", true);
+        }
+      },
+      true,
+    );
+
+    // --- Pausas automáticas --------------------------------------------
+    new IntersectionObserver(([entry]) =>
+      setAutoPaused("offscreen", !entry.isIntersecting),
+    ).observe(root);
+
+    document.addEventListener("visibilitychange", () =>
+      setAutoPaused("hidden", document.hidden),
+    );
+
+    document
+      .querySelector<HTMLDialogElement>("[data-lightbox]")
+      ?.addEventListener("close", () => setAutoPaused("lightbox", false));
+
+    // --- Accesos a secciones (video, mapa) -----------------------------
+    root.querySelectorAll<HTMLAnchorElement>("[data-scroll-to]").forEach((link) =>
+      link.addEventListener("click", (e) => {
+        const target = document.getElementById(link.dataset.scrollTo!);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
+      }),
+    );
+
+    syncPaused();
+  }
+</script>

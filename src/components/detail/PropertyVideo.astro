@@ -1,0 +1,58 @@
+---
+import { Play } from "@lucide/astro";
+import { youTubeId } from "@/lib/video";
+
+interface Props {
+  videos?: string[] | null;
+  title: string;
+}
+
+const { videos, title } = Astro.props;
+
+const videoId = videos?.map(youTubeId).find(Boolean) ?? null;
+---
+
+{
+  videoId && (
+    <section id="video" class="scroll-mt-40">
+      <h2 class="text-xl font-semibold">Video</h2>
+      {/* Mostramos solo la miniatura; el iframe de YouTube (pesado) se carga al hacer clic. */}
+      <button
+        type="button"
+        data-video={videoId}
+        data-video-title={title}
+        aria-label={`Reproducir video de ${title}`}
+        class="group relative mt-4 block aspect-video w-full cursor-pointer overflow-hidden rounded-2xl bg-neutral-900"
+      >
+        <img
+          src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+          alt=""
+          loading="lazy"
+          class="h-full w-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
+        />
+        <span class="absolute inset-0 grid place-items-center">
+          <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-lg transition-transform group-hover:scale-105">
+            <Play size={26} class="ml-1" fill="currentColor" />
+          </span>
+        </span>
+      </button>
+    </section>
+  )
+}
+
+<script>
+  document
+    .querySelector<HTMLButtonElement>("[data-video]")
+    ?.addEventListener("click", (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube-nocookie.com/embed/${btn.dataset.video}?autoplay=1&rel=0`;
+      iframe.title = btn.dataset.videoTitle ?? "Video";
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+      iframe.allowFullscreen = true;
+      iframe.className = "mt-4 aspect-video w-full rounded-2xl";
+      btn.replaceWith(iframe);
+    });
+</script>

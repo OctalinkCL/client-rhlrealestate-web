@@ -1,0 +1,94 @@
+---
+import type { Property } from "@/lib/easybroker";
+import { ImageOff, LayoutGrid } from "@lucide/astro";
+import PropertyLightbox from "@/components/detail/PropertyLightbox.astro";
+
+interface Props {
+  images: Property["property_images"];
+  title: string;
+}
+
+const { images, title } = Astro.props;
+
+const total = images.length;
+const [cover, ...rest] = images;
+const thumbs = rest.slice(0, 4);
+// El bento solo se arma con 5 imágenes; con menos, la portada va a todo el ancho
+const isBento = thumbs.length === 4;
+---
+
+{
+  total === 0 ? (
+    <div class="flex aspect-4/3 w-full flex-col items-center justify-center gap-2 rounded-xl bg-gray-100 text-gray-400 lg:aspect-auto lg:h-[480px]">
+      <ImageOff size={40} />
+      <span class="text-sm">Sin fotos disponibles</span>
+    </div>
+  ) : (
+    <>
+      <div
+        class:list={[
+          "relative grid gap-2 overflow-hidden rounded-xl",
+          "aspect-4/3 lg:aspect-auto lg:h-120",
+          isBento && "lg:grid-cols-4 lg:grid-rows-2",
+        ]}
+      >
+        <button
+          type="button"
+          data-lightbox-open
+          data-index="0"
+          aria-label="Ver fotos"
+          class:list={[
+            "h-full w-full cursor-pointer overflow-hidden",
+            isBento && "lg:col-span-2 lg:row-span-2",
+          ]}
+        >
+          <img
+            src={cover.url}
+            alt={cover.title ?? title}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            class="h-full w-full object-cover transition hover:brightness-90"
+          />
+        </button>
+
+        {isBento &&
+          thumbs.map((image, i) => (
+            <button
+              type="button"
+              data-lightbox-open
+              data-index={i + 1}
+              aria-label={`Ver foto ${i + 2}`}
+              class="hidden h-full w-full cursor-pointer overflow-hidden lg:block"
+            >
+              <img
+                src={image.url}
+                alt={image.title ?? `${title} - foto ${i + 2}`}
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-cover transition hover:brightness-90"
+              />
+            </button>
+          ))}
+
+        <span class="pointer-events-none absolute right-3 bottom-3 rounded-md bg-black/70 px-3 py-1 text-sm font-medium text-white lg:hidden">
+          1 de {total}
+        </span>
+
+        {total > 1 && (
+          <button
+            type="button"
+            data-lightbox-open
+            data-index="0"
+            class="absolute right-4 bottom-4 hidden cursor-pointer items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-black shadow-md hover:bg-gray-100 lg:flex"
+          >
+            <LayoutGrid size={18} />
+            Ver las {total} fotos
+          </button>
+        )}
+      </div>
+
+      <PropertyLightbox images={images} title={title} />
+    </>
+  )
+}

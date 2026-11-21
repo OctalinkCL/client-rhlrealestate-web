@@ -1,0 +1,36 @@
+---
+import { Image } from "astro:assets";
+import { Mail } from "@lucide/astro";
+import IconWhatsapp from "../../assets/icon_whatsapp_white.svg";
+import { propertyMailHref, propertyWhatsappHref } from "@/lib/contact";
+
+interface Props {
+  title: string;
+  publicId: string;
+}
+
+const whatsappHref = propertyWhatsappHref(Astro.props);
+const mailHref = propertyMailHref(Astro.props);
+---
+
+<!-- Barra de contacto fija inferior (solo mobile) -->
+<div
+  class="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 bg-white px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.08)] lg:hidden"
+>
+  <a
+    href={mailHref}
+    class="flex items-center justify-center gap-2 rounded-full bg-rhl-sand py-3.5 text-sm font-medium text-neutral-900 transition-colors active:bg-rhl-sand-dark"
+  >
+    <Mail size={18} />
+    Email
+  </a>
+  <a
+    href={whatsappHref}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="flex items-center justify-center gap-2 rounded-full bg-neutral-900 py-3.5 text-sm font-medium text-white transition-colors active:bg-neutral-700"
+  >
+    <Image class="w-4.5 h-4.5 shrink-0" src={IconWhatsapp} alt="" />
+    WhatsApp
+  </a>
+</div>

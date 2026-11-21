@@ -41,14 +41,20 @@ export interface Property {
   property_type: string;
   bedrooms: number;
   bathrooms: number;
+  half_bathrooms?: number | null;
   parking_spaces: number;
   construction_size: number;
   lot_size: number;
+  floors?: number | null;
+  floor?: number | null;
   age: string;
+  maintenance_amount?: number | null;
+  maintenance_currency?: string | null;
   location: PropertyLocation | null;
   operations: Operation[];
   property_images: PropertyImage[];
   videos: string[];
+  virtual_tour?: string | null;
   features: PropertyFeature[];
   tags: string[];
   exclusive: boolean | null;
@@ -106,6 +112,16 @@ export interface LocationsResponse {
 
 type Params = Record<string, string | number | null | undefined>;
 
+export class EasyBrokerError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "EasyBrokerError";
+  }
+}
+
 async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
   // String manual — URLSearchParams codifica [ ] como %5B%5D y EasyBroker rechaza eso
   const qs = Object.entries(params)
@@ -121,7 +137,7 @@ async function ebFetch<T>(path: string, params: Params = {}): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`EasyBroker ${res.status}: ${text}`);
+    throw new EasyBrokerError(res.status, `EasyBroker ${res.status}: ${text}`);
   }
 
   return (await res.json()) as T;
@@ -136,7 +152,17 @@ export function getProperties(
 }
 
 export function getProperty(id: string): Promise<Property> {
-  return ebFetch<Property>(`/properties/${id}`);
+  return ebFetch<Property>(`/properties/${encodeURIComponent(id)}`);
+}
+
+// Igual que getProperty, pero devuelve null si la propiedad no existe (404)
+export async function findProperty(id: string): Promise<Property | null> {
+  try {
+    return await getProperty(id);
+  } catch (error) {
+    if (error instanceof EasyBrokerError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export function getPropertiesFeatures(): Promise<PropertiesListResponse> {

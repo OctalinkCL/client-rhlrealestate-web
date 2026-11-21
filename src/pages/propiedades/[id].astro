@@ -1,180 +1,139 @@
 ---
 export const prerender = false;
 
-import Layout from "../../layouts/Layout.astro";
-import { getProperty } from "../../lib/easybroker";
-import { setCacheHeaders } from "../../lib/cache";
-// Icons
-import { MapPin, Hash, Bed, Bath, Ruler, Pin } from "@lucide/astro";
+import Layout from "@/layouts/Layout.astro";
+import { findProperty } from "@/lib/easybroker";
+import { setCacheHeaders } from "@/lib/cache";
 
-// Components
-import Bento from "../../components/detail/Bento.astro";
-import Badge from "@/components/ui/Badge.astro";
-import Gallery from "@/components/detail/Gallery.astro";
+import PropertyShowcase from "@/components/detail/PropertyShowcase.astro";
+import PropertyContactCard from "@/components/detail/PropertyContactCard.astro";
+import PropertyContactBar from "@/components/detail/PropertyContactBar.astro";
+import PropertySummary from "@/components/detail/PropertySummary.astro";
+import PropertyStats from "@/components/detail/PropertyStats.astro";
+import PropertyDescription from "@/components/detail/PropertyDescription.astro";
+import PropertyFeatures from "@/components/detail/PropertyFeatures.astro";
+import PropertyVideo from "@/components/detail/PropertyVideo.astro";
 import PropertyMap from "@/components/detail/PropertyMap.astro";
-import WhatsappFloatingButton from "@/components/detail/WhatsappFloatingButton.astro";
 
-const userAgent = Astro.request.headers.get("user-agent") || "";
-const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
+import { ChevronLeft, Share2 } from "@lucide/astro";
 
-setCacheHeaders(Astro.response);
-const { id } = Astro.params;
-const property = await getProperty(id!);
+const { id = "" } = Astro.params;
 
-const operationType =
-  property.operations?.[0]?.type === "rental" ? "En Arriendo" : "En Venta";
+// Los IDs de EasyBroker tienen la forma "EB-XXXX".
+// Si la URL no calza, respondemos 404 sin gastar una llamada a la API.
+const property = /^EB-[A-Z0-9]+$/i.test(id) ? await findProperty(id) : null;
 
-function toYouTubeEmbedUrl(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    const videoId =
-      parsed.searchParams.get("v") ||
-      (parsed.hostname === "youtu.be" ? parsed.pathname.slice(1) : null);
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-  } catch {
-    return null;
-  }
+if (!property) {
+  return new Response(null, { status: 404, statusText: "Not found" });
 }
 
-const videoEmbedUrl = property.videos?.[0]
-  ? toYouTubeEmbedUrl(property.videos[0])
-  : null;
+setCacheHeaders(Astro.response, 300);
 ---
 
 <Layout>
-  <div class="rhl-page">
-    <div
-      class="container mx-auto px-4 lg:px-0 grid gap-6 pt-6 | lg:gap-12 lg:pt-12"
+  <!-- page -->
+  <div class="pt-15 mx-4 lg:pt-20 lg:mx-0">
+    <!-- header: sticky bajo el header principal, fondo a todo el ancho -->
+    <header
+      class="sticky top-(--header-height) z-10 -mx-4 px-4 bg-[#f7f7f7] lg:top-(--header-height-lg) lg:mx-0 lg:px-0"
     >
-      <!-- Bento & Galler -->
-      <div>
-        {
-          isMobile ? (
-            <Gallery images={property.property_images} id="gallery-mobile" />
-          ) : (
-            <Bento images={property.property_images} />
-          )
-        }
-      </div>
-
-      <!-- Content -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-9">
-        <!-- Aside -->
-        <aside
-          class="col-span-1 lg:col-span-2 lg:sticky lg:top-30 lg:self-start"
+      <div
+        class="container mx-auto max-w-6xl py-4 flex items-center justify-between text-xs lg:py-6"
+      >
+        <a
+          href="/propiedades"
+          data-back
+          class="flex items-center gap-1 hover:underline"
         >
-          <!-- Primary Data -->
-          <div>
-            <div class="grid">
-              <p
-                class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
-              >
-                <Pin size={16} />
-                {operationType}
-              </p>
-              <p
-                class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
-              >
-                <MapPin size={16} />
-                {property.location?.name}
-              </p>
-              <p
-                class="text-gray-600 flex items-center gap-2 text-sm lg:text-base"
-              >
-                <Hash size={16} />
-                {property.public_id}
-              </p>
-              <h1 class="text-2xl lg:text-4xl font-semibold text-primary mt-4">
-                {property.title}
-              </h1>
+          <ChevronLeft size={18} />
+          Volver
+        </a>
+        <button
+          type="button"
+          data-share
+          class="flex items-center gap-1 cursor-pointer hover:underline"
+        >
+          <Share2 size={18} />
+          <span data-share-label>Compartir</span>
+        </button>
+      </div>
+    </header>
 
-              {
-                property.operations[0].formatted_amount && (
-                  <p class="text-2xl lg:text-3xl font-semibold mt-4">
-                    {property.operations[0].formatted_amount}
-                  </p>
-                )
-              }
-            </div>
-            <ul
-              class="grid grid-cols-3 border-t border-gray-200 my-4 py-4 gap-3"
-            >
-              <li class="bg-taupe-200/60 p-3 rounded-lg grid gap-2">
-                <Bed size={27} stroke-width={1.5} class="text-taupe-700" />
-                <span
-                  class="text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis"
-                >
-                  {property.bedrooms} Dormitorios</span
-                >
-              </li>
-              <li class="bg-taupe-200/60 p-3 rounded-lg grid gap-2">
-                <Bath size={27} stroke-width={1.5} class="text-taupe-700" />
-                <span class="text-gray-600">{property.bathrooms} Baños</span>
-              </li>
-              <li class="bg-taupe-200/60 p-3 rounded-lg grid gap-2">
-                <Ruler size={27} stroke-width={1.5} class="text-taupe-700" />
-                {property.construction_size}
-              </li>
-            </ul>
+    <!-- container -->
+    <div class="container mx-auto max-w-6xl">
+      <!-- cover -->
+      <section>
+        <PropertyShowcase property={property} />
+      </section>
+      <!-- content -->
+      <div class="mt-6 grid gap-4 lg:mt-8 lg:gap-8 lg:grid-cols-[1fr_360px]">
+        <!-- information -->
+        <div class="grid min-w-0 content-start gap-4">
+          <div class="grid gap-6 rounded-3xl bg-white p-6">
+            <PropertySummary property={property} />
+            <PropertyStats property={property} />
           </div>
-        </aside>
-
-        <!-- Main -->
-        <div class="col-span-1 lg:col-span-3">
-          <!-- Card -->
-          <div class="bg-white rounded-xl p-4 grid gap-9">
-            <!-- Description -->
-            <section class="grid gap-3">
-              <h4 class="text-xl font-semibold">Detalles generales</h4>
-              <p class="whitespace-pre-wrap">{property.description}</p>
-            </section>
-
-            <!-- Features -->
-            <section class="grid gap-3">
-              <h4 class="text-xl font-semibold">Características</h4>
-              <div class="flex flex-wrap gap-2">
-                {
-                  property.features?.map((feature) => (
-                    <Badge class="bg-taupe-100 text-taupe-800 text-sm!">
-                      {feature.name}
-                    </Badge>
-                  ))
-                }
-              </div>
-            </section>
-
-            <!-- Video -->
-            {
-              videoEmbedUrl && (
-                <section class="grid gap-3">
-                  <h4 class="text-xl font-semibold">Video</h4>
-                  <iframe
-                    class="w-full aspect-video"
-                    src={videoEmbedUrl}
-                    title="YouTube video player"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allowfullscreen
-                  />
-                </section>
-              )
-            }
-
-            <!-- Map -->
-            {
-              property.location && (
-                <PropertyMap
-                  lat={property.location?.latitude}
-                  lng={property.location?.longitude}
-                  title={property.title}
-                />
-              )
-            }
+          <div
+            class="grid gap-10 rounded-3xl bg-white p-6 [&>section~section]:border-t [&>section~section]:border-neutral-100 [&>section~section]:pt-10"
+          >
+            <PropertyDescription description={property.description} />
+            <PropertyFeatures features={property.features} />
+            <PropertyVideo videos={property.videos} title={property.title} />
+            <PropertyMap location={property.location} seed={property.public_id} />
           </div>
         </div>
+        <!-- aside -->
+        <aside class="hidden lg:block lg:sticky lg:top-40 lg:self-start">
+          <PropertyContactCard
+            title={property.title}
+            publicId={property.public_id}
+          />
+        </aside>
       </div>
     </div>
   </div>
 
-  <WhatsappFloatingButton title={property.title} publicId={property.public_id} />
+  <PropertyContactBar title={property.title} publicId={property.public_id} />
 </Layout>
+
+<style is:global>
+  /* Reserva espacio para la barra fija inferior en mobile,
+     así no tapa el final del footer del sitio. */
+  @media (max-width: 1023px) {
+    body {
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+  }
+</style>
+
+<script>
+  // Volver: si venimos del listado, retrocedemos en el historial
+  // para conservar los filtros que el usuario tenía en la URL.
+  const backLink = document.querySelector<HTMLAnchorElement>("[data-back]");
+  backLink?.addEventListener("click", (e) => {
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    const fromListing =
+      referrer?.origin === location.origin &&
+      referrer.pathname.startsWith("/propiedades") &&
+      history.length > 1;
+
+    if (fromListing) {
+      e.preventDefault();
+      history.back();
+    }
+  });
+
+  // Compartir: copia el link de la propiedad al portapapeles
+  const shareBtn = document.querySelector<HTMLButtonElement>("[data-share]");
+  const shareLabel = shareBtn?.querySelector("[data-share-label]");
+  shareBtn?.addEventListener("click", async () => {
+    if (!shareLabel) return;
+    try {
+      await navigator.clipboard.writeText(location.href);
+      shareLabel.textContent = "¡Link copiado!";
+    } catch {
+      shareLabel.textContent = "No se pudo copiar";
+    }
+    setTimeout(() => (shareLabel.textContent = "Compartir"), 2000);
+  });
+</script>

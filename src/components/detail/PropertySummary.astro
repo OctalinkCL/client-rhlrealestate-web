@@ -1,0 +1,77 @@
+---
+import { MapPin } from "@lucide/astro";
+import type { Property } from "@/lib/easybroker";
+import { formatMoney } from "@/lib/format";
+
+interface Props {
+  property: Property;
+}
+
+const { property } = Astro.props;
+
+const OPERATION_LABEL = { sale: "En venta", rental: "En arriendo" } as const;
+
+const operations = (property.operations ?? []).filter(
+  (op) => op.formatted_amount,
+);
+
+const maintenance = property.maintenance_amount
+  ? formatMoney(property.maintenance_amount, property.maintenance_currency)
+  : null;
+---
+
+<header>
+  <div class="flex flex-wrap items-center gap-2 text-xs font-medium">
+    {
+      operations.map((op) => (
+        <span class="rounded-full bg-neutral-900 px-3 py-1 text-white">
+          {OPERATION_LABEL[op.type] ?? op.type}
+        </span>
+      ))
+    }
+    {
+      property.property_type && (
+        <span class="rounded-full bg-rhl-sand px-3 py-1">
+          {property.property_type}
+        </span>
+      )
+    }
+    <span class="ml-auto text-neutral-500">{property.public_id}</span>
+  </div>
+
+  <h1 class="mt-4 text-2xl font-semibold tracking-tight lg:text-3xl">
+    {property.title}
+  </h1>
+
+  {
+    property.location?.name && (
+      <p class="mt-2 flex items-start gap-1.5 text-sm text-neutral-600">
+        <MapPin size={16} class="mt-0.5 shrink-0" />
+        {property.location.name}
+      </p>
+    )
+  }
+
+  <div class="mt-6 grid gap-1">
+    {
+      operations.map((op) => (
+        <p class="text-3xl font-semibold tracking-tight">
+          {op.formatted_amount}
+          {op.type === "rental" && (
+            <span class="text-base font-normal text-neutral-500">/mes</span>
+          )}
+          {operations.length > 1 && (
+            <span class="ml-2 text-sm font-normal text-neutral-500">
+              {OPERATION_LABEL[op.type]}
+            </span>
+          )}
+        </p>
+      ))
+    }
+    {
+      maintenance && (
+        <p class="text-sm text-neutral-500">Gastos comunes {maintenance}/mes</p>
+      )
+    }
+  </div>
+</header>

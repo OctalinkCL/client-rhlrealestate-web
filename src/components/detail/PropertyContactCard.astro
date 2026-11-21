@@ -1,0 +1,54 @@
+---
+import { Image } from "astro:assets";
+import { Mail } from "@lucide/astro";
+import IconWhatsapp from "../../assets/icon_whatsapp_white.svg";
+import {
+  CONTACT_EMAIL as EMAIL,
+  propertyMailHref,
+  propertyWhatsappHref,
+} from "@/lib/contact";
+
+interface Props {
+  title: string;
+  publicId: string;
+}
+
+const whatsappHref = propertyWhatsappHref(Astro.props);
+const mailHref = propertyMailHref(Astro.props);
+---
+
+<div class="rounded-3xl bg-white p-6">
+  <h2 class="text-2xl font-semibold tracking-tight">Conversemos</h2>
+  <p class="mt-3 text-sm leading-relaxed text-neutral-600">
+    ¿Te interesa esta propiedad? Escríbenos y coordinamos una visita o
+    resolvemos tus dudas.
+  </p>
+
+  <!-- WhatsApp -->
+  <a
+    href={whatsappHref}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="mt-6 flex items-center justify-center gap-2 rounded-full bg-neutral-900 px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700"
+  >
+    <Image class="w-5 h-5 shrink-0" src={IconWhatsapp} alt="" />
+    Escríbenos por WhatsApp
+  </a>
+
+  <!-- Email -->
+  <a
+    href={mailHref}
+    class="group mt-4 flex items-center justify-between gap-4 rounded-2xl bg-rhl-sand p-4 pl-5 transition-colors hover:bg-rhl-sand-dark"
+  >
+    <div class="min-w-0 text-sm">
+      <p class="text-neutral-600">¿Prefieres un email?</p>
+      <p class="truncate font-medium">{EMAIL}</p>
+    </div>
+    <span
+      class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white transition-transform group-hover:scale-105"
+      aria-hidden="true"
+    >
+      <Mail size={20} />
+    </span>
+  </a>
+</div>
