@@ -165,6 +165,33 @@ export async function findProperty(id: string): Promise<Property | null> {
   }
 }
 
+export interface ContactRequestBody {
+  property_id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  message: string;
+}
+
+// Crea (o actualiza, si el email ya existe) un lead en EasyBroker
+export async function createContactRequest(
+  body: ContactRequestBody,
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}/contact_requests`, {
+    method: "POST",
+    headers: {
+      "X-Authorization": import.meta.env.EB_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ source: "rhlrealestate.cl", ...body }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new EasyBrokerError(res.status, `EasyBroker ${res.status}: ${text}`);
+  }
+}
+
 export function getPropertiesFeatures(): Promise<PropertiesListResponse> {
   return ebFetch<PropertiesListResponse>("/properties", {
     limit: 9,

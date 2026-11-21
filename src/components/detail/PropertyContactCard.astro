@@ -1,20 +1,18 @@
 ---
 import { Image } from "astro:assets";
-import { Mail } from "@lucide/astro";
 import IconWhatsapp from "../../assets/icon_whatsapp_white.svg";
-import {
-  CONTACT_EMAIL as EMAIL,
-  propertyMailHref,
-  propertyWhatsappHref,
-} from "@/lib/contact";
+import { propertyWhatsappHref } from "@/lib/contact";
+import RequestContact from "./RequestContact.astro";
+import type { Operation } from "@/lib/easybroker";
 
 interface Props {
   title: string;
   publicId: string;
+  operations: Operation["type"][];
 }
 
+const { publicId, operations } = Astro.props;
 const whatsappHref = propertyWhatsappHref(Astro.props);
-const mailHref = propertyMailHref(Astro.props);
 ---
 
 <div class="rounded-3xl bg-white p-6">
@@ -35,20 +33,11 @@ const mailHref = propertyMailHref(Astro.props);
     Escríbenos por WhatsApp
   </a>
 
-  <!-- Email -->
-  <a
-    href={mailHref}
-    class="group mt-4 flex items-center justify-between gap-4 rounded-2xl bg-rhl-sand p-4 pl-5 transition-colors hover:bg-rhl-sand-dark"
-  >
-    <div class="min-w-0 text-sm">
-      <p class="text-neutral-600">¿Prefieres un email?</p>
-      <p class="truncate font-medium">{EMAIL}</p>
-    </div>
-    <span
-      class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white transition-transform group-hover:scale-105"
-      aria-hidden="true"
-    >
-      <Mail size={20} />
-    </span>
-  </a>
+  <div class="my-6 flex items-center gap-3 text-xs text-neutral-500">
+    <span class="h-px flex-1 bg-neutral-200"></span>
+    o déjanos tus datos
+    <span class="h-px flex-1 bg-neutral-200"></span>
+  </div>
+
+  <RequestContact publicId={publicId} operations={operations} />
 </div>

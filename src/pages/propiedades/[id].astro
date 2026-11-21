@@ -28,6 +28,9 @@ if (!property) {
 }
 
 setCacheHeaders(Astro.response, 300);
+
+// Define qué preguntas de calificación muestra el formulario de lead
+const operations = property.operations.map((operation) => operation.type);
 ---
 
 <Layout>
@@ -82,18 +85,25 @@ setCacheHeaders(Astro.response, 300);
             <PropertyMap location={property.location} seed={property.public_id} />
           </div>
         </div>
-        <!-- aside -->
-        <aside class="hidden lg:block lg:sticky lg:top-40 lg:self-start">
+        <!-- aside: sticky; si la tarjeta no cabe en pantallas bajas, scrollea dentro -->
+        <aside
+          class="hidden overscroll-contain rounded-3xl [scrollbar-width:thin] lg:sticky lg:top-40 lg:block lg:max-h-[calc(100dvh-11rem)] lg:self-start lg:overflow-y-auto"
+        >
           <PropertyContactCard
             title={property.title}
             publicId={property.public_id}
+            operations={operations}
           />
         </aside>
       </div>
     </div>
   </div>
 
-  <PropertyContactBar title={property.title} publicId={property.public_id} />
+  <PropertyContactBar
+    title={property.title}
+    publicId={property.public_id}
+    operations={operations}
+  />
 </Layout>
 
 <style is:global>

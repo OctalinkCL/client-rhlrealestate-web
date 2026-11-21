@@ -1,0 +1,213 @@
+---
+import {
+  LEAD_OPERATIONS,
+  LEAD_QUESTIONS,
+  type LeadOperation,
+} from "@/lib/contact";
+import type { Operation } from "@/lib/easybroker";
+
+interface Props {
+  publicId: string;
+  operations: Operation["type"][];
+}
+
+const { publicId, operations } = Astro.props;
+
+// Cualquier operación que no sea venta (p. ej. arriendo temporal) cuenta como arriendo.
+// Si la propiedad tiene ambas (o ninguna), primero preguntamos qué busca.
+const found = [
+  ...new Set(operations.map((type) => (type === "sale" ? "sale" : "rental"))),
+] as LeadOperation[];
+const choices: LeadOperation[] = found.length ? found : ["sale", "rental"];
+const askOperation = choices.length > 1;
+
+const legend = "text-sm font-medium text-neutral-900";
+const chip =
+  "cursor-pointer rounded-full bg-neutral-100 px-3.5 py-2 text-xs font-medium text-neutral-700 transition-colors not-has-checked:hover:bg-neutral-200 has-checked:bg-neutral-900 has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-neutral-900/30";
+const field =
+  "w-full rounded-2xl bg-neutral-100 px-4 text-sm outline-none transition-shadow placeholder:text-neutral-400 focus:ring-2 focus:ring-neutral-900/20";
+---
+
+<!-- Formulario de lead → /api/lead → EasyBroker contact_requests.
+     Puede aparecer más de una vez por página: el script usa data-attributes, no ids. -->
+<form data-request-contact novalidate class="grid gap-5">
+  <input type="hidden" name="property_id" value={publicId} />
+  <!-- Honeypot anti-bots -->
+  <input
+    type="text"
+    name="website"
+    tabindex="-1"
+    autocomplete="off"
+    aria-hidden="true"
+    class="hidden"
+  />
+
+  <!-- Preguntas de calificación -->
+  {
+    askOperation ? (
+      <fieldset data-question>
+        <legend class={legend}>¿Qué buscas?</legend>
+        <div class="mt-2 flex flex-wrap gap-2">
+          {choices.map((op) => (
+            <label class={chip}>
+              <input type="radio" name="operation" value={op} class="sr-only" />
+              {LEAD_OPERATIONS[op]}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    ) : (
+      <input type="hidden" name="operation" value={choices[0]} />
+    )
+  }
+
+  {
+    choices.map((op) => (
+      <div data-operation={op} class:list={["grid gap-5", askOperation && "hidden"]}>
+        {LEAD_QUESTIONS[op].map((question) => (
+          <fieldset data-question disabled={askOperation}>
+            <legend class={legend}>{question.label}</legend>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {question.options.map((option) => (
+                <label class={chip}>
+                  <input type="radio" name={question.name} value={option} class="sr-only" />
+                  {option}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+    ))
+  }
+
+  <!-- Datos de contacto -->
+  <div class="grid gap-3">
+    <input
+      name="name"
+      type="text"
+      autocomplete="name"
+      placeholder="Tu nombre"
+      aria-label="Nombre"
+      class={`${field} h-12`}
+    />
+    <input
+      name="email"
+      type="email"
+      autocomplete="email"
+      placeholder="tu@email.com"
+      aria-label="Email"
+      class={`${field} h-12`}
+    />
+    <div class="relative flex items-center">
+      <span
+        class="pointer-events-none absolute left-4 select-none text-sm text-neutral-500"
+        >+56 9</span
+      >
+      <input
+        name="phone"
+        type="tel"
+        inputmode="numeric"
+        autocomplete="tel-national"
+        placeholder="1234 5678"
+        aria-label="Teléfono"
+        class={`${field} h-12 pl-14`}
+      />
+    </div>
+    <p class="-mt-1 px-1 text-xs text-neutral-500">
+      Basta con un email o un teléfono.
+    </p>
+    <button
+      type="submit"
+      data-submit
+      class="mt-1 flex h-12 cursor-pointer items-center justify-center rounded-full bg-rhl-sand px-6 text-sm font-medium text-neutral-900 transition-colors hover:bg-rhl-sand-dark disabled:cursor-wait disabled:opacity-50"
+    >
+      Quiero que me contacten
+    </button>
+    <p data-status role="status" aria-live="polite" class="hidden text-center text-xs">
+    </p>
+  </div>
+</form>
+
+<script>
+  const GENERIC_ERROR = "Ocurrió un error. Intenta nuevamente.";
+
+  document
+    .querySelectorAll<HTMLFormElement>("[data-request-contact]")
+    .forEach((form) => {
+      const submit = form.querySelector<HTMLButtonElement>("[data-submit]")!;
+      const status = form.querySelector<HTMLElement>("[data-status]")!;
+      const email = form.elements.namedItem("email") as HTMLInputElement;
+      const submitLabel = submit.textContent;
+
+      const show = (text: string, ok: boolean) => {
+        status.textContent = text;
+        status.classList.remove("hidden");
+        status.classList.toggle("text-green-700", ok);
+        status.classList.toggle("text-red-600", !ok);
+      };
+
+      // Muestra solo las preguntas de la operación elegida. Los fieldsets
+      // deshabilitados quedan fuera del FormData y de la validación.
+      const syncOperation = () => {
+        const operation = new FormData(form).get("operation");
+        form.querySelectorAll<HTMLElement>("[data-operation]").forEach((group) => {
+          const active = group.dataset.operation === operation;
+          group.classList.toggle("hidden", !active);
+          group.querySelectorAll("fieldset").forEach((f) => (f.disabled = !active));
+        });
+      };
+
+      form.addEventListener("change", (event) => {
+        if ((event.target as HTMLInputElement).name === "operation") syncOperation();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        status.classList.add("hidden");
+
+        const unanswered = [
+          ...form.querySelectorAll<HTMLFieldSetElement>("fieldset[data-question]"),
+        ].some((f) => !f.disabled && !f.querySelector("input:checked"));
+        if (unanswered) return show("Responde todas las preguntas.", false);
+
+        const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+        const phoneDigits = data.phone.replace(/\D/g, "");
+
+        if (!data.name.trim() || (!data.email.trim() && !phoneDigits)) {
+          return show("Completa tu nombre y un email o teléfono.", false);
+        }
+        if (!email.checkValidity()) {
+          return show("El email no es válido.", false);
+        }
+        if (phoneDigits && phoneDigits.length !== 8) {
+          return show("El teléfono debe tener 8 dígitos.", false);
+        }
+
+        submit.disabled = true;
+        submit.textContent = "Enviando…";
+
+        try {
+          const res = await fetch("/api/lead", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const body = await res.json().catch(() => ({}));
+
+          if (res.ok) {
+            form.reset();
+            syncOperation();
+            show("¡Listo! Un ejecutivo te contactará pronto.", true);
+          } else {
+            show(body.error ?? GENERIC_ERROR, false);
+          }
+        } catch {
+          show(GENERIC_ERROR, false);
+        } finally {
+          submit.disabled = false;
+          submit.textContent = submitLabel;
+        }
+      });
+    });
+</script>
