@@ -202,6 +202,44 @@ const btnPrimary =
             </ul>
           </section>
 
+          <section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div class="flex flex-col gap-2">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="text-sm font-medium">Texto de la publicación</h2>
+                <p id="caption-count" class="text-xs text-rhl-secondary" />
+              </div>
+              <textarea
+                id="caption"
+                rows="18"
+                spellcheck="true"
+                class:list={[field, "w-full resize-y text-sm leading-relaxed"]}
+              >{data.caption}</textarea>
+              <div class="flex flex-wrap items-center gap-3">
+                <button id="copy-btn" type="button" class={btnPrimary}>Copiar texto</button>
+                <button
+                  id="reset-caption"
+                  type="button"
+                  class="px-3 py-2.5 text-sm text-rhl-secondary hover:text-rhl-primary"
+                >
+                  Volver al borrador
+                </button>
+                <p id="copy-status" class="text-sm text-rhl-secondary" aria-live="polite" />
+              </div>
+            </div>
+            <aside class="flex flex-col gap-2">
+              <h3 class="text-sm font-medium">Así se ve antes de "… más"</h3>
+              <p class="rounded-xl bg-white p-4 text-sm shadow-sm">
+                <span class="font-semibold">rhlrealestate.cl</span>{" "}
+                <span id="caption-visible" class="whitespace-pre-line" />
+                <span class="text-rhl-secondary">… más</span>
+              </p>
+              <p class="text-xs text-rhl-secondary">
+                La primera línea es lo único que lee la mayoría: que diga qué hace
+                única a la propiedad. Edita el texto libremente antes de copiarlo.
+              </p>
+            </aside>
+          </section>
+
           <div class="flex flex-wrap items-center gap-3">
             <button id="download-btn" type="button" class={btnPrimary}>
               Descargar carrusel (ZIP)
@@ -235,6 +273,7 @@ const btnPrimary =
     type CoverStatInput,
   } from "@/lib/tools/carousel";
   import { buildZip, downloadBlob, today, type NamedBlob } from "@/lib/tools/download";
+  import { CAPTION_MAX_CHARS, CAPTION_VISIBLE_CHARS } from "@/lib/tools/caption";
 
   const dataEl = document.getElementById("social-data");
 
@@ -357,6 +396,49 @@ const btnPrimary =
       }),
     );
 
+    // --- Texto de la publicación ----------------------------------------
+    const caption = $<HTMLTextAreaElement>("caption");
+    const captionCount = $<HTMLParagraphElement>("caption-count");
+    const captionVisible = $<HTMLSpanElement>("caption-visible");
+    const copyBtn = $<HTMLButtonElement>("copy-btn");
+    const copyStatus = $<HTMLParagraphElement>("copy-status");
+
+    /** Aproxima el corte de Instagram: ~125 caracteres o 2 líneas. */
+    function visiblePart(text: string): string {
+      const twoLines = text.split("\n").slice(0, 2).join("\n");
+      return twoLines.length > CAPTION_VISIBLE_CHARS
+        ? twoLines.slice(0, CAPTION_VISIBLE_CHARS).trimEnd()
+        : twoLines.trimEnd();
+    }
+
+    function updateCaption() {
+      const text = caption.value;
+      const length = [...text].length; // cuenta emojis como 1
+      captionCount.textContent = `${length.toLocaleString("es-CL")} / ${CAPTION_MAX_CHARS.toLocaleString("es-CL")} caracteres`;
+      captionCount.classList.toggle("text-red-700", length > CAPTION_MAX_CHARS);
+      captionVisible.textContent = visiblePart(text);
+      copyStatus.textContent = "";
+    }
+
+    caption.addEventListener("input", updateCaption);
+    $<HTMLButtonElement>("reset-caption").addEventListener("click", () => {
+      caption.value = data.caption;
+      updateCaption();
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(caption.value);
+        copyStatus.textContent = "✓ Copiado. Pégalo en Instagram.";
+      } catch {
+        // Sin permiso de portapapeles: se selecciona para copiar a mano
+        caption.select();
+        copyStatus.textContent = "Selecciona y copia con Ctrl/Cmd + C.";
+      }
+    });
+
+    updateCaption();
+
     // --- Descarga -------------------------------------------------------
     downloadBtn.addEventListener("click", async () => {
       downloadBtn.disabled = true;
@@ -376,10 +458,16 @@ const btnPrimary =
         }
 
         files.push({ name: `${pad(photos.length + 2)}-final.jpg`, blob: await renderFinalSlide() });
+        // El texto viaja con las fotos (útil si publica otra persona o desde el celular).
+        // BOM para que el Bloc de notas de Windows muestre bien tildes y emojis.
+        files.push({
+          name: "texto-publicacion.txt",
+          blob: new Blob(["﻿" + caption.value], { type: "text/plain;charset=utf-8" }),
+        });
 
         status.textContent = "Generando ZIP…";
         downloadBlob(await buildZip(files), `carrusel-${data.id.toLowerCase()}-${today()}.zip`);
-        status.textContent = `Listo: ${files.length} slides.`;
+        status.textContent = `Listo: ${files.length - 1} slides + texto de la publicación.`;
       } catch (err) {
         console.error(err);
         status.textContent = "No se pudo generar el carrusel. Intenta de nuevo.";

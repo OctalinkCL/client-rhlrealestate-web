@@ -119,14 +119,38 @@ Página: `src/pages/tools/redes.astro` (`?codigo=EB-XXXX`, resuelto en el servid
 
 **Provisionales:** `portada-base.svg` y `final.svg` los generamos a partir de la referencia del cliente. Cuando lleguen sus PNG, se reemplazan los archivos y se actualizan `COVER_BASE_URL` / `FINAL_SLIDE_URL` en `carousel.ts`. Si la zona transparente o el panel cambian de tamaño, hay que ajustar las coordenadas de `renderCover` (panel desde y≈808, textos en 862/906, cuadrados con `top` 922).
 
+### Texto de la publicación (`caption.ts`, armado en el servidor, sin IA)
+
+Formato acordado con ventas y el community manager: el texto largo con la ficha
+completa no funciona en redes; el detalle vive en la ficha web. Estructura:
+
+1. **Gancho**, menos de 125 caracteres (lo que Instagram muestra antes de "… más"): `{Tipo}[ amoblado/a] en {venta|arriendo} en {barrio} con {hasta 3 atributos} {emoji}`. Si no cabe, se quitan atributos.
+2. **Contexto:** 1–2 frases del primer párrafo de la descripción, saltando títulos como "PRIMER PISO:".
+3. **Datos:** dormitorios y baños (+ baño de visita), estacionamientos, m², piso, y hasta 3 líneas de atributos agrupados (🌊 vista, ✨ equipamiento, 🌿 exterior, 🛡 seguridad, 📦 extras).
+4. **💰 Precio** (`/ mes` en arriendo; ambos si tiene venta y arriendo).
+5. **Llamado a la acción:** DM o WhatsApp (`CONTACT_WHATSAPP` de `src/lib/contact.ts`) + ficha en rhlrealestate.cl (link en la bio) + código EB.
+6. **Hashtags (máximo 5):** `#rhlrealestate`, barrio, comuna, operación y tipo, `#propiedades{comuna}`, con tildes.
+
+**Regla clave:** el gancho y los atributos salen **solo de `features`** (datos marcados en
+EasyBroker), **nunca** de buscar palabras en la descripción. Ejemplo real: "estructura para
+instalar ascensor" no es "con ascensor". El script no inventa; el gancho creativo lo ajusta la persona.
+
+- EasyBroker define **31 atributos** posibles (`GET /features`). En `FEATURES` está la prioridad de los que venden; el resto se ignora (permitido o prohibido fumar, etc.). `REDUNDANT_WITH` evita repeticiones ("Vista al mar" deja fuera "Vista al agua"), y en el gancho va una sola vista.
+- `floor` puede venir como `"ground_floor"` → se muestra "Primer piso".
+- Interfaz: cuadro editable, contador (máximo 2.200), vista previa de lo que se ve antes de "… más", botones **"Copiar texto"** (acción principal) y "Volver al borrador". El ZIP del carrusel incluye `texto-publicacion.txt` (UTF-8 con BOM, para el Bloc de notas de Windows). Un `.txt` suelto se descartó por ser un botón de más.
+- Probado con los 5 tipos publicados (Casa EB-UH7861, Oficina EB-UN0669, Departamento EB-UZ6006, Terreno EB-WF5540, Local EB-WJ4599): primera línea de 50–83 caracteres, total de 440–770.
+- La calidad depende de lo que se carga en EasyBroker: descripción con el contexto en el primer párrafo y atributos marcados.
+
 ## Pendientes (al 2026-11-21)
+
+Carrusel **en pausa** por decisión del usuario: quizás cambie la plantilla de la portada.
 
 1. **El logo de la foto de EasyBroker choca con "Venta" en la portada**, porque el logo queda en el centro del cuadrado. Opciones planteadas: (a) subir opcionalmente una foto limpia para la portada (recomendada), (b) achicar o bajar "Venta / Disponible", (c) dejarlo así. Sin decidir.
 2. ~~Mejorar la UX de `/tools/logo`~~: resuelto con la separación en 3 pestañas (ver Principios de UX).
 3. Recibir del cliente: PNG de portada con zona transparente, PNG del slide final, íconos SVG propios (opcional) y fuentes exactas.
 4. Identificar el nombre de las pistas en Mixkit.
 5. Probar el carrusel con un terreno y una oficina (portada sin íconos o con solo la superficie).
-6. Etapa 2 de redes: texto de la publicación con plantilla (sin IA), usando la descripción de EasyBroker, el precio y hashtags, con un botón "Copiar". Límite de Instagram: 2.200 caracteres y 30 hashtags.
+6. ~~Texto de la publicación~~: hecho (ver la sección anterior). A futuro, opcional: un botón "Sugerir ganchos" con IA, siempre revisado por una persona.
 
 ## Cómo probar
 

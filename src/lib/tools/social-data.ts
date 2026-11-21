@@ -1,5 +1,6 @@
 import type { Property } from "@/lib/easybroker";
 import { formatNumber } from "@/lib/format";
+import { buildCaption } from "./caption";
 
 /**
  * Datos de una propiedad para armar el carrusel de redes. Se calcula en el
@@ -39,6 +40,8 @@ export interface SocialProperty {
   /** Datos marcados por defecto en la portada (máximo 3) */
   defaultStats: StatKey[];
   images: string[];
+  /** Borrador del texto para Instagram (editable en la página) */
+  caption: string;
 }
 
 export const MAX_COVER_STATS = 3;
@@ -123,5 +126,6 @@ export function toSocialProperty(p: Property): SocialProperty {
     stats,
     defaultStats: defaultStats.slice(0, MAX_COVER_STATS),
     images: (p.property_images ?? []).map((img) => img.url),
+    caption: buildCaption(p),
   };
 }
