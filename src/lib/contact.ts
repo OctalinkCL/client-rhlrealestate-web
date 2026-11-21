@@ -52,7 +52,7 @@ export const LEAD_QUESTIONS: Record<LeadOperation, LeadQuestion[]> = {
         "Contado",
         "Crédito pre-aprobado",
         "Necesito crédito",
-        "Debo vender otra propiedad",
+        "Vendo otra propiedad",
       ],
     },
     {
