@@ -3,6 +3,191 @@ import ToolsLayout from "@/layouts/ToolsLayout.astro";
 ---
 
 <ToolsLayout title="Agregar logo">
-  <h1 class="text-2xl font-semibold">Agregar logo</h1>
-  <p class="mt-2 text-rhl-secondary">Hola mundo</p>
+  <div class="flex flex-col gap-6">
+    <header>
+      <h1 class="text-2xl font-semibold">Agregar logo</h1>
+      <p class="mt-1 text-sm text-rhl-secondary">
+        Sube las fotos de la propiedad (JPG, PNG o WebP). Se les pone el logo al
+        centro y se descargan en un ZIP. Las fotos no salen de tu computador.
+      </p>
+    </header>
+
+    <label
+      id="dropzone"
+      for="photos-input"
+      class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-rhl-secondary/50 bg-white px-6 py-10 text-center transition-colors hover:border-rhl-primary data-[dragging]:border-rhl-primary data-[dragging]:bg-rhl-soft-blue"
+    >
+      <span class="font-medium">Arrastra las fotos aquí o haz clic para elegirlas</span>
+      <span class="text-sm text-rhl-secondary">Se mantiene el orden en que vienen</span>
+      <input
+        id="photos-input"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        class="sr-only"
+      />
+    </label>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button
+        id="zip-btn"
+        type="button"
+        disabled
+        class="rounded-lg bg-rhl-primary px-5 py-2.5 font-medium text-white hover:bg-rhl-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Descargar imágenes (ZIP)
+      </button>
+      <button
+        id="clear-btn"
+        type="button"
+        hidden
+        class="rounded-lg border border-rhl-primary px-5 py-2.5 font-medium text-rhl-primary hover:bg-white"
+      >
+        Limpiar
+      </button>
+      <p id="status" class="text-sm text-rhl-secondary" aria-live="polite"></p>
+    </div>
+
+    <ul id="preview" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"></ul>
+  </div>
 </ToolsLayout>
+
+<script>
+  import {
+    addLogoToPhoto,
+    isAcceptedPhoto,
+    type ProcessedPhoto,
+  } from "@/lib/tools/photos";
+  import {
+    buildZip,
+    downloadBlob,
+    today,
+    uniqueName,
+  } from "@/lib/tools/download";
+
+  const input = document.getElementById("photos-input") as HTMLInputElement;
+  const dropzone = document.getElementById("dropzone") as HTMLLabelElement;
+  const zipBtn = document.getElementById("zip-btn") as HTMLButtonElement;
+  const clearBtn = document.getElementById("clear-btn") as HTMLButtonElement;
+  const status = document.getElementById("status") as HTMLParagraphElement;
+  const preview = document.getElementById("preview") as HTMLUListElement;
+
+  let photos: ProcessedPhoto[] = [];
+  let urls: string[] = [];
+  /** Sube con cada carga nueva: descarta el trabajo de una carga anterior. */
+  let run = 0;
+
+  function reset() {
+    run++;
+    urls.forEach((url) => URL.revokeObjectURL(url));
+    photos = [];
+    urls = [];
+    preview.replaceChildren();
+    zipBtn.disabled = true;
+    clearBtn.hidden = true;
+    status.textContent = "";
+    input.value = "";
+  }
+
+  function addPreview(photo: ProcessedPhoto) {
+    const url = URL.createObjectURL(photo.blob);
+    urls.push(url);
+
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = photo.name;
+    link.title = `Descargar ${photo.name}`;
+    link.className =
+      "block overflow-hidden rounded-lg bg-white shadow-sm ring-rhl-primary hover:ring-2";
+
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = photo.name;
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.className = "aspect-[4/3] w-full object-cover";
+
+    const caption = document.createElement("span");
+    caption.textContent = photo.name;
+    caption.className = "block truncate px-2 py-1.5 text-xs text-rhl-secondary";
+
+    link.append(img, caption);
+    li.append(link);
+    preview.append(li);
+  }
+
+  async function handleFiles(fileList: FileList | File[]) {
+    const all = Array.from(fileList);
+    if (!all.length) return;
+
+    reset();
+    const current = run;
+    const files = all.filter(isAcceptedPhoto);
+    const skipped = all.length - files.length;
+    const errors: string[] = [];
+    // Nombres únicos desde ya, para que la vista previa coincida con el ZIP
+    const usedNames = new Set<string>();
+
+    clearBtn.hidden = false;
+    for (let i = 0; i < files.length; i++) {
+      status.textContent = `Procesando ${i + 1} de ${files.length}…`;
+      try {
+        const photo = await addLogoToPhoto(files[i]);
+        if (current !== run) return;
+        photo.name = uniqueName(photo.name, usedNames);
+        photos.push(photo);
+        addPreview(photo);
+      } catch (err) {
+        if (current !== run) return;
+        console.error(err);
+        errors.push(files[i].name);
+      }
+    }
+
+    const notes = [
+      `${photos.length} ${photos.length === 1 ? "foto lista" : "fotos listas"}.`,
+      skipped && `${skipped} omitida(s): formato no soportado (usa JPG o PNG).`,
+      errors.length && `No se pudo procesar: ${errors.join(", ")}.`,
+    ].filter(Boolean);
+    status.textContent = notes.join(" ");
+    zipBtn.disabled = photos.length === 0;
+  }
+
+  input.addEventListener("change", () => {
+    if (input.files) handleFiles(input.files);
+  });
+
+  // Arrastrar y soltar
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.dataset.dragging = "";
+  });
+  dropzone.addEventListener("dragleave", () => {
+    delete dropzone.dataset.dragging;
+  });
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    delete dropzone.dataset.dragging;
+    if (e.dataTransfer?.files) handleFiles(e.dataTransfer.files);
+  });
+
+  zipBtn.addEventListener("click", async () => {
+    if (!photos.length) return;
+    zipBtn.disabled = true;
+    const previous = status.textContent;
+    status.textContent = "Generando ZIP…";
+    try {
+      const zip = await buildZip(photos);
+      downloadBlob(zip, `fotos-rhl-${today()}.zip`);
+      status.textContent = previous;
+    } catch (err) {
+      console.error(err);
+      status.textContent = "No se pudo generar el ZIP. Intenta de nuevo.";
+    } finally {
+      zipBtn.disabled = false;
+    }
+  });
+
+  clearBtn.addEventListener("click", reset);
+</script>
