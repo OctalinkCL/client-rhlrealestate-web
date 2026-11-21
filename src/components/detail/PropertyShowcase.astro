@@ -15,7 +15,7 @@ const images = property.property_images ?? [];
 
 /** Cuántas fotos rotan en el showcase. El resto se ve en el lightbox. */
 const MAX_SLIDES = 4;
-/** Duración de cada foto, en ms (la barra de progreso y el avance la usan). */
+/** Duración de cada foto, en ms (la usan el paneo y la barra de progreso vía --slide-ms). */
 const SLIDE_MS = 6000;
 
 const slides = images.slice(0, MAX_SLIDES);
@@ -29,11 +29,19 @@ const virtualTour = property.virtual_tour || null;
 // Para la ficha "Fotos" usamos una foto que no esté rotando, si existe.
 const photosThumb = images[MAX_SLIDES] ?? images[0];
 
-// Cada foto tiene su propio movimiento (zoom / paneo) para que no se repita.
-const MOTIONS = ["kb-in", "kb-left", "kb-out", "kb-right"];
-
 const IMAGE_WIDTHS = [640, 828, 1080, 1200];
 const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
+
+// Pausa global: botón, foto fuera de pantalla, pestaña oculta o lightbox abierto.
+const pausable = "group-data-paused/showcase:[animation-play-state:paused]";
+
+// Accesos directos (fotos, video, mapa, tour)
+const tile = "group/tile grid cursor-pointer gap-1.5 text-left text-white";
+const tileMedia =
+  "grid h-10 w-13 place-items-center overflow-hidden rounded-md ring-[1.5px] ring-white/90 transition-transform duration-200 group-hover/tile:-translate-y-0.5 lg:h-21 lg:w-30 lg:rounded-lg lg:ring-2";
+const tileLabel =
+  "text-[0.625rem] leading-none font-medium text-shadow-[0_1px_2px_rgb(0_0_0/0.5)] lg:text-sm";
+const tileIcon = "size-5 lg:size-7";
 ---
 
 {
@@ -46,13 +54,12 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
     <>
       <section
         data-showcase
-        data-slide-ms={SLIDE_MS}
         aria-roledescription="carrusel"
         aria-label={`Fotos de ${title}`}
-        class="showcase relative isolate aspect-4/3 w-full touch-pan-y overflow-hidden rounded-xl bg-neutral-900 sm:aspect-video lg:aspect-auto lg:h-130"
+        class="group/showcase relative isolate aspect-4/3 w-full touch-pan-y overflow-hidden rounded-xl bg-neutral-900 sm:aspect-video lg:aspect-auto lg:h-130"
         style={`--slide-ms: ${SLIDE_MS}ms`}
       >
-        {/* Fotos apiladas: solo la activa es visible (fundido entre ellas) */}
+        {/* Fotos apiladas: solo la activa es visible (fundido); las demás quedan inert */}
         {slides.map((image, i) => (
           <button
             type="button"
@@ -60,13 +67,10 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
             data-lightbox-open
             data-index={i}
             aria-label={`Ver foto ${i + 1} de ${total}`}
-            aria-hidden={i === 0 ? undefined : "true"}
-            tabindex={i === 0 ? undefined : -1}
-            class:list={[
-              "showcase-slide absolute inset-0 cursor-pointer",
-              i === 0 && "is-active",
-            ]}
+            inert={i !== 0}
+            class="absolute inset-0 cursor-pointer transition-opacity duration-1000 inert:opacity-0 motion-reduce:transition-none"
           >
+            {/* Paneo lateral alternando dirección (izq → der, der → izq) */}
             <Image
               src={image.url}
               alt={image.title ?? `${title} - foto ${i + 1}`}
@@ -77,7 +81,11 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
               loading={i === 0 ? "eager" : "lazy"}
               fetchpriority={i === 0 ? "high" : undefined}
               data-caption={image.title ?? ""}
-              class:list={["showcase-img h-full w-full object-cover", MOTIONS[i % MOTIONS.length]]}
+              class:list={[
+                "size-full scale-110 object-cover motion-reduce:scale-100 motion-reduce:animate-none",
+                i % 2 === 0 ? "animate-pan-left" : "animate-pan-right",
+                pausable,
+              ]}
             />
           </button>
         ))}
@@ -97,59 +105,54 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
           aria-label="Contenido de la propiedad"
           class="absolute bottom-4 left-4 flex gap-2 lg:bottom-8 lg:left-8 lg:gap-4"
         >
-          <button type="button" data-lightbox-open data-index="0" class="showcase-tile group">
-            <span class="showcase-tile-media">
+          <button type="button" data-lightbox-open data-index="0" class={tile}>
+            <span class={tileMedia}>
               <Image
                 src={photosThumb.url}
                 alt=""
                 width={240}
-                height={160}
-                widths={[640]}
-                sizes="160px"
+                height={168}
+                widths={[120, 240]}
+                sizes="(min-width: 1024px) 120px, 52px"
                 loading="lazy"
-                class="h-full w-full object-cover"
+                class="size-full object-cover"
               />
             </span>
-            <span class="showcase-tile-label">Fotos ({total})</span>
+            <span class={tileLabel}>Fotos ({total})</span>
           </button>
 
           {videoId && (
-            <a href="#video" data-scroll-to="video" class="showcase-tile group">
-              <span class="showcase-tile-media relative">
+            <a href="#video" data-scroll-to="video" class={tile}>
+              <span class:list={[tileMedia, "relative"]}>
                 <img
                   src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
                   alt=""
                   loading="lazy"
-                  class="h-full w-full object-cover"
+                  class="size-full object-cover"
                 />
                 <span class="absolute inset-0 grid place-items-center bg-black/20">
                   <Play size={20} fill="currentColor" class="text-white" />
                 </span>
               </span>
-              <span class="showcase-tile-label">Video</span>
+              <span class={tileLabel}>Video</span>
             </a>
           )}
 
           {hasMap && (
-            <a href="#ubicacion" data-scroll-to="ubicacion" class="showcase-tile group">
-              <span class="showcase-tile-media grid place-items-center bg-[#f2e2d8] text-neutral-900">
-                <MapPin size={26} stroke-width={1.75} />
+            <a href="#ubicacion" data-scroll-to="ubicacion" class={tile}>
+              <span class:list={[tileMedia, "bg-rhl-sand text-neutral-900"]}>
+                <MapPin stroke-width={1.75} class={tileIcon} />
               </span>
-              <span class="showcase-tile-label">Mapa</span>
+              <span class={tileLabel}>Mapa</span>
             </a>
           )}
 
           {virtualTour && (
-            <a
-              href={virtualTour}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="showcase-tile group"
-            >
-              <span class="showcase-tile-media grid place-items-center bg-white text-neutral-900">
-                <Rotate3d size={26} stroke-width={1.75} />
+            <a href={virtualTour} target="_blank" rel="noopener noreferrer" class={tile}>
+              <span class:list={[tileMedia, "bg-white text-neutral-900"]}>
+                <Rotate3d stroke-width={1.75} class={tileIcon} />
               </span>
-              <span class="showcase-tile-label">Tour 360°</span>
+              <span class={tileLabel}>Tour 360°</span>
             </a>
           )}
         </nav>
@@ -161,23 +164,28 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
               type="button"
               data-showcase-toggle
               aria-label="Pausar presentación"
-              class="grid size-7 shrink-0 cursor-pointer place-items-center rounded-full text-white hover:bg-white/15"
+              aria-pressed="false"
+              class="group/toggle grid size-7 shrink-0 cursor-pointer place-items-center rounded-full text-white hover:bg-white/15"
             >
-              <Pause size={16} fill="currentColor" data-icon-pause />
-              <Play size={16} fill="currentColor" data-icon-play class="hidden" />
+              <Pause size={16} fill="currentColor" class="group-aria-pressed/toggle:hidden" />
+              <Play size={16} fill="currentColor" class="hidden group-aria-pressed/toggle:block" />
             </button>
             <div class="flex flex-1 gap-1.5">
               {slides.map((_, i) => (
                 <button
                   type="button"
-                  data-showcase-dot={i}
+                  data-showcase-dot
                   aria-label={`Ir a la foto ${i + 1}`}
-                  class="group relative h-5 flex-1 cursor-pointer"
+                  class="relative h-5 flex-1 cursor-pointer"
                 >
                   <span class="absolute inset-x-0 top-1/2 h-0.75 -translate-y-1/2 overflow-hidden rounded-full bg-white/35">
                     <span
                       data-showcase-progress
-                      class:list={["showcase-progress block h-full w-full origin-left bg-white", i === 0 && "is-running"]}
+                      data-running={i === 0 ? "" : undefined}
+                      class:list={[
+                        "block size-full origin-left scale-x-0 bg-white data-done:scale-x-100 data-running:animate-progress",
+                        pausable,
+                      ]}
                     />
                   </span>
                 </button>
@@ -186,10 +194,11 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
           </div>
         )}
 
-        {/* Título de la foto actual (EasyBroker trae "Living comedor", "Cocina", …) */}
+        {/* Título de la foto actual (EasyBroker trae "Living comedor", "Cocina", …).
+            Solo se anuncia al lector de pantalla cuando la presentación está en pausa. */}
         <p
           data-showcase-caption
-          aria-live="polite"
+          aria-live="off"
           class="pointer-events-none absolute right-8 bottom-16 hidden text-sm font-medium tracking-wide text-white/90 lg:block"
         >
           {slides[0]?.title ?? ""}
@@ -200,131 +209,6 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
     </>
   )
 }
-
-<style>
-  /* ---------- Fotos y fundido ---------- */
-  .showcase-slide {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 1s ease;
-  }
-  .showcase-slide.is-active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* ---------- Efecto Ken Burns ----------
-     Dura un poco más que la foto para que siga moviéndose durante el fundido. */
-  .showcase-img {
-    animation-duration: calc(var(--slide-ms) + 1s);
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-play-state: paused;
-    will-change: transform;
-  }
-  .showcase-slide.is-moving .showcase-img {
-    animation-play-state: running;
-  }
-  .kb-in { animation-name: kb-in; }
-  .kb-out { animation-name: kb-out; }
-  .kb-left { animation-name: kb-left; }
-  .kb-right { animation-name: kb-right; }
-
-  @keyframes kb-in {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
-  }
-  @keyframes kb-out {
-    from { transform: scale(1.12); }
-    to { transform: scale(1.02); }
-  }
-  @keyframes kb-left {
-    from { transform: scale(1.1) translateX(3%); }
-    to { transform: scale(1.1) translateX(-3%); }
-  }
-  @keyframes kb-right {
-    from { transform: scale(1.1) translateX(-3%); }
-    to { transform: scale(1.1) translateX(3%); }
-  }
-
-  /* ---------- Barra de progreso ---------- */
-  .showcase-progress {
-    transform: scaleX(0);
-  }
-  .showcase-progress.is-done {
-    transform: scaleX(1);
-  }
-  .showcase-progress.is-running {
-    animation: showcase-progress var(--slide-ms) linear forwards;
-  }
-  @keyframes showcase-progress {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
-  }
-
-  /* Pausa (botón, foto fuera de pantalla, pestaña oculta o lightbox abierto) */
-  .showcase[data-paused] .showcase-img,
-  .showcase[data-paused] .showcase-progress {
-    animation-play-state: paused !important;
-  }
-
-  /* ---------- Accesos directos ---------- */
-  .showcase-tile {
-    display: grid;
-    gap: 0.375rem;
-    cursor: pointer;
-    color: white;
-    text-align: left;
-  }
-  .showcase-tile-media {
-    display: grid;
-    place-items: center;
-    width: 3.25rem;
-    height: 2.5rem;
-    overflow: hidden;
-    border-radius: 0.375rem;
-    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.9);
-    transition: transform 0.2s ease;
-  }
-  .showcase-tile:hover .showcase-tile-media {
-    transform: translateY(-2px);
-  }
-  .showcase-tile-media :global(svg) {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  .showcase-tile-label {
-    font-size: 0.625rem;
-    font-weight: 500;
-    line-height: 1;
-    text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
-  }
-  @media (min-width: 1024px) {
-    .showcase-tile-media {
-      width: 7.5rem;
-      height: 5.25rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9);
-    }
-    .showcase-tile-media :global(svg) {
-      width: 1.75rem;
-      height: 1.75rem;
-    }
-    .showcase-tile-label {
-      font-size: 0.875rem;
-    }
-  }
-
-  /* Sin animaciones si el usuario las desactivó en su sistema */
-  @media (prefers-reduced-motion: reduce) {
-    .showcase-img {
-      animation: none !important;
-    }
-    .showcase-slide {
-      transition: none;
-    }
-  }
-</style>
 
 <script>
   const root = document.querySelector<HTMLElement>("[data-showcase]");
@@ -342,17 +226,14 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
     // --- Pausa ---------------------------------------------------------
     // userPaused: lo decide el usuario con el botón.
     // autoPaused: razones externas (fuera de pantalla, pestaña oculta, lightbox).
+    // Todo se pausa con data-paused en la raíz (animation-play-state), sin timers.
     let userPaused = reducedMotion;
     const autoPaused = new Set<string>();
 
     const syncPaused = () => {
-      const paused = userPaused || autoPaused.size > 0;
-      root.toggleAttribute("data-paused", paused);
-      if (toggle) {
-        toggle.setAttribute("aria-label", userPaused ? "Reanudar presentación" : "Pausar presentación");
-        toggle.querySelector("[data-icon-pause]")?.classList.toggle("hidden", userPaused);
-        toggle.querySelector("[data-icon-play]")?.classList.toggle("hidden", !userPaused);
-      }
+      root.toggleAttribute("data-paused", userPaused || autoPaused.size > 0);
+      toggle?.setAttribute("aria-pressed", String(userPaused));
+      caption?.setAttribute("aria-live", userPaused ? "polite" : "off");
     };
 
     const setAutoPaused = (reason: string, on: boolean) => {
@@ -361,31 +242,21 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
     };
 
     // --- Cambio de foto ------------------------------------------------
-    /** Reinicia una animación CSS quitando y volviendo a poner la clase. */
-    const restart = (el: Element, className: string) => {
-      el.classList.remove(className);
-      void (el as HTMLElement).offsetWidth; // fuerza reflow
-      el.classList.add(className);
-    };
-
     const show = (index: number) => {
       const next = (index + slides.length) % slides.length;
 
-      slides.forEach((slide, i) => {
-        const active = i === next;
-        slide.classList.toggle("is-active", active);
-        slide.toggleAttribute("aria-hidden", !active);
-        slide.tabIndex = active ? 0 : -1;
-      });
-      // La foto entrante arranca su movimiento desde cero; la saliente
-      // sigue moviéndose mientras se desvanece.
-      restart(slides[next], "is-moving");
+      slides.forEach((slide, i) => (slide.inert = i !== next));
+
+      // La foto entrante reinicia su paneo; la saliente sigue moviéndose
+      // mientras se desvanece.
+      slides[next].querySelector("img")?.getAnimations().forEach((a) => (a.currentTime = 0));
 
       bars.forEach((bar, i) => {
-        bar.classList.remove("is-running");
-        bar.classList.toggle("is-done", i < next);
+        bar.removeAttribute("data-running");
+        bar.toggleAttribute("data-done", i < next);
       });
-      if (bars[next]) restart(bars[next], "is-running");
+      void bars[next]?.offsetWidth; // reflow para que la barra reinicie
+      bars[next]?.setAttribute("data-running", "");
 
       if (caption) {
         caption.textContent = slides[next].querySelector("img")?.dataset.caption ?? "";
@@ -422,7 +293,7 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
         show(current + (dx < 0 ? 1 : -1));
       }
     });
-    // Un swipe no debe abrir el lightbox
+    // Un swipe no debe abrir el lightbox; un click en una foto/ficha lo abre y pausa.
     root.addEventListener(
       "click",
       (e) => {
@@ -430,6 +301,8 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
           e.stopPropagation();
           e.preventDefault();
           swiped = false;
+        } else if ((e.target as Element).closest("[data-lightbox-open]")) {
+          setAutoPaused("lightbox", true);
         }
       },
       true,
@@ -444,13 +317,9 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
       setAutoPaused("hidden", document.hidden),
     );
 
-    const lightbox = document.querySelector<HTMLDialogElement>("[data-lightbox]");
-    root.addEventListener("click", (e) => {
-      if ((e.target as Element).closest("[data-lightbox-open]")) {
-        setAutoPaused("lightbox", true);
-      }
-    });
-    lightbox?.addEventListener("close", () => setAutoPaused("lightbox", false));
+    document
+      .querySelector<HTMLDialogElement>("[data-lightbox]")
+      ?.addEventListener("close", () => setAutoPaused("lightbox", false));
 
     // --- Accesos a secciones (video, mapa) -----------------------------
     root.querySelectorAll<HTMLAnchorElement>("[data-scroll-to]").forEach((link) =>
@@ -463,7 +332,5 @@ const IMAGE_SIZES = "(min-width: 1152px) 1152px, 100vw";
     );
 
     syncPaused();
-    if (slides.length > 1) restart(slides[0], "is-moving");
-    else slides[0]?.classList.add("is-moving");
   }
 </script>

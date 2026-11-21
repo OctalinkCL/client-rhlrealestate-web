@@ -3,7 +3,6 @@
 @import "@fontsource/marcellus";
 @import "tailwindcss";
 @import "./layout.css";
-@import "@splidejs/splide/css";
 
 @theme {
   --font-sans: "Inter Variable", sans-serif;
@@ -11,8 +10,29 @@
   --color-rhl-primary: #072c5a;
   --color-rhl-secondary: #7898c1;
   --color-rhl-soft-blue: #f0f4fa;
+  --color-rhl-sand: #f2e2d8;
+  --color-rhl-sand-dark: #ecd6c9;
 
   --color-primary: #000f24;
+}
+
+/* Animaciones del showcase de propiedad. "inline" hace que var(--slide-ms)
+   se resuelva en el propio componente (que define la variable), no en :root. */
+@theme inline {
+  /* Paneo lateral: dura 1s más que la foto para seguir moviéndose en el fundido */
+  --animate-pan-left: showcase-pan calc(var(--slide-ms) + 1s) linear both;
+  --animate-pan-right: showcase-pan calc(var(--slide-ms) + 1s) linear reverse both;
+  --animate-progress: showcase-progress var(--slide-ms) linear forwards;
+
+  /* Se usa "translate"/"scale" (no "transform") para combinarse con scale-110 / scale-x-0 */
+  @keyframes showcase-pan {
+    from { translate: 4% 0; }
+    to { translate: -4% 0; }
+  }
+  @keyframes showcase-progress {
+    from { scale: 0 1; }
+    to { scale: 1 1; }
+  }
 }
 
 html,
