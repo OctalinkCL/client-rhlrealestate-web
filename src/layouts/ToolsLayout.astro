@@ -1,0 +1,80 @@
+---
+import "../styles/global.css";
+import Logo from "@/components/Logo.astro";
+
+interface Props {
+  title: string;
+  /** Oculta pestañas y botón de salir (pantalla de login). */
+  bare?: boolean;
+}
+
+const { title, bare = false } = Astro.props;
+
+const tabs = [
+  { href: "/tools/logo", label: "Agregar logo" },
+  { href: "/tools/redes", label: "Publicación redes" },
+];
+
+const current = Astro.url.pathname.replace(/\/$/, "");
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} · Herramientas RHL</title>
+  </head>
+  <body class="min-h-screen bg-rhl-soft-blue text-rhl-primary">
+    <header class="border-b border-rhl-secondary/30 bg-white">
+      <div
+        class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4"
+      >
+        <a href="/tools" class="flex items-center gap-3">
+          <Logo class="h-6 w-auto fill-rhl-primary" />
+          <span class="text-sm font-medium text-rhl-secondary">Herramientas</span>
+        </a>
+        {
+          !bare && (
+            <form method="post" action="/tools/logout">
+              <button
+                type="submit"
+                class="text-sm text-rhl-secondary hover:text-rhl-primary"
+              >
+                Salir
+              </button>
+            </form>
+          )
+        }
+      </div>
+      {
+        !bare && (
+          <nav class="mx-auto flex max-w-5xl gap-1 px-4" aria-label="Herramientas">
+            {tabs.map((tab) => {
+              const active = current === tab.href;
+              return (
+                <a
+                  href={tab.href}
+                  aria-current={active ? "page" : undefined}
+                  class:list={[
+                    "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "border-rhl-primary text-rhl-primary"
+                      : "border-transparent text-rhl-secondary hover:text-rhl-primary",
+                  ]}
+                >
+                  {tab.label}
+                </a>
+              );
+            })}
+          </nav>
+        )
+      }
+    </header>
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <slot />
+    </main>
+  </body>
+</html>
