@@ -58,6 +58,9 @@ El sitio es inmobiliario — no necesita tiempo real.
 
 ## Herramientas internas (/tools)
 
+Usar la skill **`tools`** ([.claude/skills/tools/SKILL.md](.claude/skills/tools/SKILL.md)):
+decisiones, datos verificados, archivos y pendientes de `/tools/logo` y `/tools/redes`.
+
 Herramientas para el equipo del cliente, protegidas con una sola contraseña
 (`TOOLS_PASSWORD` en `.env` y en Vercel). Login, cookie y rutas protegidas en
 `src/lib/tools-auth.ts` + `src/middleware.ts`. El procesamiento de imágenes y video
