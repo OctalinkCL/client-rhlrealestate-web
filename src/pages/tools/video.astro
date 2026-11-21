@@ -1,0 +1,306 @@
+---
+import ToolsLayout from "@/layouts/ToolsLayout.astro";
+import Dropzone from "@/components/tools/Dropzone.astro";
+import { TRACKS } from "@/lib/tools/tracks";
+
+const btnPrimary =
+  "rounded-lg bg-rhl-primary px-5 py-2.5 font-medium text-white hover:bg-rhl-primary/90 disabled:cursor-not-allowed disabled:opacity-40";
+const btnLink = "px-3 py-2.5 text-sm text-rhl-secondary hover:text-rhl-primary disabled:opacity-40";
+const trackOption =
+  "flex items-center rounded-lg border border-rhl-secondary/40 bg-white has-checked:border-rhl-primary has-checked:ring-1 has-checked:ring-rhl-primary has-disabled:opacity-50";
+---
+
+<ToolsLayout title="Video">
+  <div class="flex flex-col gap-6">
+    <header>
+      <h1 class="text-2xl font-semibold">Video</h1>
+      <p class="mt-1 text-sm text-rhl-secondary">
+        Video horizontal para YouTube (1920×1080) con las fotos de la propiedad,
+        movimiento lateral y música. Se genera en tu computador.
+      </p>
+    </header>
+
+    <p
+      id="unsupported"
+      hidden
+      class="rounded-xl bg-white px-4 py-3 text-sm text-red-700 shadow-sm"
+    >
+      Este navegador no puede crear videos. Usa Chrome o Edge en computador.
+    </p>
+
+    <div id="upload">
+      <Dropzone inputId="photos-input" />
+    </div>
+
+    <section id="setup" hidden class="flex flex-col gap-5">
+      <div>
+        <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+          <p id="summary" class="text-sm font-medium"></p>
+          <button id="change-btn" type="button" class={btnLink}>Cambiar fotos</button>
+        </div>
+        <ul id="thumbs" class="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8"></ul>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="flex items-center gap-2 text-sm font-medium">
+          <input id="with-logo" type="checkbox" checked class="size-4 accent-rhl-primary" />
+          Agregar logo al video
+        </label>
+        <p class="pl-6 text-xs text-rhl-secondary">Desmárcalo si tus fotos ya tienen logo.</p>
+      </div>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-medium">Música</legend>
+        <div class="flex flex-wrap gap-2">
+          <label class:list={[trackOption, "cursor-pointer gap-2 px-3 py-2 text-sm"]}>
+            <input type="radio" name="music" value="" class="accent-rhl-primary" />
+            Sin música
+          </label>
+          {
+            TRACKS.map((track, i) => (
+              <div class={trackOption}>
+                <label class="flex cursor-pointer items-center gap-2 py-2 pr-1 pl-3 text-sm">
+                  <input
+                    type="radio"
+                    name="music"
+                    value={track.url}
+                    checked={i === 0}
+                    class="accent-rhl-primary"
+                  />
+                  {track.label}
+                </label>
+                <button
+                  type="button"
+                  data-preview={track.url}
+                  aria-label={`Escuchar ${track.label}`}
+                  class="mr-1 grid size-7 place-items-center rounded-md text-xs text-rhl-secondary hover:bg-rhl-soft-blue hover:text-rhl-primary"
+                >
+                  ▶
+                </button>
+              </div>
+            ))
+          }
+        </div>
+        <p id="music-note" hidden class="mt-2 text-xs text-rhl-secondary">
+          Este navegador no puede agregar música al video (usa Chrome o Edge).
+        </p>
+        <audio id="preview-audio" preload="none"></audio>
+      </fieldset>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="create-btn" type="button" class={btnPrimary}>Crear video</button>
+      </div>
+
+      <div id="progress" hidden class="flex flex-col gap-2 rounded-xl bg-white p-4 shadow-sm">
+        <div class="h-1.5 overflow-hidden rounded-full bg-rhl-soft-blue">
+          <div id="bar" class="h-full w-0 rounded-full bg-rhl-primary transition-[width] duration-300"></div>
+        </div>
+        <div class="flex items-center justify-between gap-3">
+          <p id="progress-label" class="text-sm text-rhl-secondary" aria-live="polite"></p>
+          <button id="cancel-btn" type="button" class={btnLink}>Cancelar</button>
+        </div>
+      </div>
+
+      <p id="error" hidden class="text-sm text-red-700" role="alert"></p>
+
+      <div id="done" hidden class="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm">
+        <p class="text-sm font-medium">✓ Video listo</p>
+        <video id="player" controls playsinline muted class="aspect-video w-full rounded-lg bg-black"></video>
+        <div>
+          <button id="download-btn" type="button" class={btnPrimary}>
+            Descargar video (MP4)
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</ToolsLayout>
+
+<script>
+  import { isAcceptedPhoto } from "@/lib/tools/photos";
+  import { downloadBlob, today } from "@/lib/tools/download";
+  import { takeHandoff } from "@/lib/tools/handoff";
+  import { canEncodeMusic } from "@/lib/tools/music";
+  import { bindDropzone, photoTile, photosLabel } from "@/lib/tools/ui";
+  import { canCreateVideo, createVideo, videoDuration } from "@/lib/tools/video";
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  const input = $<HTMLInputElement>("photos-input");
+  const upload = $<HTMLDivElement>("upload");
+  const unsupported = $<HTMLParagraphElement>("unsupported");
+  const setup = $<HTMLElement>("setup");
+  const summary = $<HTMLParagraphElement>("summary");
+  const thumbs = $<HTMLUListElement>("thumbs");
+  const changeBtn = $<HTMLButtonElement>("change-btn");
+  const withLogo = $<HTMLInputElement>("with-logo");
+  const musicNote = $<HTMLParagraphElement>("music-note");
+  const previewAudio = $<HTMLAudioElement>("preview-audio");
+  const musicInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="music"]')];
+  const previewBtns = [...document.querySelectorAll<HTMLButtonElement>("[data-preview]")];
+  const createBtn = $<HTMLButtonElement>("create-btn");
+  const progress = $<HTMLDivElement>("progress");
+  const bar = $<HTMLDivElement>("bar");
+  const progressLabel = $<HTMLParagraphElement>("progress-label");
+  const cancelBtn = $<HTMLButtonElement>("cancel-btn");
+  const errorEl = $<HTMLParagraphElement>("error");
+  const done = $<HTMLDivElement>("done");
+  const player = $<HTMLVideoElement>("player");
+  const downloadBtn = $<HTMLButtonElement>("download-btn");
+
+  let sources: File[] = [];
+  let thumbUrls: string[] = [];
+  let video: Blob | null = null;
+  let videoUrl: string | null = null;
+  let generating: AbortController | null = null;
+  let videoSupported = false;
+  let musicSupported = false;
+
+  const selectedMusic = () =>
+    musicSupported ? musicInputs.find((i) => i.checked)?.value || null : null;
+
+  function setBusy(busy: boolean) {
+    createBtn.disabled = busy || !videoSupported;
+    changeBtn.disabled = busy;
+    withLogo.disabled = busy;
+    musicInputs.forEach((i) => (i.disabled = busy || !musicSupported));
+    progress.hidden = !busy;
+  }
+
+  function stopPreview() {
+    previewAudio.pause();
+    previewBtns.forEach((b) => (b.textContent = "▶"));
+  }
+
+  /** El resultado siempre corresponde a las opciones actuales. */
+  function clearVideo() {
+    generating?.abort();
+    generating = null;
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
+    video = null;
+    videoUrl = null;
+    player.removeAttribute("src");
+    player.load();
+    done.hidden = true;
+    errorEl.hidden = true;
+    setBusy(false);
+  }
+
+  function setPhotos(files: File[]) {
+    clearVideo();
+    thumbUrls.forEach((url) => URL.revokeObjectURL(url));
+    thumbUrls = [];
+    thumbs.replaceChildren();
+
+    sources = files.filter(isAcceptedPhoto);
+    const skipped = files.length - sources.length;
+
+    sources.forEach((file) => {
+      const url = URL.createObjectURL(file);
+      thumbUrls.push(url);
+      thumbs.append(photoTile(url, file.name));
+    });
+
+    summary.textContent =
+      `${photosLabel(sources.length)} · video de ${videoDuration(sources.length)} s` +
+      (skipped ? ` · ${skipped} omitida(s) por formato` : "");
+    setup.hidden = sources.length === 0;
+    upload.hidden = sources.length > 0;
+  }
+
+  async function create() {
+    clearVideo();
+    stopPreview();
+    const controller = new AbortController();
+    generating = controller;
+    setBusy(true);
+    bar.style.width = "0%";
+    progressLabel.textContent = "Preparando…";
+
+    try {
+      const blob = await createVideo(sources, {
+        withLogo: withLogo.checked,
+        musicUrl: selectedMusic(),
+        signal: controller.signal,
+        onProgress: ({ fraction, label }) => {
+          bar.style.width = `${Math.round(fraction * 100)}%`;
+          progressLabel.textContent = label;
+        },
+      });
+      if (generating !== controller) return;
+      video = blob;
+      videoUrl = URL.createObjectURL(blob);
+      player.src = videoUrl;
+      done.hidden = false;
+      player.play().catch(() => {}); // en silencio: el navegador lo permite
+      done.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (err) {
+      if (generating !== controller) return;
+      if ((err as Error).name !== "AbortError") {
+        console.error(err);
+        errorEl.textContent = "No se pudo crear el video. Intenta de nuevo en Chrome.";
+        errorEl.hidden = false;
+      }
+    } finally {
+      if (generating === controller) generating = null;
+      setBusy(false);
+    }
+  }
+
+  // --- Eventos ---------------------------------------------------------
+
+  bindDropzone(input, setPhotos);
+
+  changeBtn.addEventListener("click", () => {
+    clearVideo();
+    sources = [];
+    setup.hidden = true;
+    upload.hidden = false;
+    input.click();
+  });
+
+  [withLogo, ...musicInputs].forEach((el) => el.addEventListener("change", clearVideo));
+
+  createBtn.addEventListener("click", create);
+  cancelBtn.addEventListener("click", () => generating?.abort());
+  downloadBtn.addEventListener("click", () => {
+    if (video) downloadBlob(video, `video-rhl-${today()}.mp4`);
+  });
+
+  previewBtns.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const url = btn.dataset.preview!;
+      const playingThis = !previewAudio.paused && previewAudio.src.endsWith(url);
+      stopPreview();
+      if (playingThis) return;
+      previewAudio.src = url;
+      previewAudio.currentTime = 0;
+      previewAudio.play().catch(() => stopPreview());
+      btn.textContent = "■";
+    }),
+  );
+  previewAudio.addEventListener("ended", stopPreview);
+
+  // --- Inicio ----------------------------------------------------------
+
+  Promise.all([canCreateVideo(), canEncodeMusic()]).then(([v, m]) => {
+    videoSupported = v;
+    musicSupported = m;
+    unsupported.hidden = v;
+    musicNote.hidden = m;
+    if (!m) musicInputs[0].checked = true; // "Sin música"
+    setBusy(false);
+  });
+
+  // Fotos que llegan desde "Fotos con logo" (vienen limpias: el logo lo pone el video)
+  const params = new URLSearchParams(location.search);
+  if (params.has("desde")) {
+    history.replaceState(null, "", location.pathname);
+    takeHandoff().then((files) => {
+      if (files?.length && !sources.length) {
+        withLogo.checked = true;
+        setPhotos(files);
+      }
+    });
+  }
+</script>

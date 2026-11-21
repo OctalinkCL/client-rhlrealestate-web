@@ -30,14 +30,29 @@ hardware), las fotos nunca se suben a ningún lado y "sin memoria" sale gratis.
 - `public/tools/**` (música, portada, final) **no** pasa por el middleware: es público. Está bien, no es sensible.
 - Astro **no carga un `src/middleware.ts` nuevo ni cambios de `.env` sin reiniciar** el servidor de desarrollo.
 
-## /tools/logo: fotos con logo, video y ZIP
+## Principios de UX (decididos con el usuario, 2026-11-21)
 
-Página: `src/pages/tools/logo.astro`.
+Tres pestañas, **una tarea y un resultado por herramienta**: "Fotos con logo"
+(`/tools/logo`), "Video" (`/tools/video`) y "Carrusel redes" (`/tools/redes`).
+- La pantalla vacía muestra solo la zona de carga. Las opciones aparecen cuando ya hay fotos.
+- Los botones no cambian de nombre ni de lugar. Cambiar una opción borra el resultado anterior, así el resultado siempre corresponde a las opciones actuales.
+- No hay ZIP combinado de fotos y video (se descartó): cada herramienta descarga lo suyo. Un MP4 suelto se sube directo a YouTube.
+- No se agregan casillas que cambien el modo de la página. La opción del logo vive solo en Video ("Agregar logo al video").
+- Pendiente para más adelante: reordenar fotos arrastrándolas y adaptar la interfaz al celular.
 
-**Flujo:** subir JPG/PNG/WebP (HEIC se omite con aviso) → vista previa con logo →
-"Descargar imágenes (ZIP)" / "Crear video" → reproductor + "Descargar video" → el
-ZIP pasa a "Descargar todo (fotos + video)". Casilla **"Estas fotos ya tienen
-logo"**: no se agrega otro, se oculta el ZIP y solo se genera el video.
+Piezas compartidas: `src/components/tools/Dropzone.astro` (zona de carga) y `src/lib/tools/ui.ts`
+(`bindDropzone`, `photoTile`, `photosLabel`).
+
+## /tools/logo: Fotos con logo
+
+Página: `src/pages/tools/logo.astro`. Flujo: subir JPG/PNG/WebP (HEIC se omite con
+aviso) → miniaturas con logo (un clic descarga una) → "Descargar fotos (ZIP)".
+Al terminar ofrece el atajo **"¿Quieres un video con estas fotos? → Crear video"**.
+
+**Atajo a Video** (`src/lib/tools/handoff.ts`): las páginas son distintas, así que las fotos
+**limpias** se guardan un momento en IndexedDB y se navega a `/tools/video?desde=fotos`.
+Video las lee y **las borra de inmediato**, y el traspaso vence a los 10 minutos. Si IndexedDB
+falla (modo privado), solo navega y el usuario vuelve a subir las fotos.
 
 **Logo** (`src/lib/tools/watermark.ts`)
 - `public/logo_rhl_white.svg`, centrado, **ancho = 70% del lado corto**, **opacidad 0.6**. Se midió en fotos publicadas por el cliente (743/1032 y 547/792 ≈ 0.7). Constantes `LOGO_SCALE` y `LOGO_OPACITY`.
@@ -48,7 +63,15 @@ logo"**: no se agrega otro, se oculta el ZIP y solo se genera el video.
 
 **ZIP** (`download.ts`): `fflate`, sin recomprimir (nivel 0), porque JPG y MP4 ya vienen comprimidos.
 
-**Video** (`video.ts`), el mismo efecto del showcase de la ficha (`PropertyShowcase.astro`):
+## /tools/video: Video
+
+Página: `src/pages/tools/video.astro`. Flujo: subir fotos (o recibirlas del atajo) →
+miniaturas y "Cambiar fotos" → **"☑ Agregar logo al video"** (marcado por defecto; la
+ayuda dice que se desmarque si las fotos ya tienen logo) → música → "Crear video" →
+progreso con tiempo restante estimado según la velocidad real del equipo, y "Cancelar" →
+"✓ Video listo" con el reproductor (arranca solo, en silencio) y "Descargar video (MP4)".
+
+**Render** (`video.ts`), el mismo efecto del showcase de la ficha (`PropertyShowcase.astro`):
 - 1920×1080 (YouTube), 30 fps, **4 s por foto**, **fundido de 1 s**, foto al **110%** con **paneo solo lateral ±4%** que alterna la dirección. La foto saliente sigue moviéndose durante el fundido.
 - Fundido desde y hacia negro de 0,5 s al inicio y al final. Sin lámina final, por decisión del usuario.
 - El logo se dibuja **fijo encima de cada cuadro**. El video siempre parte de las fotos **limpias**: si se armara con las fotos ya marcadas, el logo se movería con el paneo.
@@ -99,7 +122,7 @@ Página: `src/pages/tools/redes.astro` (`?codigo=EB-XXXX`, resuelto en el servid
 ## Pendientes (al 2026-11-21)
 
 1. **El logo de la foto de EasyBroker choca con "Venta" en la portada**, porque el logo queda en el centro del cuadrado. Opciones planteadas: (a) subir opcionalmente una foto limpia para la portada (recomendada), (b) achicar o bajar "Venta / Disponible", (c) dejarlo así. Sin decidir.
-2. Mejorar la UX de `/tools/logo`. ¿Renombrar la pestaña a "Fotos y video"?
+2. ~~Mejorar la UX de `/tools/logo`~~: resuelto con la separación en 3 pestañas (ver Principios de UX).
 3. Recibir del cliente: PNG de portada con zona transparente, PNG del slide final, íconos SVG propios (opcional) y fuentes exactas.
 4. Identificar el nombre de las pistas en Mixkit.
 5. Probar el carrusel con un terreno y una oficina (portada sin íconos o con solo la superficie).

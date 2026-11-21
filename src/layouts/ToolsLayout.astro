@@ -11,8 +11,9 @@ interface Props {
 const { title, bare = false } = Astro.props;
 
 const tabs = [
-  { href: "/tools/logo", label: "Agregar logo" },
-  { href: "/tools/redes", label: "Publicación redes" },
+  { href: "/tools/logo", label: "Fotos con logo" },
+  { href: "/tools/video", label: "Video" },
+  { href: "/tools/redes", label: "Carrusel redes" },
 ];
 
 const current = Astro.url.pathname.replace(/\/$/, "");

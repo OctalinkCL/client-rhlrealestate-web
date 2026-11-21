@@ -1,449 +1,153 @@
 ---
 import ToolsLayout from "@/layouts/ToolsLayout.astro";
-import { TRACKS } from "@/lib/tools/tracks";
-
-const trackOption =
-  "flex items-center rounded-lg border border-rhl-secondary/40 bg-white has-checked:border-rhl-primary has-checked:ring-1 has-checked:ring-rhl-primary has-disabled:opacity-50";
+import Dropzone from "@/components/tools/Dropzone.astro";
 
 const btnPrimary =
   "rounded-lg bg-rhl-primary px-5 py-2.5 font-medium text-white hover:bg-rhl-primary/90 disabled:cursor-not-allowed disabled:opacity-40";
-const btnSecondary =
-  "rounded-lg border border-rhl-primary px-5 py-2.5 font-medium text-rhl-primary hover:bg-white disabled:cursor-not-allowed disabled:opacity-40";
 ---
 
-<ToolsLayout title="Agregar logo">
+<ToolsLayout title="Fotos con logo">
   <div class="flex flex-col gap-6">
     <header>
-      <h1 class="text-2xl font-semibold">Agregar logo</h1>
+      <h1 class="text-2xl font-semibold">Fotos con logo</h1>
       <p class="mt-1 text-sm text-rhl-secondary">
-        Sube las fotos de la propiedad (JPG, PNG o WebP). Se les pone el logo al
-        centro, puedes crear un video y descargar todo en un ZIP. Las fotos no
-        salen de tu computador.
+        Sube las fotos de la propiedad y descárgalas con el logo al centro.
+        Las fotos no salen de tu computador.
       </p>
     </header>
 
-    <label class="flex items-center gap-2 text-sm">
-      <input id="has-logo" type="checkbox" class="size-4 accent-rhl-primary" />
-      Estas fotos ya tienen logo
-    </label>
+    <Dropzone inputId="photos-input" />
 
-    <fieldset id="music">
-      <legend class="mb-2 text-sm font-medium">Música del video</legend>
-      <div class="flex flex-wrap gap-2">
-        <label class:list={[trackOption, "cursor-pointer gap-2 px-3 py-2 text-sm"]}>
-          <input type="radio" name="music" value="" class="accent-rhl-primary" />
-          Sin música
-        </label>
-        {
-          TRACKS.map((track, i) => (
-            <div class={trackOption}>
-              <label class="flex cursor-pointer items-center gap-2 py-2 pr-1 pl-3 text-sm">
-                <input
-                  type="radio"
-                  name="music"
-                  value={track.url}
-                  checked={i === 0}
-                  class="accent-rhl-primary"
-                />
-                {track.label}
-              </label>
-              <button
-                type="button"
-                data-preview={track.url}
-                aria-label={`Escuchar ${track.label}`}
-                class="mr-1 grid size-7 place-items-center rounded-md text-xs text-rhl-secondary hover:bg-rhl-soft-blue hover:text-rhl-primary"
-              >
-                ▶
-              </button>
-            </div>
-          ))
-        }
-      </div>
-      <p id="music-note" hidden class="mt-2 text-xs text-rhl-secondary">
-        Este navegador no puede agregar música al video (usa Chrome o Edge).
-      </p>
-      <audio id="preview-audio" preload="none"></audio>
-    </fieldset>
-
-    <label
-      id="dropzone"
-      for="photos-input"
-      class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-rhl-secondary/50 bg-white px-6 py-10 text-center transition-colors hover:border-rhl-primary data-[dragging]:border-rhl-primary data-[dragging]:bg-rhl-soft-blue"
-    >
-      <span class="font-medium">Arrastra las fotos aquí o haz clic para elegirlas</span>
-      <span class="text-sm text-rhl-secondary">Se mantiene el orden en que vienen</span>
-      <input
-        id="photos-input"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        multiple
-        class="sr-only"
-      />
-    </label>
-
-    <div class="flex flex-wrap items-center gap-3">
-      <button id="zip-btn" type="button" disabled class={btnPrimary}>
-        Descargar imágenes (ZIP)
-      </button>
-      <button id="video-btn" type="button" disabled class={btnSecondary}>
-        Crear video
-      </button>
-      <button
-        id="clear-btn"
-        type="button"
-        hidden
-        class="px-3 py-2.5 text-sm text-rhl-secondary hover:text-rhl-primary"
-      >
-        Limpiar
-      </button>
-      <p id="status" class="text-sm text-rhl-secondary" aria-live="polite"></p>
-    </div>
-
-    <section id="video-section" hidden class="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm">
-      <div id="video-progress" class="flex flex-col gap-2">
-        <div class="h-1.5 overflow-hidden rounded-full bg-rhl-soft-blue">
-          <div
-            id="video-bar"
-            class="h-full w-0 rounded-full bg-rhl-primary transition-[width] duration-300"
-          >
-          </div>
-        </div>
-        <div class="flex items-center justify-between gap-3">
-          <p id="video-label" class="text-sm text-rhl-secondary" aria-live="polite"></p>
-          <button
-            id="video-cancel"
-            type="button"
-            class="text-sm text-rhl-secondary hover:text-rhl-primary"
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-      <div id="video-result" hidden class="flex flex-col gap-3">
-        <video
-          id="video-player"
-          controls
-          playsinline
-          class="aspect-video w-full rounded-lg bg-black"
+    <section id="result" hidden class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="zip-btn" type="button" disabled class={btnPrimary}>
+          Descargar fotos (ZIP)
+        </button>
+        <button
+          id="clear-btn"
+          type="button"
+          class="px-3 py-2.5 text-sm text-rhl-secondary hover:text-rhl-primary"
         >
-        </video>
-        <div>
-          <button id="video-download" type="button" class={btnPrimary}>
-            Descargar video (MP4)
-          </button>
-        </div>
+          Empezar de nuevo
+        </button>
+        <p id="status" class="text-sm text-rhl-secondary" aria-live="polite"></p>
       </div>
-    </section>
 
-    <ul id="preview" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"></ul>
+      <a
+        id="to-video"
+        href="/tools/video"
+        hidden
+        class="flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm shadow-sm ring-rhl-primary hover:ring-2"
+      >
+        <span>¿Quieres un video con estas fotos?</span>
+        <span class="font-medium text-rhl-primary">Crear video →</span>
+      </a>
+
+      <ul id="preview" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"></ul>
+    </section>
   </div>
 </ToolsLayout>
 
 <script>
-  import {
-    addLogoToPhoto,
-    isAcceptedPhoto,
-    type ProcessedPhoto,
-  } from "@/lib/tools/photos";
-  import {
-    buildZip,
-    downloadBlob,
-    today,
-    uniqueName,
-    type NamedBlob,
-  } from "@/lib/tools/download";
-  import { canCreateVideo, createVideo, videoDuration } from "@/lib/tools/video";
-  import { canEncodeMusic } from "@/lib/tools/music";
+  import { addLogoToPhoto, isAcceptedPhoto, type ProcessedPhoto } from "@/lib/tools/photos";
+  import { buildZip, downloadBlob, today, uniqueName } from "@/lib/tools/download";
+  import { saveHandoff } from "@/lib/tools/handoff";
+  import { bindDropzone, photoTile, photosLabel } from "@/lib/tools/ui";
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
   const input = $<HTMLInputElement>("photos-input");
-  const hasLogoInput = $<HTMLInputElement>("has-logo");
-  const dropzone = $<HTMLLabelElement>("dropzone");
+  const result = $<HTMLElement>("result");
   const zipBtn = $<HTMLButtonElement>("zip-btn");
-  const videoBtn = $<HTMLButtonElement>("video-btn");
   const clearBtn = $<HTMLButtonElement>("clear-btn");
   const status = $<HTMLParagraphElement>("status");
+  const toVideo = $<HTMLAnchorElement>("to-video");
   const preview = $<HTMLUListElement>("preview");
-  const videoSection = $<HTMLElement>("video-section");
-  const videoProgress = $<HTMLDivElement>("video-progress");
-  const videoBar = $<HTMLDivElement>("video-bar");
-  const videoLabel = $<HTMLParagraphElement>("video-label");
-  const videoCancel = $<HTMLButtonElement>("video-cancel");
-  const videoResult = $<HTMLDivElement>("video-result");
-  const videoPlayer = $<HTMLVideoElement>("video-player");
-  const videoDownload = $<HTMLButtonElement>("video-download");
-  const musicNote = $<HTMLParagraphElement>("music-note");
-  const previewAudio = $<HTMLAudioElement>("preview-audio");
-  const musicInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="music"]')];
-  const previewBtns = [...document.querySelectorAll<HTMLButtonElement>("[data-preview]")];
 
-  /** Fotos tal como se subieron (limpias o con logo). El video siempre parte de estas. */
+  /** Fotos originales (limpias): son las que se pasan al video. */
   let sources: File[] = [];
-  /** Fotos con logo para el ZIP (vacío si ya traían logo). */
   let photos: ProcessedPhoto[] = [];
-  let previewUrls: string[] = [];
-  let video: Blob | null = null;
-  let videoUrl: string | null = null;
-  let videoSupported = false;
-  let musicSupported = false;
-  let processing = false;
-  let generating: AbortController | null = null;
+  let urls: string[] = [];
   /** Sube con cada carga: descarta el trabajo de una carga anterior. */
   let run = 0;
 
-  const hasLogo = () => hasLogoInput.checked;
-  const selectedMusic = () =>
-    musicSupported ? musicInputs.find((i) => i.checked)?.value || null : null;
-
-  function stopPreview() {
-    previewAudio.pause();
-    previewBtns.forEach((b) => (b.textContent = "▶"));
-  }
-
-  function fileName(base: string, ext: string) {
-    return `${base}-${today()}.${ext}`;
-  }
-
-  function updateUI() {
-    const busy = processing || generating !== null;
-
-    zipBtn.hidden = hasLogo();
-    zipBtn.disabled = busy || photos.length === 0;
-    zipBtn.textContent = video
-      ? "Descargar todo (fotos + video)"
-      : "Descargar imágenes (ZIP)";
-
-    videoBtn.textContent = video ? "Volver a crear video" : "Crear video";
-    videoBtn.disabled = busy || sources.length === 0 || !videoSupported;
-    videoBtn.title = videoSupported
-      ? ""
-      : "El video requiere Chrome o Edge en computador";
-
-    clearBtn.hidden = sources.length === 0;
-    clearBtn.disabled = busy;
-    input.disabled = busy;
-    hasLogoInput.disabled = busy;
-    musicInputs.forEach((i) => (i.disabled = busy || !musicSupported));
-  }
-
-  function clearVideo() {
-    generating?.abort();
-    generating = null;
-    if (videoUrl) URL.revokeObjectURL(videoUrl);
-    video = null;
-    videoUrl = null;
-    videoPlayer.removeAttribute("src");
-    videoPlayer.load();
-    videoSection.hidden = true;
-  }
-
-  function clearOutputs() {
+  function reset() {
     run++;
-    previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    previewUrls = [];
+    urls.forEach((url) => URL.revokeObjectURL(url));
+    urls = [];
     photos = [];
+    sources = [];
     preview.replaceChildren();
     status.textContent = "";
-    clearVideo();
+    result.hidden = true;
+    toVideo.hidden = true;
+    zipBtn.disabled = true;
+    input.disabled = false;
   }
 
-  function addPreview(blob: Blob, name: string) {
-    const url = URL.createObjectURL(blob);
-    previewUrls.push(url);
-
-    const li = document.createElement("li");
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = name;
-    link.title = `Descargar ${name}`;
-    link.className =
-      "block overflow-hidden rounded-lg bg-white shadow-sm ring-rhl-primary hover:ring-2";
-
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = name;
-    img.loading = "lazy";
-    img.decoding = "async";
-    img.className = "aspect-[4/3] w-full object-cover";
-
-    const caption = document.createElement("span");
-    caption.textContent = name;
-    caption.className = "block truncate px-2 py-1.5 text-xs text-rhl-secondary";
-
-    link.append(img, caption);
-    li.append(link);
-    preview.append(li);
-  }
-
-  async function processAll(skipped = 0) {
-    clearOutputs();
+  async function handleFiles(all: File[]) {
+    reset();
     const current = run;
-    processing = true;
-    updateUI();
-
-    const usedNames = new Set<string>();
+    const files = all.filter(isAcceptedPhoto);
+    const skipped = all.length - files.length;
     const errors: string[] = [];
+    const usedNames = new Set<string>();
 
-    for (let i = 0; i < sources.length; i++) {
-      const file = sources[i];
-      if (hasLogo()) {
-        addPreview(file, file.name);
-        continue;
-      }
-      status.textContent = `Procesando ${i + 1} de ${sources.length}…`;
+    result.hidden = false;
+    input.disabled = true;
+
+    for (let i = 0; i < files.length; i++) {
+      status.textContent = `Agregando logo… ${i + 1} de ${files.length}`;
       try {
-        const photo = await addLogoToPhoto(file);
+        const photo = await addLogoToPhoto(files[i]);
         if (current !== run) return;
         photo.name = uniqueName(photo.name, usedNames);
         photos.push(photo);
-        addPreview(photo.blob, photo.name);
+        sources.push(files[i]);
+        const url = URL.createObjectURL(photo.blob);
+        urls.push(url);
+        preview.append(photoTile(url, photo.name, true));
       } catch (err) {
         if (current !== run) return;
         console.error(err);
-        errors.push(file.name);
+        errors.push(files[i].name);
       }
     }
 
-    const ready = hasLogo() ? sources.length : photos.length;
+    input.disabled = false;
     const notes = [
-      `${ready} ${ready === 1 ? "foto lista" : "fotos listas"}.`,
+      photos.length ? `✓ ${photosLabel(photos.length)} con logo.` : "No hay fotos para procesar.",
       skipped && `${skipped} omitida(s): formato no soportado (usa JPG o PNG).`,
       errors.length && `No se pudo procesar: ${errors.join(", ")}.`,
     ].filter(Boolean);
     status.textContent = notes.join(" ");
-    processing = false;
-    updateUI();
+    zipBtn.disabled = photos.length === 0;
+    toVideo.hidden = photos.length === 0;
   }
 
-  function handleFiles(fileList: FileList | File[]) {
-    const all = Array.from(fileList);
-    if (!all.length) return;
-    sources = all.filter(isAcceptedPhoto);
-    processAll(all.length - sources.length);
-    input.value = "";
-  }
-
-  async function generateVideo() {
-    if (!sources.length) return;
-    clearVideo();
-    stopPreview();
-    const controller = new AbortController();
-    generating = controller;
-
-    videoSection.hidden = false;
-    videoProgress.hidden = false;
-    videoResult.hidden = true;
-    videoBar.style.width = "0%";
-    videoLabel.textContent = `Preparando video de ${videoDuration(sources.length)} s…`;
-    updateUI();
-
-    try {
-      const blob = await createVideo(sources, {
-        withLogo: !hasLogo(),
-        musicUrl: selectedMusic(),
-        signal: controller.signal,
-        onProgress: ({ fraction, label }) => {
-          videoBar.style.width = `${Math.round(fraction * 100)}%`;
-          videoLabel.textContent = label;
-        },
-      });
-      if (generating !== controller) return;
-      video = blob;
-      videoUrl = URL.createObjectURL(blob);
-      videoPlayer.src = videoUrl;
-      videoProgress.hidden = true;
-      videoResult.hidden = false;
-    } catch (err) {
-      if (generating !== controller) return;
-      if ((err as Error).name === "AbortError") {
-        videoSection.hidden = true;
-      } else {
-        console.error(err);
-        videoLabel.textContent = "No se pudo crear el video. Intenta de nuevo en Chrome.";
-      }
-    } finally {
-      if (generating === controller) generating = null;
-      updateUI();
-    }
-  }
-
-  // --- Eventos ---------------------------------------------------------
-
-  input.addEventListener("change", () => {
-    if (input.files) handleFiles(input.files);
-  });
-
-  dropzone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropzone.dataset.dragging = "";
-  });
-  dropzone.addEventListener("dragleave", () => {
-    delete dropzone.dataset.dragging;
-  });
-  dropzone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    delete dropzone.dataset.dragging;
-    if (input.disabled) return;
-    if (e.dataTransfer?.files) handleFiles(e.dataTransfer.files);
-  });
-
-  hasLogoInput.addEventListener("change", () => {
-    if (sources.length) processAll();
-    else updateUI();
-  });
+  bindDropzone(input, handleFiles);
 
   zipBtn.addEventListener("click", async () => {
-    if (!photos.length) return;
+    zipBtn.disabled = true;
     const previous = status.textContent;
-    processing = true;
-    updateUI();
-    status.textContent = "Generando ZIP…";
+    status.textContent = "Preparando ZIP…";
     try {
-      const files: NamedBlob[] = [...photos];
-      if (video) files.push({ name: "video.mp4", blob: video });
-      downloadBlob(await buildZip(files), fileName("fotos-rhl", "zip"));
+      downloadBlob(await buildZip(photos), `fotos-rhl-${today()}.zip`);
       status.textContent = previous;
     } catch (err) {
       console.error(err);
       status.textContent = "No se pudo generar el ZIP. Intenta de nuevo.";
     } finally {
-      processing = false;
-      updateUI();
+      zipBtn.disabled = false;
     }
   });
 
-  videoBtn.addEventListener("click", generateVideo);
-  videoCancel.addEventListener("click", () => generating?.abort());
-  videoDownload.addEventListener("click", () => {
-    if (video) downloadBlob(video, fileName("video-rhl", "mp4"));
+  // Atajo: lleva las fotos limpias a la pestaña Video (el video pone el logo encima)
+  toVideo.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const saved = await saveHandoff(sources);
+    location.href = saved ? "/tools/video?desde=fotos" : "/tools/video";
   });
 
-  clearBtn.addEventListener("click", () => {
-    sources = [];
-    clearOutputs();
-    updateUI();
-  });
-
-  previewBtns.forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const url = btn.dataset.preview!;
-      const playingThis = !previewAudio.paused && previewAudio.src.endsWith(url);
-      stopPreview();
-      if (playingThis) return;
-      previewAudio.src = url;
-      previewAudio.currentTime = 0;
-      previewAudio.play().catch(() => stopPreview());
-      btn.textContent = "■";
-    }),
-  );
-  previewAudio.addEventListener("ended", stopPreview);
-
-  Promise.all([canCreateVideo(), canEncodeMusic()]).then(([video, music]) => {
-    videoSupported = video;
-    musicSupported = music;
-    musicNote.hidden = music;
-    if (!music) musicInputs[0].checked = true; // "Sin música"
-    updateUI();
-  });
+  clearBtn.addEventListener("click", reset);
 </script>

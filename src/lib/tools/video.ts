@@ -243,6 +243,7 @@ export async function createVideo(photos: Blob[], options: VideoOptions): Promis
     await output.start();
 
     const frames = Math.round(total * FPS);
+    const startedAt = performance.now();
     // El audio se encola en paralelo: si se espera completo antes del video,
     // el muxer puede quedarse esperando frames para intercalar.
     const audioDone = audioSource
@@ -257,9 +258,14 @@ export async function createVideo(photos: Blob[], options: VideoOptions): Promis
         await source.add(t, 1 / FPS);
 
         if (f % FPS === 0) {
+          // Tiempo restante según la velocidad real de este equipo
+          const elapsed = (performance.now() - startedAt) / 1000;
+          const remaining = f > 0 ? Math.ceil((elapsed / f) * (frames - f)) : null;
           onProgress?.({
             fraction: 0.1 + (f / frames) * 0.88,
-            label: `Generando video… ${Math.round((f / frames) * 100)}%`,
+            label:
+              `Generando video… ${Math.round((f / frames) * 100)}%` +
+              (remaining !== null && f >= FPS * 2 ? ` · quedan ~${remaining} s` : ""),
           });
           await nextTick(); // deja respirar a la UI
         }
