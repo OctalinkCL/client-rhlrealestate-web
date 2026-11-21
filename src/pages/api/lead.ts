@@ -1,6 +1,10 @@
 import type { APIRoute } from "astro";
 import { createContactRequest, EasyBrokerError } from "../../lib/easybroker";
-import { buildLeadMessage, isLeadOperation } from "../../lib/contact";
+import {
+  buildLeadMessage,
+  chileanMobileDigits,
+  isLeadOperation,
+} from "../../lib/contact";
 
 const clean = (value: unknown, max: number) =>
   String(value ?? "")
@@ -27,7 +31,8 @@ export const POST: APIRoute = async ({ request }) => {
   const property_id = clean(raw.property_id, 20);
   const name = clean(raw.name, 100);
   const email = clean(raw.email, 150);
-  const digits = clean(raw.phone, 20).replace(/\D/g, "");
+  // Acepta "9 1234 5678", "+56 9…", etc. (autocompletado del teléfono)
+  const digits = chileanMobileDigits(clean(raw.phone, 20));
 
   if (!/^EB-[A-Z0-9]+$/i.test(property_id)) {
     return json({ error: "Propiedad inválida" }, 422);
