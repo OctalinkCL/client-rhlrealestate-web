@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <!-- Capa base de la portada (provisional, se reemplaza por el PNG del cliente).
+       Todo lo transparente deja ver la foto; los textos los dibuja el código. -->
+  <defs>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Oscurece levemente la parte alta de la foto para que se lea "Venta / Disponible" -->
+  <rect x="0" y="0" width="1080" height="400" fill="url(#shade)"/>
+  <!-- Panel inferior -->
+  <path d="M0 1080 V888 C0 838 34 808 120 808 H1080 V1080 Z" fill="#e5e7ea"/>
+</svg>

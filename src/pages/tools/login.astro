@@ -1,0 +1,66 @@
+---
+import ToolsLayout from "@/layouts/ToolsLayout.astro";
+import {
+  TOOLS_COOKIE,
+  TOOLS_SESSION_DAYS,
+  checkPassword,
+  isToolsConfigured,
+  isValidSession,
+  safeNext,
+  sessionToken,
+} from "@/lib/tools-auth";
+
+const next = safeNext(Astro.url.searchParams.get("next"));
+let error = "";
+
+if (!isToolsConfigured()) {
+  error = "Falta configurar TOOLS_PASSWORD en el servidor.";
+} else if (isValidSession(Astro.cookies.get(TOOLS_COOKIE)?.value)) {
+  return Astro.redirect(next);
+} else if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const input = String(form.get("password") ?? "");
+
+  if (checkPassword(input)) {
+    Astro.cookies.set(TOOLS_COOKIE, sessionToken()!, {
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * TOOLS_SESSION_DAYS,
+    });
+    return Astro.redirect(next);
+  }
+
+  // Pausa ante un error para frenar intentos por fuerza bruta
+  await new Promise((r) => setTimeout(r, 1000));
+  Astro.response.status = 401;
+  error = "Contraseña incorrecta.";
+}
+---
+
+<ToolsLayout title="Ingresar" bare>
+  <div class="mx-auto mt-12 max-w-sm rounded-xl bg-white p-8 shadow-sm">
+    <h1 class="mb-6 text-xl font-semibold">Ingresar</h1>
+    <form method="post" class="flex flex-col gap-4">
+      <label class="flex flex-col gap-1 text-sm font-medium">
+        Contraseña
+        <input
+          type="password"
+          name="password"
+          required
+          autofocus
+          autocomplete="current-password"
+          class="rounded-lg border border-rhl-secondary/40 px-3 py-2 font-normal focus:border-rhl-primary focus:outline-none"
+        />
+      </label>
+      {error && <p class="text-sm text-red-600" role="alert">{error}</p>}
+      <button
+        type="submit"
+        class="rounded-lg bg-rhl-primary px-4 py-2 font-medium text-white hover:bg-rhl-primary/90"
+      >
+        Entrar
+      </button>
+    </form>
+  </div>
+</ToolsLayout>

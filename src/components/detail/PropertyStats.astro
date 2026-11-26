@@ -29,6 +29,11 @@ const ageStat = /^\d{4}$/.test(age)
     ? { label: "Antigüedad", value: `${age} ${plural(Number(age), "año", "años")}` }
     : null;
 
+// EasyBroker manda el piso como número ("8") o como símbolo ("ground_floor" = 1° piso).
+// Un símbolo desconocido no se muestra para no imprimir el código crudo.
+const floorRaw = String(p.floor ?? "").trim();
+const floor = floorRaw === "ground_floor" ? "1" : /^\d+$/.test(floorRaw) ? floorRaw : null;
+
 // Solo mostramos los datos que la propiedad tiene (un terreno no tiene baños,
 // un depto no tiene m² de terreno, etc.).
 const stats = [
@@ -67,7 +72,7 @@ const stats = [
     value: p.floors,
     label: plural(p.floors, "Piso", "Pisos"),
   },
-  p.floor && { icon: Building2, value: `${p.floor}°`, label: "Piso" },
+  floor && { icon: Building2, value: `${floor}°`, label: "Piso" },
   ageStat && { icon: CalendarDays, ...ageStat },
 ].filter(Boolean) as { icon: typeof Bath; value: string | number; label: string }[];
 ---

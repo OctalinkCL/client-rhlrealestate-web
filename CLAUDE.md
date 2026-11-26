@@ -50,3 +50,23 @@ documentación oficial (por ejemplo, los parámetros inválidos se ignoran sin d
 Usar `Cache-Control: s-maxage=300` (5 minutos) en todas las respuestas.
 El sitio es inmobiliario — no necesita tiempo real.
 5 minutos es el balance perfecto entre frescura y rendimiento.
+
+**Excepción:** `/tools/*` y `/api/tools/*` van siempre con `Cache-Control: private, no-store`
+(lo aplica `src/middleware.ts`). Una página protegida cacheada en la CDN se serviría sin login.
+
+---
+
+## Herramientas internas (/tools)
+
+Usar la skill **`tools`** ([.claude/skills/tools/SKILL.md](.claude/skills/tools/SKILL.md)):
+decisiones, datos verificados, archivos y pendientes de `/tools/logo` y `/tools/redes`.
+
+Herramientas para el equipo del cliente, protegidas con una sola contraseña
+(`TOOLS_PASSWORD` en `.env` y en Vercel). Login, cookie y rutas protegidas en
+`src/lib/tools-auth.ts` + `src/middleware.ts`. El procesamiento de imágenes y video
+se hace en el navegador; el servidor solo valida el acceso y consulta EasyBroker.
+
+```
+# .env
+TOOLS_PASSWORD=
+```
