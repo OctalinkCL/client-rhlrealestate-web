@@ -1,0 +1,483 @@
+---
+import ToolsLayout from "@/layouts/ToolsLayout.astro";
+import { findProperty } from "@/lib/easybroker";
+import {
+  MAX_COVER_STATS,
+  toSocialProperty,
+  type SocialProperty,
+  type StatKey,
+} from "@/lib/tools/social-data";
+import {
+  Bath,
+  BedDouble,
+  Building2,
+  CalendarDays,
+  Car,
+  LandPlot,
+  Layers,
+  Ruler,
+  Toilet,
+} from "@lucide/astro";
+
+const codigo = (Astro.url.searchParams.get("codigo") ?? "").trim().toUpperCase();
+
+let data: SocialProperty | null = null;
+let error = "";
+
+if (codigo) {
+  if (!/^EB-[A-Z0-9]+$/.test(codigo)) {
+    error = "El código debe tener la forma EB-XXXX.";
+  } else {
+    try {
+      const property = await findProperty(codigo);
+      if (property) data = toSocialProperty(property);
+      else error = `No existe una propiedad con el código ${codigo}.`;
+    } catch (err) {
+      console.error(err);
+      error = "No se pudo consultar EasyBroker. Intenta de nuevo.";
+    }
+  }
+}
+
+// Mismos íconos que la ficha (PropertyStats), en blanco para el cuadrado azul
+const ICONS: Record<StatKey, typeof Bath> = {
+  bedrooms: BedDouble,
+  bathrooms: Bath,
+  half_bathrooms: Toilet,
+  parking_spaces: Car,
+  construction_size: Ruler,
+  lot_size: LandPlot,
+  floors: Layers,
+  floor: Building2,
+  age: CalendarDays,
+};
+
+// JSON seguro dentro de <script>: escapa "<" para que no cierre la etiqueta
+const json = data ? JSON.stringify(data).replace(/</g, "\\u003c") : "";
+
+const field =
+  "rounded-lg border border-rhl-secondary/40 bg-white px-3 py-2 font-normal focus:border-rhl-primary focus:outline-none";
+const btnPrimary =
+  "rounded-lg bg-rhl-primary px-5 py-2.5 font-medium text-white hover:bg-rhl-primary/90 disabled:cursor-not-allowed disabled:opacity-40";
+---
+
+<ToolsLayout title="Carrusel redes">
+  <div class="flex flex-col gap-6">
+    <header>
+      <h1 class="text-2xl font-semibold">Carrusel redes</h1>
+      <p class="mt-1 text-sm text-rhl-secondary">
+        Ingresa el código de la propiedad para armar el carrusel de Instagram
+        (1080×1080) con sus fotos de EasyBroker.
+      </p>
+    </header>
+
+    <form method="get" class="flex flex-wrap items-end gap-3">
+      <label class="flex flex-col gap-1 text-sm font-medium">
+        Código de la propiedad
+        <input
+          name="codigo"
+          value={codigo}
+          required
+          placeholder="EB-UH7861"
+          autocomplete="off"
+          class:list={[field, "w-48 uppercase"]}
+        />
+      </label>
+      <button type="submit" class={btnPrimary}>Buscar</button>
+      {error && <p class="w-full text-sm text-red-600" role="alert">{error}</p>}
+    </form>
+
+    {
+      data && (
+        <>
+          <section class="rounded-xl bg-white p-4 shadow-sm">
+            <p class="text-xs text-rhl-secondary">
+              {data.id} · {data.type} · {data.operations.join(" / ")}
+              {data.price && ` · ${data.price}`}
+            </p>
+            <p class="mt-1 font-semibold">{data.title}</p>
+            <p class="text-sm text-rhl-secondary">{data.location}</p>
+          </section>
+
+          <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div>
+              <h2 class="mb-2 text-sm font-medium">Portada</h2>
+              <canvas
+                id="cover-preview"
+                class="aspect-square w-full rounded-xl bg-white shadow-sm"
+              />
+            </div>
+
+            <div class="flex flex-col gap-4">
+              <label class="flex flex-col gap-1 text-sm font-medium">
+                Operación
+                <select id="cover-operation" class={field}>
+                  {["Venta", "Arriendo"].map((op) => (
+                    <option selected={op === data.operations[0]}>{op}</option>
+                  ))}
+                </select>
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium">
+                Línea 1
+                <input id="cover-line1" value={data.neighborhood} maxlength="60" class={field} />
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium">
+                Línea 2
+                <input id="cover-line2" value={data.title} maxlength="80" class={field} />
+              </label>
+
+              {data.surface && (
+                <label class="flex items-center gap-2 text-sm">
+                  <input id="cover-surface" type="checkbox" checked class="size-4 accent-rhl-primary" />
+                  Mostrar superficie ({data.surface})
+                </label>
+              )}
+
+              <fieldset>
+                <legend class="mb-2 text-sm font-medium">
+                  Datos con ícono (máximo {MAX_COVER_STATS})
+                </legend>
+                {data.stats.length === 0 ? (
+                  <p class="text-sm text-rhl-secondary">Esta propiedad no tiene datos para mostrar.</p>
+                ) : (
+                  <div class="flex flex-col gap-1.5">
+                    {data.stats.map((stat) => (
+                      <label class="flex items-center gap-2 text-sm has-disabled:opacity-40">
+                        <input
+                          type="checkbox"
+                          name="cover-stat"
+                          value={stat.key}
+                          checked={data.defaultStats.includes(stat.key)}
+                          class="size-4 accent-rhl-primary"
+                        />
+                        {stat.label}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </fieldset>
+            </div>
+          </section>
+
+          <section>
+            <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 class="text-sm font-medium">Fotos del carrusel</h2>
+              <p id="slide-count" class="text-sm text-rhl-secondary" />
+            </div>
+            <p class="mb-3 text-xs text-rhl-secondary">
+              Haz clic en "Portada" para elegir la foto de la portada. Desmarca las
+              fotos que no quieras incluir. Así se ve el recorte cuadrado.
+            </p>
+            <ul id="photos" class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+              {data.images.map((url, i) => (
+                <li
+                  data-photo={i}
+                  class="group relative overflow-hidden rounded-lg bg-white shadow-sm ring-rhl-primary data-cover:ring-4"
+                >
+                  <img
+                    src={`${url}&width=400`}
+                    crossorigin="anonymous"
+                    alt={`Foto ${i + 1}`}
+                    loading="lazy"
+                    class="aspect-square w-full object-cover group-has-[input:not(:checked)]:opacity-35 group-data-cover:opacity-100!"
+                  />
+                  <label class="absolute top-1.5 left-1.5 grid size-7 cursor-pointer place-items-center rounded-md bg-white/90 group-data-cover:hidden">
+                    <input
+                      type="checkbox"
+                      data-include
+                      aria-label={`Incluir foto ${i + 1}`}
+                      class="size-4 accent-rhl-primary"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    data-make-cover
+                    class="absolute inset-x-1.5 bottom-1.5 rounded-md bg-white/90 py-1 text-xs font-medium text-rhl-primary group-data-cover:bg-rhl-primary group-data-cover:text-white"
+                  >
+                    <span class="group-data-cover:hidden">Portada</span>
+                    <span class="hidden group-data-cover:inline">✓ Portada</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div class="flex flex-col gap-2">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="text-sm font-medium">Texto de la publicación</h2>
+                <p id="caption-count" class="text-xs text-rhl-secondary" />
+              </div>
+              <textarea
+                id="caption"
+                rows="18"
+                spellcheck="true"
+                class:list={[field, "w-full resize-y text-sm leading-relaxed"]}
+              >{data.caption}</textarea>
+              <div class="flex flex-wrap items-center gap-3">
+                <button id="copy-btn" type="button" class={btnPrimary}>Copiar texto</button>
+                <button
+                  id="reset-caption"
+                  type="button"
+                  class="px-3 py-2.5 text-sm text-rhl-secondary hover:text-rhl-primary"
+                >
+                  Volver al borrador
+                </button>
+                <p id="copy-status" class="text-sm text-rhl-secondary" aria-live="polite" />
+              </div>
+            </div>
+            <aside class="flex flex-col gap-2">
+              <h3 class="text-sm font-medium">Así se ve antes de "… más"</h3>
+              <p class="rounded-xl bg-white p-4 text-sm shadow-sm">
+                <span class="font-semibold">rhlrealestate.cl</span>{" "}
+                <span id="caption-visible" class="whitespace-pre-line" />
+                <span class="text-rhl-secondary">… más</span>
+              </p>
+              <p class="text-xs text-rhl-secondary">
+                La primera línea es lo único que lee la mayoría: que diga qué hace
+                única a la propiedad. Edita el texto libremente antes de copiarlo.
+              </p>
+            </aside>
+          </section>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="download-btn" type="button" class={btnPrimary}>
+              Descargar carrusel (ZIP)
+            </button>
+            <p id="status" class="text-sm text-rhl-secondary" aria-live="polite" />
+          </div>
+
+          <div hidden>
+            {Object.entries(ICONS).map(([key, Icon]) => (
+              <template data-icon={key}>
+                <Icon size={96} color="#ffffff" stroke-width={1.5} />
+              </template>
+            ))}
+          </div>
+          <script type="application/json" id="social-data" set:html={json} />
+        </>
+      )
+    }
+  </div>
+</ToolsLayout>
+
+<script>
+  import type { SocialProperty } from "@/lib/tools/social-data";
+  import { MAX_COVER_STATS } from "@/lib/tools/social-data";
+  import {
+    MAX_SLIDES,
+    canvasToJpeg,
+    renderCover,
+    renderFinalSlide,
+    renderPhotoSlide,
+    type CoverStatInput,
+  } from "@/lib/tools/carousel";
+  import { buildZip, downloadBlob, today, type NamedBlob } from "@/lib/tools/download";
+  import { CAPTION_MAX_CHARS, CAPTION_VISIBLE_CHARS } from "@/lib/tools/caption";
+
+  const dataEl = document.getElementById("social-data");
+
+  if (dataEl?.textContent) {
+    const data = JSON.parse(dataEl.textContent) as SocialProperty;
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+    const preview = $<HTMLCanvasElement>("cover-preview");
+    const operationInput = $<HTMLSelectElement>("cover-operation");
+    const line1Input = $<HTMLInputElement>("cover-line1");
+    const line2Input = $<HTMLInputElement>("cover-line2");
+    const surfaceInput = document.getElementById("cover-surface") as HTMLInputElement | null;
+    const statInputs = [
+      ...document.querySelectorAll<HTMLInputElement>('input[name="cover-stat"]'),
+    ];
+    const photoItems = [...document.querySelectorAll<HTMLLIElement>("[data-photo]")];
+    const slideCount = $<HTMLParagraphElement>("slide-count");
+    const downloadBtn = $<HTMLButtonElement>("download-btn");
+    const status = $<HTMLParagraphElement>("status");
+
+    /** Fotos además de la portada: 20 slides = portada + 18 + final. */
+    const MAX_PHOTOS = MAX_SLIDES - 2;
+    let coverIndex = 0;
+
+    // --- Íconos: SVG de Lucide → imagen para el canvas ------------------
+    const iconImages = new Map<string, Promise<HTMLImageElement>>();
+    function iconFor(key: string): Promise<HTMLImageElement> {
+      let icon = iconImages.get(key);
+      if (!icon) {
+        const tpl = document.querySelector<HTMLTemplateElement>(`template[data-icon="${key}"]`);
+        const svg = tpl?.content.querySelector("svg")?.outerHTML ?? "";
+        const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+        const img = new Image();
+        img.src = url;
+        icon = img.decode().then(() => img);
+        iconImages.set(key, icon);
+      }
+      return icon;
+    }
+
+    // --- Selección de fotos ---------------------------------------------
+    const includeInput = (li: HTMLLIElement) =>
+      li.querySelector<HTMLInputElement>("[data-include]")!;
+
+    const slidePhotos = () =>
+      photoItems
+        .map((li, i) => ({ li, i }))
+        .filter(({ li, i }) => i !== coverIndex && includeInput(li).checked)
+        .map(({ i }) => data.images[i]);
+
+    function updatePhotos() {
+      photoItems.forEach((li, i) => li.toggleAttribute("data-cover", i === coverIndex));
+      const count = slidePhotos().length;
+      photoItems.forEach((li, i) => {
+        const input = includeInput(li);
+        input.disabled = i !== coverIndex && !input.checked && count >= MAX_PHOTOS;
+      });
+      slideCount.textContent = `${count + 2} slides: portada + ${count} ${count === 1 ? "foto" : "fotos"} + final (máx. ${MAX_SLIDES})`;
+    }
+
+    // Por defecto: todas incluidas (hasta el límite), portada = la primera
+    let included = 0;
+    photoItems.forEach((li, i) => {
+      const input = includeInput(li);
+      input.checked = i !== coverIndex && included < MAX_PHOTOS;
+      if (input.checked) included++;
+      input.addEventListener("change", updatePhotos);
+      li.querySelector("[data-make-cover]")!.addEventListener("click", () => {
+        coverIndex = i;
+        updatePhotos();
+        scheduleCover();
+      });
+    });
+
+    // --- Datos de la portada (máx. 3) -----------------------------------
+    function updateStatLimit() {
+      const checked = statInputs.filter((i) => i.checked).length;
+      statInputs.forEach((i) => (i.disabled = !i.checked && checked >= MAX_COVER_STATS));
+    }
+
+    async function coverInput() {
+      const selected = statInputs.filter((i) => i.checked).map((i) => i.value);
+      const stats: CoverStatInput[] = await Promise.all(
+        data.stats
+          .filter((s) => selected.includes(s.key))
+          .map(async (s) => ({ label: s.label, icon: await iconFor(s.key) })),
+      );
+      return {
+        photoUrl: data.images[coverIndex],
+        operation: operationInput.value,
+        line1: line1Input.value.trim(),
+        line2: line2Input.value.trim(),
+        surface: surfaceInput?.checked ? data.surface : null,
+        stats,
+      };
+    }
+
+    // Vista previa en vivo (agrupa cambios seguidos en un solo render)
+    let frame = 0;
+    let renderSeq = 0;
+    function scheduleCover() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(async () => {
+        const seq = ++renderSeq;
+        try {
+          const input = await coverInput();
+          if (seq !== renderSeq) return;
+          await renderCover(preview, input);
+        } catch (err) {
+          console.error(err);
+          status.textContent = "No se pudo dibujar la portada.";
+        }
+      });
+    }
+
+    [operationInput, line1Input, line2Input, surfaceInput, ...statInputs].forEach((el) =>
+      el?.addEventListener("input", () => {
+        updateStatLimit();
+        scheduleCover();
+      }),
+    );
+
+    // --- Texto de la publicación ----------------------------------------
+    const caption = $<HTMLTextAreaElement>("caption");
+    const captionCount = $<HTMLParagraphElement>("caption-count");
+    const captionVisible = $<HTMLSpanElement>("caption-visible");
+    const copyBtn = $<HTMLButtonElement>("copy-btn");
+    const copyStatus = $<HTMLParagraphElement>("copy-status");
+
+    /** Aproxima el corte de Instagram: ~125 caracteres o 2 líneas. */
+    function visiblePart(text: string): string {
+      const twoLines = text.split("\n").slice(0, 2).join("\n");
+      return twoLines.length > CAPTION_VISIBLE_CHARS
+        ? twoLines.slice(0, CAPTION_VISIBLE_CHARS).trimEnd()
+        : twoLines.trimEnd();
+    }
+
+    function updateCaption() {
+      const text = caption.value;
+      const length = [...text].length; // cuenta emojis como 1
+      captionCount.textContent = `${length.toLocaleString("es-CL")} / ${CAPTION_MAX_CHARS.toLocaleString("es-CL")} caracteres`;
+      captionCount.classList.toggle("text-red-700", length > CAPTION_MAX_CHARS);
+      captionVisible.textContent = visiblePart(text);
+      copyStatus.textContent = "";
+    }
+
+    caption.addEventListener("input", updateCaption);
+    $<HTMLButtonElement>("reset-caption").addEventListener("click", () => {
+      caption.value = data.caption;
+      updateCaption();
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(caption.value);
+        copyStatus.textContent = "✓ Copiado. Pégalo en Instagram.";
+      } catch {
+        // Sin permiso de portapapeles: se selecciona para copiar a mano
+        caption.select();
+        copyStatus.textContent = "Selecciona y copia con Ctrl/Cmd + C.";
+      }
+    });
+
+    updateCaption();
+
+    // --- Descarga -------------------------------------------------------
+    downloadBtn.addEventListener("click", async () => {
+      downloadBtn.disabled = true;
+      try {
+        const photos = slidePhotos();
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const files: NamedBlob[] = [];
+
+        status.textContent = "Generando portada…";
+        const cover = document.createElement("canvas");
+        await renderCover(cover, await coverInput());
+        files.push({ name: "01-portada.jpg", blob: await canvasToJpeg(cover) });
+
+        for (let i = 0; i < photos.length; i++) {
+          status.textContent = `Generando foto ${i + 1} de ${photos.length}…`;
+          files.push({ name: `${pad(i + 2)}.jpg`, blob: await renderPhotoSlide(photos[i]) });
+        }
+
+        files.push({ name: `${pad(photos.length + 2)}-final.jpg`, blob: await renderFinalSlide() });
+        // El texto viaja con las fotos (útil si publica otra persona o desde el celular).
+        // BOM para que el Bloc de notas de Windows muestre bien tildes y emojis.
+        files.push({
+          name: "texto-publicacion.txt",
+          blob: new Blob(["﻿" + caption.value], { type: "text/plain;charset=utf-8" }),
+        });
+
+        status.textContent = "Generando ZIP…";
+        downloadBlob(await buildZip(files), `carrusel-${data.id.toLowerCase()}-${today()}.zip`);
+        status.textContent = `Listo: ${files.length - 1} slides + texto de la publicación.`;
+      } catch (err) {
+        console.error(err);
+        status.textContent = "No se pudo generar el carrusel. Intenta de nuevo.";
+      } finally {
+        downloadBtn.disabled = false;
+      }
+    });
+
+    updatePhotos();
+    updateStatLimit();
+    scheduleCover();
+  }
+</script>

@@ -1,0 +1,30 @@
+---
+/** Zona para arrastrar o elegir fotos. El comportamiento lo conecta `bindDropzone()`. */
+interface Props {
+  inputId: string;
+  title?: string;
+  hint?: string;
+}
+
+const {
+  inputId,
+  title = "Arrastra las fotos aquí o haz clic para elegirlas",
+  hint = "JPG, PNG o WebP · se mantiene el orden en que vienen",
+} = Astro.props;
+---
+
+<label
+  data-dropzone
+  for={inputId}
+  class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-rhl-secondary/50 bg-white px-6 py-10 text-center transition-colors hover:border-rhl-primary has-disabled:cursor-not-allowed has-disabled:opacity-50 data-dragging:border-rhl-primary data-dragging:bg-rhl-soft-blue"
+>
+  <span class="font-medium">{title}</span>
+  <span class="text-sm text-rhl-secondary">{hint}</span>
+  <input
+    id={inputId}
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    multiple
+    class="sr-only"
+  />
+</label>

@@ -1,0 +1,153 @@
+---
+import ToolsLayout from "@/layouts/ToolsLayout.astro";
+import Dropzone from "@/components/tools/Dropzone.astro";
+
+const btnPrimary =
+  "rounded-lg bg-rhl-primary px-5 py-2.5 font-medium text-white hover:bg-rhl-primary/90 disabled:cursor-not-allowed disabled:opacity-40";
+---
+
+<ToolsLayout title="Fotos con logo">
+  <div class="flex flex-col gap-6">
+    <header>
+      <h1 class="text-2xl font-semibold">Fotos con logo</h1>
+      <p class="mt-1 text-sm text-rhl-secondary">
+        Sube las fotos de la propiedad y descárgalas con el logo al centro.
+        Las fotos no salen de tu computador.
+      </p>
+    </header>
+
+    <Dropzone inputId="photos-input" />
+
+    <section id="result" hidden class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="zip-btn" type="button" disabled class={btnPrimary}>
+          Descargar fotos (ZIP)
+        </button>
+        <button
+          id="clear-btn"
+          type="button"
+          class="px-3 py-2.5 text-sm text-rhl-secondary hover:text-rhl-primary"
+        >
+          Empezar de nuevo
+        </button>
+        <p id="status" class="text-sm text-rhl-secondary" aria-live="polite"></p>
+      </div>
+
+      <a
+        id="to-video"
+        href="/tools/video"
+        hidden
+        class="flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm shadow-sm ring-rhl-primary hover:ring-2"
+      >
+        <span>¿Quieres un video con estas fotos?</span>
+        <span class="font-medium text-rhl-primary">Crear video →</span>
+      </a>
+
+      <ul id="preview" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"></ul>
+    </section>
+  </div>
+</ToolsLayout>
+
+<script>
+  import { addLogoToPhoto, isAcceptedPhoto, type ProcessedPhoto } from "@/lib/tools/photos";
+  import { buildZip, downloadBlob, today, uniqueName } from "@/lib/tools/download";
+  import { saveHandoff } from "@/lib/tools/handoff";
+  import { bindDropzone, photoTile, photosLabel } from "@/lib/tools/ui";
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  const input = $<HTMLInputElement>("photos-input");
+  const result = $<HTMLElement>("result");
+  const zipBtn = $<HTMLButtonElement>("zip-btn");
+  const clearBtn = $<HTMLButtonElement>("clear-btn");
+  const status = $<HTMLParagraphElement>("status");
+  const toVideo = $<HTMLAnchorElement>("to-video");
+  const preview = $<HTMLUListElement>("preview");
+
+  /** Fotos originales (limpias): son las que se pasan al video. */
+  let sources: File[] = [];
+  let photos: ProcessedPhoto[] = [];
+  let urls: string[] = [];
+  /** Sube con cada carga: descarta el trabajo de una carga anterior. */
+  let run = 0;
+
+  function reset() {
+    run++;
+    urls.forEach((url) => URL.revokeObjectURL(url));
+    urls = [];
+    photos = [];
+    sources = [];
+    preview.replaceChildren();
+    status.textContent = "";
+    result.hidden = true;
+    toVideo.hidden = true;
+    zipBtn.disabled = true;
+    input.disabled = false;
+  }
+
+  async function handleFiles(all: File[]) {
+    reset();
+    const current = run;
+    const files = all.filter(isAcceptedPhoto);
+    const skipped = all.length - files.length;
+    const errors: string[] = [];
+    const usedNames = new Set<string>();
+
+    result.hidden = false;
+    input.disabled = true;
+
+    for (let i = 0; i < files.length; i++) {
+      status.textContent = `Agregando logo… ${i + 1} de ${files.length}`;
+      try {
+        const photo = await addLogoToPhoto(files[i]);
+        if (current !== run) return;
+        photo.name = uniqueName(photo.name, usedNames);
+        photos.push(photo);
+        sources.push(files[i]);
+        const url = URL.createObjectURL(photo.blob);
+        urls.push(url);
+        preview.append(photoTile(url, photo.name, true));
+      } catch (err) {
+        if (current !== run) return;
+        console.error(err);
+        errors.push(files[i].name);
+      }
+    }
+
+    input.disabled = false;
+    const notes = [
+      photos.length ? `✓ ${photosLabel(photos.length)} con logo.` : "No hay fotos para procesar.",
+      skipped && `${skipped} omitida(s): formato no soportado (usa JPG o PNG).`,
+      errors.length && `No se pudo procesar: ${errors.join(", ")}.`,
+    ].filter(Boolean);
+    status.textContent = notes.join(" ");
+    zipBtn.disabled = photos.length === 0;
+    toVideo.hidden = photos.length === 0;
+  }
+
+  bindDropzone(input, handleFiles);
+
+  zipBtn.addEventListener("click", async () => {
+    zipBtn.disabled = true;
+    const previous = status.textContent;
+    status.textContent = "Preparando ZIP…";
+    try {
+      downloadBlob(await buildZip(photos), `fotos-rhl-${today()}.zip`);
+      status.textContent = previous;
+    } catch (err) {
+      console.error(err);
+      status.textContent = "No se pudo generar el ZIP. Intenta de nuevo.";
+    } finally {
+      zipBtn.disabled = false;
+    }
+  });
+
+  // Atajo: lleva las fotos limpias a la pestaña Video (el video pone el logo encima)
+  toVideo.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const saved = await saveHandoff(sources);
+    location.href = saved ? "/tools/video?desde=fotos" : "/tools/video";
+  });
+
+  clearBtn.addEventListener("click", reset);
+</script>

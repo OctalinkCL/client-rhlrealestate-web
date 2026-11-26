@@ -16,6 +16,20 @@ export function propertyWhatsappHref(property: PropertyRef) {
   return `https://api.whatsapp.com/send/?phone=${CONTACT_WHATSAPP}&text=${text}&type=phone_number&app_absent=0`;
 }
 
+/**
+ * Deja un celular chileno en sus 8 dígitos (sin +56 ni el 9 inicial), que es
+ * lo que pide el formulario tras el prefijo fijo "+56 9". Acepta lo que
+ * entregan el autocompletado del teléfono y la costumbre: "9 1234 5678",
+ * "+56 9 1234 5678", "56912345678". Si no calza, devuelve los dígitos tal
+ * cual y la validación de largo los rechaza.
+ */
+export function chileanMobileDigits(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("569")) return digits.slice(3);
+  if (digits.length === 9 && digits.startsWith("9")) return digits.slice(1);
+  return digits;
+}
+
 // --- Calificación de leads ---
 // Preguntas de un toque que reemplazan el mensaje libre. Se usan en el
 // formulario (RequestContact) y en el servidor (/api/lead) para validar
@@ -52,7 +66,7 @@ export const LEAD_QUESTIONS: Record<LeadOperation, LeadQuestion[]> = {
         "Contado",
         "Crédito pre-aprobado",
         "Necesito crédito",
-        "Debo vender otra propiedad",
+        "Vendo otra propiedad",
       ],
     },
     {
