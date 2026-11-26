@@ -10,8 +10,8 @@ export const SLIDE_SIZE = 1080;
 export const MAX_SLIDES = 20; // límite de Instagram
 /** Capa con zona transparente para la foto (provisional: luego el PNG del cliente). */
 export const COVER_BASE_URL = "/tools/redes/portada-base.svg";
-/** Slide final fijo (provisional: luego el PNG del cliente). */
-export const FINAL_SLIDE_URL = "/tools/redes/final.svg";
+/** Slide final fijo: imagen original del cliente (1080×1080), se usa tal cual. */
+export const FINAL_SLIDE_URL = "/tools/redes/final.png";
 export const JPEG_QUALITY = 0.92;
 
 const NAVY = "#072c5a";
@@ -43,7 +43,7 @@ export function ensureFonts(): Promise<unknown> {
     document.fonts.load(`800 100px ${SANS}`),
     document.fonts.load(`700 40px ${SANS}`),
     document.fonts.load(`400 24px ${SANS}`),
-    document.fonts.load(`italic 400 100px ${SERIF}`),
+    document.fonts.load(`italic 600 100px ${SERIF}`),
   ]);
   return fontsReady;
 }
@@ -129,6 +129,22 @@ export interface CoverInput {
   stats: CoverStatInput[];
 }
 
+/**
+ * "Venta / Disponible" en la parte superior. Tamaños fijos, como la referencia
+ * del cliente (no se igualan anchos: en su portada "Venta" es más angosta).
+ * `tracking` es el espacio entre letras como fracción del tamaño (negativo = más
+ * apretado, como en la referencia).
+ */
+const HEADLINE = {
+  operationY: 165,
+  operationSize: 106,
+  operationTracking: -0.045,
+  availableY: 272,
+  availableSize: 135,
+  availableWeight: 600,
+  availableTracking: -0.035,
+};
+
 const PANEL_CENTER = 600;
 const TILE = { w: 132, h: 108, top: 922, slot: 190, icon: 64, radius: 8 };
 
@@ -143,15 +159,27 @@ export async function renderCover(canvas: HTMLCanvasElement, input: CoverInput):
   drawCoverCrop(ctx, photo);
   ctx.drawImage(base, 0, 0, SLIDE_SIZE, SLIDE_SIZE);
 
-  // "Venta / Disponible" sobre la foto
+  // "Venta / Disponible" arriba: las fotos de EasyBroker traen el logo al
+  // centro, así que el texto no puede ir a media altura.
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
-  ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
   ctx.shadowBlur = 18;
-  fitText(ctx, input.operation, 540, 668, 760, (s) => `800 ${s}px ${SANS}`, 118);
-  fitText(ctx, "Disponible", 540, 788, 600, (s) => `italic 400 ${s}px ${SERIF}`, 150);
+  // letterSpacing en canvas: Chrome/Edge sí; donde no exista se ignora sin error
+  ctx.letterSpacing = `${HEADLINE.operationTracking * HEADLINE.operationSize}px`;
+  fitText(ctx, input.operation, 540, HEADLINE.operationY, 760, (s) => `800 ${s}px ${SANS}`, HEADLINE.operationSize);
+  ctx.letterSpacing = `${HEADLINE.availableTracking * HEADLINE.availableSize}px`;
+  fitText(
+    ctx,
+    "Disponible",
+    540,
+    HEADLINE.availableY,
+    760,
+    (s) => `italic ${HEADLINE.availableWeight} ${s}px ${SERIF}`,
+    HEADLINE.availableSize,
+  );
   ctx.restore();
 
   // Panel: ubicación y título

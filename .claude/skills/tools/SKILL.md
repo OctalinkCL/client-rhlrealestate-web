@@ -111,13 +111,13 @@ Página: `src/pages/tools/redes.astro` (`?codigo=EB-XXXX`, resuelto en el servid
 
 **Render** (`carousel.ts`, en el navegador)
 - Portada = foto recortada + capa `public/tools/redes/portada-base.svg` (transparente arriba, panel gris abajo) + textos y cuadrados dibujados por código.
-- "Venta" en Inter 800 y "Disponible" en EB Garamond cursiva; las dos ya están cargadas en `global.css`. Hay que llamar `ensureFonts()` antes de dibujar, porque el canvas no espera las fuentes web.
+- "Venta" en Inter 800 (106 px) y "Disponible" en EB Garamond cursiva **peso 600** (135 px), **en la parte superior** (`HEADLINE` en `carousel.ts`, líneas base en y=165 y y=272). Espaciado entre letras apretado, como en la referencia del cliente: −0,045 em en la operación y −0,035 em en "Disponible" (`ctx.letterSpacing`; donde el navegador no lo soporta se ignora). Tamaños fijos: **no** se igualan anchos, porque en la referencia "Venta" es más angosta que "Disponible". Van arriba porque las fotos de EasyBroker traen el logo al centro. La capa base oscurece suavemente los 400 px superiores para que el blanco se lea sobre cielos o techos claros. Las dos fuentes ya están cargadas en `global.css`. Hay que llamar `ensureFonts()` antes de dibujar, porque el canvas no espera las fuentes web.
 - `fitText()` achica la fuente y, si aun así no cabe, corta con "…".
-- Slide final: `public/tools/redes/final.svg`.
+- Slide final: `public/tools/redes/final.png`, **la imagen original del cliente** (1080×1080, logo a color, ícono del logo de fondo), usada tal cual. Se eligió en vez de recrearla con código porque es fija y así queda idéntica. Además, un SVG cargado como imagen no puede usar las fuentes del sitio. Para cambiar el teléfono o el correo hay que pedir una imagen nueva al cliente.
 - Máximo 20 slides (límite de Instagram): portada + hasta 18 fotos + final. La foto elegida como portada no se repite.
 - ZIP: `01-portada.jpg`, `02.jpg` … `NN-final.jpg`.
 
-**Provisionales:** `portada-base.svg` y `final.svg` los generamos a partir de la referencia del cliente. Cuando lleguen sus PNG, se reemplazan los archivos y se actualizan `COVER_BASE_URL` / `FINAL_SLIDE_URL` en `carousel.ts`. Si la zona transparente o el panel cambian de tamaño, hay que ajustar las coordenadas de `renderCover` (panel desde y≈808, textos en 862/906, cuadrados con `top` 922).
+**Provisional:** `portada-base.svg` la generamos a partir de la referencia del cliente. Si llega su PNG, se reemplaza el archivo y se actualiza `COVER_BASE_URL` en `carousel.ts`. Solo tenemos el logo en blanco (`public/logo_rhl_white.svg`): no hay versión a color en el proyecto. Si la zona transparente o el panel cambian de tamaño, hay que ajustar las coordenadas de `renderCover` (panel desde y≈808, textos en 862/906, cuadrados con `top` 922).
 
 ### Texto de la publicación (`caption.ts`, armado en el servidor, sin IA)
 
@@ -145,7 +145,7 @@ instalar ascensor" no es "con ascensor". El script no inventa; el gancho creativ
 
 Carrusel **en pausa** por decisión del usuario: quizás cambie la plantilla de la portada.
 
-1. **El logo de la foto de EasyBroker choca con "Venta" en la portada**, porque el logo queda en el centro del cuadrado. Opciones planteadas: (a) subir opcionalmente una foto limpia para la portada (recomendada), (b) achicar o bajar "Venta / Disponible", (c) dejarlo así. Sin decidir.
+1. ~~El logo de la foto choca con "Venta"~~: resuelto el 2026-11-26. El texto se subió a la parte superior y se achicó un 10%, a pedido del usuario.
 2. ~~Mejorar la UX de `/tools/logo`~~: resuelto con la separación en 3 pestañas (ver Principios de UX).
 3. Recibir del cliente: PNG de portada con zona transparente, PNG del slide final, íconos SVG propios (opcional) y fuentes exactas.
 4. Identificar el nombre de las pistas en Mixkit.
